@@ -1,0 +1,11 @@
+.sidebar {
+  top: 0;
+  position: -webkit-sticky;
+  position: sticky;
+}
+
+@media only screen and (max-width: 1000px) {
+  .sidebar {
+    display: none;
+  }
+}

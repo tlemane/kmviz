@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "kmviz"
+version = "0.1.0"
+description = ""
+authors = ["Teo Lemane <teo.lemane@genoscope.cns.fr>"]
+license = "MIT"
+readme = "README.md"
+
+packages = [
+  { include = "kmviz" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+loguru = "^0.7.2"
+numpy = "^1.26.4"
+pandas = "^2.2.1"
+dash = {extras = ["diskcache"], version = "^2.16.1"}
+dash-bio = "^1.0.2"
+uplink = {extras = ["aiohttp"], version = "^0.9.7"}
+click = "^8.1.7"
+dash-extensions = "^1.0.14"
+dash-bootstrap-components = "^1.5.0"
+dash-mantine-components = "^0.12.1"
+dash-iconify = "^0.1.2"
+pyyaml = "^6.0.1"
+pyaml = "^23.12.0"
+pydeck = "^0.8.0"
+dash-deck = "^0.0.1"
+dash-ag-grid = "^31.0.1"
+dash-daq = "^0.5.0"
+statsmodels = "^0.14.1"
+dash-labs = "^1.2.0"
+dash-auth = "^2.3.0"
+importlib-resources = "^6.4.0"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+gunicorn = "^21.2.0"
+fastwsgi = "^0.0.9"
+socketify = "^0.0.27"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

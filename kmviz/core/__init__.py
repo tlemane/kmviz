@@ -1,0 +1,3 @@
+
+class KmVizError(Exception):
+    pass
