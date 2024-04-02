@@ -92,7 +92,7 @@ class kState:
 
     def _configure_providers(self, config: dict):
         if "databases" not in config:
-            raise KmVizError("'providers' section is missing in the configuration file.")
+            raise KmVizError("'databases' section is missing in the configuration file.")
 
         for config in config["databases"]:
             for provider, params in config.items():
