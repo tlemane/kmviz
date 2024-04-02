@@ -188,7 +188,16 @@ def make_map_layout():
     ])
 
     res =  html.Div([
-        dmc.Space(h=5),
+        dcc.Graph(figure=blank_map(),
+                  id=kmap.sid("figure"),
+                  responsive=True,
+                  mathjax=True,
+                  style = { "margin-left": "auto",
+                            "margin-right": "auto",
+                            "height": "65vh",
+                            "width":"95%" }
+        ),
+
 
         html.Div([
             dmc.Group([
@@ -199,16 +208,6 @@ def make_map_layout():
                 ),
             ])
         ], id=kmap.sid("presets-div")),
-
-        dcc.Graph(figure=blank_map(),
-                  id=kmap.sid("figure"),
-                  responsive=True,
-                  mathjax=True,
-                  style = { "margin-left": "auto",
-                            "margin-right": "auto",
-                            "height": "65vh",
-                            "width":"95%" }
-        ),
         dmc.Tabs([
             dmc.TabsList([
                 dmc.Tab("Map", value="map-MAP"),

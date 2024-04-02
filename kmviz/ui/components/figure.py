@@ -1550,12 +1550,17 @@ def make_axes_callbacks(factory, figure_id):
     def update_rs(inputs):
         n = "xaxis" if inputs[0] == 0 else f"xaxis{inputs[0]+1}"
         return patch_figure(ctx, ["layout", n])
-        #return patch_figure(ctx, ["layout", "xaxis"])
 
 def make_plot(factory):
     pid = factory
     res =  html.Div([
-        dmc.Space(h=5),
+        dcc.Graph(
+            figure=blank_figure(),
+            id=pid.sid("figure"),
+            responsive=True,
+            mathjax=True,
+            style = {"margin-left": "auto", "margin-right": "auto", "height":"70vh", "width":"90%"}
+        ),
         html.Div([
             dmc.Group([
                 dmc.Select(
@@ -1565,15 +1570,6 @@ def make_plot(factory):
                 ),
             ])
         ], id=pid.sid("presets-div")),
-        dmc.Space(h=5),
-
-        dcc.Graph(
-            figure=blank_figure(),
-            id=pid.sid("figure"),
-            responsive=True,
-            mathjax=True,
-            style = {"margin-left": "auto", "margin-right": "auto", "height":"70vh", "width":"90%"}
-        ),
         dmc.Tabs([
             dmc.TabsList([
                 dmc.Tab("Trace", value="trace", disabled=False,   id=pid.sid("trace-tab")),

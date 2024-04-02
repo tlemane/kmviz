@@ -11,6 +11,9 @@
   color: white;
 }
 */
+.mantine-Grid-col {
+  padding-top: 0;
+}
 .mantine-Slider-track {
   background-color: white;
   border-color: #000000;

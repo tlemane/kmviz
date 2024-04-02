@@ -19,14 +19,23 @@ def make_tabs():
                 dmc.Tab("Plot", value="plot", disabled=True, id=kplot.sid("panel"), icon=DashIconify(icon="carbon:qq-plot"),),
                 dmc.Tab("Sequence", value="sequence", disabled=True, id=kseq.sid("panel"), icon=DashIconify(icon="mdi:dna"),),
                 dmc.Tab("Help", value="help", icon=DashIconify(icon="material-symbols:help-outline"),),
-                ]),
+            ], className="kmviz-tab-header"),
 
-            dmc.TabsPanel(make_table_layout(), value="table"),
-            dmc.TabsPanel(make_map_layout(), value="map"),
-            dmc.TabsPanel(make_index_layout(), value="index"),
-            dmc.TabsPanel(make_sequence_layout(), value="sequence"),
-            dmc.TabsPanel(make_plot_layout(), value="plot"),
-            dmc.TabsPanel(make_help_layout(), value="help"),
+            html.Div([
+
+            dmc.TabsPanel(
+                make_table_layout(), value="table"),
+            dmc.TabsPanel(
+                make_map_layout(), value="map"),
+            dmc.TabsPanel(
+                make_index_layout(), value="index"),
+            dmc.TabsPanel(
+                make_sequence_layout(), value="sequence"),
+            dmc.TabsPanel(
+                make_plot_layout(), value="plot"),
+            dmc.TabsPanel(
+                make_help_layout(), value="help"),
+            ], className="kmviz-tabs")
         ], value="index", id="tab-select"),
     ])
 

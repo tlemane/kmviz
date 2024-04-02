@@ -12,6 +12,7 @@ from kmviz.ui.utils import prevent_update_on_none
 from kmviz.core.query import Query
 from kmviz.core.io import parse_fastx, KmVizIOError
 from kmviz.ui import state
+from kmviz.ui.utils import make_select_data
 from kmviz.ui.components.store import ksf
 from kmviz.ui.components.select import kgsf
 from dataclasses import dataclass
@@ -30,6 +31,7 @@ def make_input_session():
             label="Session ID",
             placeholder="kmviz-324bfabc-50e7-44ac-89d9-6460803d2f5e"
         ),
+        dmc.Space(h=5),
         html.Div(id=kif("session-error")),
         dmc.Button("Load", id=kif("session-load"), style={"display":"inline"})
     ]
@@ -142,13 +144,14 @@ def make_input_text():
             id=kif("text"),
             label="Query sequence(s)",
             description="Fasta/Fastq format",
-            placeholder="Sequences...",
+            placeholder=">Query\nACCGTAGCCTTAGAATTA",
             spellCheck=False,
             autosize=True,
             maxRows=4,
             required=True,
             style={"display":"inline"}
         ),
+        dmc.Space(h=5),
         html.Div(id=kif("text-msg")),
         dmc.Button("Load", id=kif("text-load"), style={"display":"inline"})
     ]
@@ -248,21 +251,26 @@ def make_input_file_callbacks():
 
 def make_input():
     hidden = { "display": "none" }
+    show = { "display": "inline" }
 
     res = html.Div([
         dmc.Divider(size="sm", color="gray", label="INPUT", labelPosition="center"),
+        dmc.Space(h=5),
 
-        dmc.RadioGroup(
-            [dmc.Radio("Text", "text"), dmc.Radio("File", "file"), dmc.Radio("Session", "session")],
+        dmc.SegmentedControl(
             id=kif("select"),
-            label="Select input type",
-            withAsterisk=True,
-            style={"display":"inline"}
+            orientation="horizontal",
+            size="sm",
+            fullWidth=True,
+            style={},
+            color="#1C7ED6",
+            data=make_select_data(["text", "file", "session"], True)
         ),
+
 
         dmc.Space(h=10),
 
-        html.Div(make_input_text(), id=kidf("text"), style=hidden),
+        html.Div(make_input_text(), id=kidf("text"), style=show),
         html.Div(make_input_file(), id=kidf("file"), style=hidden),
         html.Div(make_input_session(), id=kidf("session"), style=hidden),
         #html.Div(make_input_dataframe(), id=kidf("df"), style=hidden),

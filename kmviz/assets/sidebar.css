@@ -2,6 +2,7 @@
   top: 0;
   position: -webkit-sticky;
   position: sticky;
+  width: 225px;
 }
 
 @media only screen and (max-width: 1000px) {

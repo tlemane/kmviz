@@ -46,22 +46,20 @@ def make_select_provider_callbacks():
         return active, data, default
 
 def make_select():
-    return html.Div([
-        dmc.Affix(
-            dmc.Select(
-                id=kgsf("query"),
-                placeholder="Select query",
-            ),
-            position = {"top": 5, "right":10}
+    return dmc.Group([
+        dmc.Select(
+            id=kgsf("provider"),
+            placeholder="Select database",
+            className="kmviz-gselect",
+            size="xs"
         ),
-        dmc.Affix(
-            dmc.Select(
-                id=kgsf("provider"),
-                placeholder="Select database"
-            ),
-            position = {"top": 5, "right": 260}
-        )
-    ])
+        dmc.Select(
+            id=kgsf("query"),
+            placeholder="Select query",
+            className="kmviz-gselect",
+            size="xs"
+        ),
+    ], spacing=3, align="center", className="kmviz-gselect-group")
 
 def make_select_callbacks():
 
