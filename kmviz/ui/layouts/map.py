@@ -22,6 +22,7 @@ from kmviz.ui.components.figure import apply_presets
 from kmviz.ui.layouts.table import ktable
 from kmviz.ui.layouts.sequence import kseq
 from kmviz.ui.id_factory import kmviz_factory as kf
+from kmviz.core.log import kmv_debug
 
 kmap = kf.child("map")
 
@@ -256,14 +257,17 @@ def make_map_layout_callbacks():
         Input(kmap("size_max"), "value"),
         Input(kmap.sid("select-preset"), "value"),
         State(kgsf("provider"), "value"),
+        State(kf.sid("session-id"), "data"),
         prevent_initial_callbacks=True,
         prevent_initial_call=True
     )
     def update_map(data, template, color, size, text, symbol, aframe, agroup,
                    projection, cscs, cdcs, cccs, ccm, smap, sseq, cdm, cds, opacity,
-                   size_max, preset_name, provider):
+                   size_max, preset_name, provider, session):
         trigger = ctx.triggered_id
         args = ctx.args_grouping
+
+        kmv_debug(f"{session}: 'update_map' triggered by '{trigger}'")
 
         if not data:
             return blank_map(), True
@@ -305,7 +309,7 @@ def make_map_layout_callbacks():
             del presets["name"]
             params = apply_presets(presets, params, priority)
 
-        return px.scatter_geo(df, hover_name="Sample", **params), False
+        return px.scatter_geo(df, hover_name="ID", **params), False
 
     @callback(
         Input(kgsf("provider"), "value"),
@@ -336,36 +340,30 @@ def make_map_layout_callbacks():
 
     @callback(
         Input(kmap.sid("figure"), "clickData"),
-        State(kgsf("query"), "value"),
-        State(kgsf("provider"), "value"),
         Output(kseq.sid("select"), "value"),
         Output(ktable.sid("grid"), "filterModel"),
         Output("tab-select", "value"),
         prevent_initial_callbacks=True,
     )
-    def on_click_data_map(value, query, provider):
+    def on_click_data_map(value):
         sample = value["points"][0]["hovertext"]
 
         p = Patch()
-        p["Sample"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
-        #f = {'Sample': {'filterType': 'text', 'type': 'equals', 'filter': sample}}
+        p["ID"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
 
         return sample, p, "sequence"
 
     @callback(
         Input(kmap.sid("figure"), "selectedData"),
-        State(kgsf("query"), "value"),
-        State(kgsf("provider"), "value"),
         State(ksf("query-results"), "data"),
         Output(ktable.sid("grid"), "filterModel"),
         prevent_initial_callbacks=True
     )
-    def on_selected(sdata, query, provider, query_result):
+    def on_selected(sdata, query):
         trigger = ctx.triggered_id
 
         if trigger == kmap.sid("figure"):
             conditions = []
-            qr = query_result[query][provider]
 
             if sdata is None:
                 return {}
@@ -376,7 +374,7 @@ def make_map_layout_callbacks():
                 )
 
             p = Patch()
-            p["Sample"] = { "filterType": "text", "operator":"OR", "conditions": conditions }
+            p["ID"] = { "filterType": "text", "operator":"OR", "conditions": conditions }
             return p
 
         raise dash.exceptions.PreventUpdate()

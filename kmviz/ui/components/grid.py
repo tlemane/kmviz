@@ -8,7 +8,7 @@ def make_ag_grid(id: Union[str, dict],
                  **kwargs):
 
     default_params = {
-        "columnSize": "sizeToFit",
+        "columnSize": "autoSize",
         "className": "ag-theme-quartz"
     }
 
@@ -26,7 +26,7 @@ def make_ag_grid(id: Union[str, dict],
         "loadingOverlayComponentParams": {
             "loadingMessage": "Waiting for results..."
         },
-        "rowSelection": "single"
+        "rowSelection": "single",
     }
 
     default_export = {

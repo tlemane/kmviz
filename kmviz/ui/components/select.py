@@ -11,10 +11,10 @@ kgsf = kf.child("global-select")
 
 def make_select_provider():
     res = html.Div([
-        dmc.Divider(size="sm", color="gray", label="PROVIDERS", labelPosition="center"),
+        dmc.Divider(size="sm", color="gray", label="DATABASES", labelPosition="center"),
         dmc.MultiSelect(
             id=kpsf("provider"),
-            label="Provider(s)",
+            label="Database(s)",
             data=make_select_data(state.kmstate.providers.list()),
             clearable=True,
             withAsterisk=True,
@@ -54,7 +54,7 @@ def make_select():
         dmc.Affix(
             dmc.Select(
                 id=kgsf("provider"),
-                placeholder="Select provider"
+                placeholder="Select database"
             ),
             position = {"top": 5, "right": 260}
         )

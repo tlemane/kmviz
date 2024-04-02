@@ -27,7 +27,7 @@ def make_sequence_layout():
         dmc.Group([
             dmc.Select(
                 id=kseq.sid("select"),
-                label="Sample"
+                label="Select ID"
             )
         ]),
 
@@ -56,7 +56,7 @@ def make_sequence_layout_callbacks():
     def update_sample_select(provider, query, query_result):
         prevent_update_on_none(provider, query)
         qr = query_result[query][provider]
-        return make_select_data(list(qr.df["Sample"])), False
+        return make_select_data(list(qr.df["ID"])), False
 
     @callback(
         Input(ktable.sid("grid"), "selectedRows"),
@@ -68,7 +68,7 @@ def make_sequence_layout_callbacks():
         if not len(data):
             prevent_update_on_none(None)
 
-        return data[0]["Sample"], "sequence"
+        return data[0]["ID"], "sequence"
 
     @callback(
         Input(kseq.sid("select"), "value"),
@@ -83,7 +83,7 @@ def make_sequence_layout_callbacks():
 
         qr = query_result[query][provider]
 
-        f = {'Sample': {'filterType': 'text', 'type': 'contains', 'filter': sample}}
+        f = {'ID': {'filterType': 'text', 'type': 'contains', 'filter': sample}}
 
         index = list(range(len(qr.query.seq)))
 

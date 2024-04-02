@@ -1,4 +1,4 @@
-providers:
+databases:
   - MIO:
       type: "kmindex-server"
       params:
@@ -9,7 +9,7 @@ providers:
         params:
           path: "./tests/metadata.tsv"
           sep: "\t"
-          sample: "Sample"
+          idx: "Sample"
           geodata:
             latitude: "Lat"
             longitude: "Long"

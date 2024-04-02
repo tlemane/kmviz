@@ -18,6 +18,7 @@ from kmviz.ui.components.figure import from_json, make_plot_px, make_plot, make_
 from kmviz.ui.components.figure import apply_presets, px_options, fix_px_params
 from kmviz.ui.layouts.sequence import kseq
 from kmviz.ui.layouts.table import ktable
+from kmviz.core.log import kmv_debug
 
 kplot = kf.child("plot")
 
@@ -66,20 +67,6 @@ def make_plot_layout_callbacks():
 
         return (cols, cols, cols, cols_size, cols, cols, cols, cols,
                 cols, cols, cols, cols, cols, cols, cols, cols, cols, cols, False)
-
-    #clientside_callback(
-    #    """
-    #    function(ptype, options) {
-    #        if (n) {
-    #            return Array(options.length).fill({"display":"none"})
-    #        }
-    #        return window.dash_clientside.no_update
-    #    }
-    #    """,
-    #    Input(ktrace("type"), "value"),
-    #    State(ktrace.all, "id"),
-    #    Output(ktrace.all, "style")
-    #)
 
     # Takes some time to apply, same behavior with a clientside callback
     @callback(
@@ -162,6 +149,7 @@ def make_plot_layout_callbacks():
         Input(ktrace("contours_coloring"), "value"),
         Input(kplot.sid("select-preset"), "value"),
         State(kgsf("provider"), "value"),
+        State(kf.sid("session-id"), "data"),
         prevent_initial_callbacks=True
     )
     def update_plot(data, ptype, X, Y, Z,
@@ -173,7 +161,9 @@ def make_plot_layout_callbacks():
                     line_dash, line_group, line_shape, ld_seq, ld_map, markers,
                     dimensions, values, names, histn, histf, binx, biny,
                     boxmode, violinmode, points, notched, box, contours_coloring,
-                    preset_name, provider):
+                    preset_name, provider, session):
+
+        kmv_debug(f"{session}: 'update_plot' triggered by '{ctx.triggered_id}'")
 
         if not data:
             prevent_update_on_none(data)
@@ -308,12 +298,9 @@ def make_plot_layout_callbacks():
             )
 
         p = Patch()
-        p["Sample"] = { "filterType": "text", "operator":"OR", "conditions": conditions }
+        p["ID"] = { "filterType": "text", "operator":"OR", "conditions": conditions }
         return p
 
-        #return { "Sample" : {
-        #    "filterType": "text", "operator": "OR", "conditions": conditions
-        #}}
 
     @callback(
         Input(kplot.sid("figure"), "clickData"),
@@ -330,9 +317,8 @@ def make_plot_layout_callbacks():
         qr = query_result[query][provider]
         sample = data["points"][0]["hovertext"]
 
-        #f = { "Sample": {"filterType": "text", "type":"equals", "filter": sample}}
         p = Patch()
-        p["Sample"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
+        p["ID"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
         return sample, p, "sequence"
 
 

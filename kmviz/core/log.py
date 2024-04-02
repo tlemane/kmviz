@@ -16,6 +16,7 @@ log_fmt = (
 )
 
 def setup_logger(log_level: str="DEBUG", log_directory: str=None, with_stderr: bool=True) -> None:
+    log_level = log_level.upper()
     logger.remove()
 
     if with_stderr:

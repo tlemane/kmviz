@@ -143,22 +143,22 @@ def make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
     X, Y, Z = list_to_str(X), list_to_str(Y), list_to_str(Z)
 
     if ptype == "Bar":
-        return px.bar(df, x=X, y=Y, hover_name="Sample", **params)
+        return px.bar(df, x=X, y=Y, hover_name="ID", **params)
 
     if ptype == "Line":
-        return px.line(df, x=X, y=Y, hover_name="Sample", **params)
+        return px.line(df, x=X, y=Y, hover_name="ID", **params)
 
     if ptype == "Area":
-        return px.area(df, x=X, y=Y, hover_name="Sample", **params)
+        return px.area(df, x=X, y=Y, hover_name="ID", **params)
 
     if ptype == "Scatter":
-        return px.scatter(df, x=X, y=Y, hover_name="Sample", **params)
+        return px.scatter(df, x=X, y=Y, hover_name="ID", **params)
 
     if ptype == "Scatter3D":
-        return px.scatter_3d(df, x=X, y=Y, z=Z, hover_name="Sample", **params)
+        return px.scatter_3d(df, x=X, y=Y, z=Z, hover_name="ID", **params)
 
     if ptype == "Pie":
-        return px.pie(df, hover_name="Sample", **params),
+        return px.pie(df, hover_name="ID", **params),
 
     if ptype == "Parallel coordinates":
         prevent_update_on_empty(params["dimensions"])
@@ -170,14 +170,14 @@ def make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
 
     if ptype == "Scatter matrix":
         prevent_update_on_empty(params["dimensions"])
-        return px.scatter_matrix(df, **params, hover_name="Sample")
+        return px.scatter_matrix(df, **params, hover_name="ID")
 
     if ptype == "Density contour":
         ct = None
         if "contours_coloring" in params:
             ct = params["contours_coloring"]
             del params["contours_coloring"]
-        fig = px.density_contour(df, x=X, y=Y, z=Z, hover_name="Sample", **params)
+        fig = px.density_contour(df, x=X, y=Y, z=Z, hover_name="ID", **params)
 
         if ct:
             fig.update_traces(contours_coloring=ct)
@@ -185,13 +185,13 @@ def make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
         return fig
 
     if ptype == "Density heatmap":
-        return px.density_heatmap(df, x=X, y=Y, z=Z, hover_name="Sample", **params)
+        return px.density_heatmap(df, x=X, y=Y, z=Z, hover_name="ID", **params)
 
     if ptype == "Violin":
-        return px.violin(df, x=X, y=Y, hover_name="Sample", **params)
+        return px.violin(df, x=X, y=Y, hover_name="ID", **params)
 
     if ptype == "Box":
-        return px.box(df, x=X, y=Y, hover_name="Sample", **params)
+        return px.box(df, x=X, y=Y, hover_name="ID", **params)
 
 
 px_bar_options = {

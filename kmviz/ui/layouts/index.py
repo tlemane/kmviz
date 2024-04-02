@@ -16,7 +16,7 @@ kindex = kf.child("index")
 def make_index_layout():
     res = html.Div([
         dmc.Center([
-            html.H1("Index informations")
+            html.H2("Index informations")
         ]),
         make_ag_grid(
             kindex.sid("infos-grid"),
@@ -31,7 +31,7 @@ def make_index_layout():
             leftIcon=DashIconify(icon="ph:export", width=20)
         ),
         dmc.Center([
-            html.H1("Index metadata")
+            html.H2("Index metadata")
         ]),
 
         make_ag_grid(kindex.sid("metadata-grid")),

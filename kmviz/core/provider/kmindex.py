@@ -45,7 +45,6 @@ class KmindexServerProvider(KmindexProvider):
 
     def connect(self):
         self.index_infos = dict(self._api.infos().json())["index"]
-        self.set_active(self.index_list())
 
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
 
@@ -144,7 +143,7 @@ class KmindexServerProvider(KmindexProvider):
         return {
             "id": query.name,
             "seq": wrap(query.seq),
-            "index": list(self.active),
+            "index": self.index_list(),
             "r": options["coverage"].value,
             "z": options["z"].value,
             "format": "json_vec"

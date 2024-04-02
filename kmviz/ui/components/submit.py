@@ -11,6 +11,8 @@ from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.utils import prevent_update_on_none, make_select_data
 from kmviz.ui.components.store import ksf, ksfr
 from kmviz.ui.components.select import kgsf
+from kmviz.core.log import kmv_info
+import time
 
 import uuid
 
@@ -42,7 +44,8 @@ def make_submit():
         ], id=ksub.sid("progress-div"), style={"display": "none"}),
         dmc.NotificationsProvider([
             html.Div(id=kf.sid("notification")),
-        ], limit=1)
+        ], limit=1),
+        dcc.Store(id=kf.sid("session-id"))
     ])
 
     return res
@@ -79,6 +82,7 @@ def make_submit_callbacks():
         Output(kgsf("provider"), "value"),
         Output(kgsf("query"), "data"),
         Output(kgsf("query"), "value"),
+        Output(kf.sid("session-id"), "data"),
         inputs=[
             Input(ksub.sid("button"), "n_clicks"),
             State(ksfr("query-sequences"), "data"),
@@ -103,6 +107,8 @@ def make_submit_callbacks():
         progress_pattern = "{n} / {total}"
 
         uuid_str = f"kmviz-{str(uuid.uuid4())}"
+
+        kmv_info(f"⌛ {uuid_str}")
         nshow = make_session_notification("show", uuid_str)
 
         set_progress((0, progress_pattern.format(n=0, total=nb_queries), nshow))
@@ -134,11 +140,13 @@ def make_submit_callbacks():
 
         set_progress((100, "Done", nshow))
 
+        kmv_info(f"✅ {uuid_str}")
         return (
             Serverside(query_results),
             make_select_data(actives),
             default_provider,
             make_select_data([query.name for query in queries]),
-            default_query
+            default_query,
+            uuid_str
         )
 

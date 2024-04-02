@@ -4,16 +4,16 @@ from typing import List, Set
 from .db import MetaDB
 
 class TsvMetaDB(MetaDB):
-    def __init__(self, path: str, sample: str, geodata: dict={}, **kwargs) -> None:
-        super().__init__(geodata)
+    def __init__(self, path: str, idx: str, geodata: dict={}, **kwargs) -> None:
+        super().__init__(idx, geodata)
         self.data = pd.read_csv(path, **kwargs)
-        self.sample = sample
+        self.data.rename(columns={self.idx: "ID"}, inplace=True)
 
     def connect(self) -> None:
         pass
 
-    def query(self, idx: Set[str]) -> pd.DataFrame:
-        return self.data[self.data[self.sample].isin(idx)]
+    def query(self, keys: Set[str]) -> pd.DataFrame:
+        return self.data[self.data["ID"].isin(keys)]
 
     def df(self) -> pd.DataFrame:
         return self.data

@@ -14,7 +14,6 @@ class Provider(ABC):
         self._name = name
         self.index_infos: Dict[str, Any] = None
         self.db: MetaDB = None
-        self.active = set()
         self.options = {}
         self._presets = {}
 
@@ -52,9 +51,6 @@ class Provider(ABC):
     def set_presets(self, presets: dict):
         self._presets = presets
 
-    def set_active(self, indexes: List[str]):
-        self.active = set(indexes)
-
     def name(self) -> str:
         return self._name
 
@@ -82,13 +78,13 @@ class Providers:
         self._providers = {}
         self._active = set()
 
-    def add(self, provider: Provider, active=False) -> None:
+    def add(self, provider: Provider) -> None:
         self._providers[provider.name()] = provider
-        if active:
-            self._active.add(provider.name())
+        #if active:
+        #    self._active.add(provider.name())
 
-    def set_active(self, providers: List[str]):
-        self._active = set(providers)
+    #def set_active(self, providers: List[str]):
+    #    self._active = set(providers)
 
     def list(self) -> List[str]:
         return list(self._providers.keys())
@@ -96,8 +92,8 @@ class Providers:
     def all(self):
         return self._providers
 
-    def active(self) -> set:
-        return self._active
+    #def active(self) -> set:
+    #    return self._active
 
     def get(self, name: str):
         return self._providers[name]

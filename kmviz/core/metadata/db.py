@@ -1,17 +1,18 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict
 import pandas as pd
 
 class MetaDB(ABC):
-    def __init__(self, geodata = {}, **kwargs):
+    def __init__(self, idx: str, geodata: Dict[str, str] = {}) -> None:
         self._geodata = geodata
+        self._idx = idx
 
     @abstractmethod
     def connect(self):
         ...
 
     @abstractmethod
-    def query(self, idx: List[str]) -> pd.DataFrame:
+    def query(self, keys: List[str]) -> pd.DataFrame:
         ...
 
     @abstractmethod
@@ -25,6 +26,10 @@ class MetaDB(ABC):
     @property
     def geodata(self) -> dict:
         return self._geodata
+
+    @property
+    def idx(self) -> str:
+        return self._idx
 
 
 

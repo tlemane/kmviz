@@ -21,13 +21,23 @@ def make_help_layout():
 
     res = html.Div([
         dcc.Markdown("""
-        ## Welcome to kmviz documentation!
 
-        Here is a condensed version of the documentation for a quick start. For the complete documentation, please refer to [link](link).
+        Here is a condensed version of the documentation for a quickstart. For the complete documentation, please refer to the [wiki](https://github.com/tlemane/kmviz/wiki).
 
         ### Submit a query
 
+        The configuration and submission of a query take place in the left sidebar. First, you have to choose one or more databases.
+
+        1. Select one or more database
+
+        Upon submitting a query, you will receive a notification containing a session ID, such as
+        `kmviz-f47b1f69-6b6c-4209-b6fa-98d5f78bd9fd`. This ID can be used to reload your results at a later time which useful for queries that require long processing times.
+
+        2.
+
         ### Result tabs
+
+        **kmviz** allows to visualize results for each pair of database/query. At the top right, there a two selectors: the first one is to choose the database, and the second one is for the query. Query identifiers are the same as in your fasta/q input files.
 
         #### Index
 
@@ -35,9 +45,10 @@ def make_help_layout():
 
         #### Map
 
+        #### Plot
+
         #### Sequence
 
-        #### Plot
 
         """, mathjax=True),
         plugin_section,

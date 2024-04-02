@@ -40,6 +40,7 @@ def make_input_session_callbacks():
         Output(kgsf("query"), "value"),
         Output(kf.sid("sidebar-layout"), "style"),
         Output(kif("session"), "error"),
+        Output(kf.sid("session-id"), "data"),
         prevent_initial_callbacks=True,
         prevent_initial_call=True,
     )
@@ -47,10 +48,10 @@ def make_input_session_callbacks():
         if n_clicks:
             try:
                 res = state.kmstate.get_result(session_id)
-                return Serverside(res[0]), res[1], res[2], res[3], res[4], {"display":"none"}, no_update
+                return Serverside(res[0]), res[1], res[2], res[3], res[4], {"display":"none"}, no_update, session_id
             except:
                 msg = "Session not found. Invalid session id, query still running, or results erased."
-                return no_update, no_update, no_update, no_update, no_update, no_update, msg
+                return no_update, no_update, no_update, no_update, no_update, no_update, msg, None
 
 
 def make_input_text():
@@ -162,8 +163,6 @@ def make_input_file_callbacks():
         except KmVizIOError as e:
             message = dmc.Text(f"🗎 {filename} -> Invalid format", color="red", weight=500)
             return Serverside([]), message, Patch(), None, style_inline_patch()
-
-
 
 def make_input():
     hidden = { "display": "none" }

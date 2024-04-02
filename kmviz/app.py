@@ -57,12 +57,17 @@ def init(**kwargs):
               help="Path to yaml config file.")
 @click.option("--log-level",
               help="Logging level.",
+              default="debug",
               type=click.Choice(["debug", "info", "warning", "error"]))
-@click.option("--log-directory",
-              help="Directory to store log files.")
-@click.option("--host", help="host", default="127.0.0.1")
-@click.option("--port", help="port", default=8050)
-@click.option("--debug", is_flag=True)
+@click.option("--host",
+              help="host",
+              default="127.0.0.1")
+@click.option("--port",
+              help="port",
+              default=8050)
+@click.option("--debug",
+              help="Run flask server in debug mode",
+              is_flag=True)
 def main(**kwargs):
     setup_logger()
     kmv_info(f"Starting kmviz (instance_id = {instance_id()})")

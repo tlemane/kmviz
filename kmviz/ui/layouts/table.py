@@ -13,10 +13,13 @@ from kmviz.ui.utils import prevent_update_on_none
 from kmviz.ui.components.select import kgsf
 from kmviz.ui.components.store import ksf
 
+from pandas.api.types import is_numeric_dtype, is_datetime64_dtype
+
 ktable = kf.child("table")
 
 def make_table_layout():
     res = html.Div([
+        dmc.Space(h=5),
         make_ag_grid(ktable.sid("grid"), {}, {}, {}, style = {"height": "85vh"}),
         dmc.Space(h=5),
         dmc.Group([
@@ -56,8 +59,20 @@ def make_table_layout_callbacks():
     )
     def update_table_grid(query, provider, query_result):
 
+        def column_filter(data):
+            if is_numeric_dtype(data):
+                return "agNumberColumnFilter"
+            if is_datetime64_dtype(data):
+                return "agDateColumnFilter"
+            return "agTextColumnFilter"
+
         fields = [
-            {"field": x, "filterParams": {"maxNumConditions": 10000}, "suppressMenu": True}
+            {
+                "field": x,
+                "filterParams": {"maxNumConditions": 10000},
+                "suppressMenu": True,
+                "filter": column_filter(query_result[query][provider].df[x])
+            }
             for x in list(query_result[query][provider].df)
         ]
 

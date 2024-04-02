@@ -33,6 +33,7 @@ statsmodels = "^0.14.1"
 dash-labs = "^1.2.0"
 dash-auth = "^2.3.0"
 importlib-resources = "^6.4.0"
+executor = "^23.2"
 
 
 [tool.poetry.group.dev.dependencies]

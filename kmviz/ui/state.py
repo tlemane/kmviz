@@ -77,6 +77,7 @@ class kState:
         if not "plugins" in config:
             self.dashboard_path = "/"
         else:
+            self.dashboard_path = "/dashboard"
             self._plugins = search_for_plugins(config["plugins"])
             for name, plugin in self._plugins.items():
                 self._external_css.extend(plugin.external_styles())
@@ -90,10 +91,10 @@ class kState:
             shutil.copytree(p, f"{main}/_{plugin_name}_assets", dirs_exist_ok=True)
 
     def _configure_providers(self, config: dict):
-        if "providers" not in config:
+        if "databases" not in config:
             raise KmVizError("'providers' section is missing in the configuration file.")
 
-        for config in config["providers"]:
+        for config in config["databases"]:
             for provider, params in config.items():
                 kmv_info(f"Load provider '{provider}'")
                 p = make_provider_from_dict(provider, params)
