@@ -2,7 +2,7 @@ import click
 import dash
 from dash_extensions.enrich import DashProxy, LogTransform, NoOutputTransform, ServersideOutputTransform, html
 import dash_bootstrap_components as dbc
-from kmviz.core.log import kmv_info, instance_id, setup_logger
+from kmviz.core.log import kmv_info, instance_id, setup_logger, kmv_ex
 from kmviz.core.provider import make_provider_from_dict
 from kmviz.core.cache import callback_manager
 from kmviz.core import KmVizError
@@ -56,7 +56,7 @@ def init(**kwargs):
         elif cpath.split(".")[-1] in ("yml", "yaml"):
             config = load(config_file, Loader=Loader)
         else:
-            raise KmVizError("Invalid config file")
+            raise KmVizError("Invalid config file format, supported formats are 'yaml' and 'toml'.")
 
     state.kmstate.configure(config)
 
@@ -82,7 +82,12 @@ def main(**kwargs):
     setup_logger()
     kmv_info(f"Starting kmviz (instance_id = {instance_id()})")
 
-    config = init(**kwargs)
+    config = None
+    try:
+        config = init(**kwargs)
+    except Exception as e:
+        kmv_ex(e)
+        exit(1)
 
     app = make_app()
 
@@ -99,8 +104,8 @@ app = make_app()
 
 if "auth" in config:
     auth = dash_auth.BasicAuth(app, config["auth"])
-
 app = app.server
+
 
 
 

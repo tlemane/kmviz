@@ -1,4 +1,5 @@
 [databases]
+
 [databases.MIO]
 type = "kmindex-server"
 [databases.MIO.params]
@@ -17,8 +18,10 @@ name = "ORA"
 priority = true
 size = "CovXK"
 opacity = 0.9
+
 [[databases.MIO.presets.plot]]
 name = "ORA"
+priority = true
 type = "Scatter"
 size = "CovXK"
 X = "Depth"
