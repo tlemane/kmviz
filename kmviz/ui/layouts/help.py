@@ -1,5 +1,8 @@
 from dash_extensions.enrich import html, dcc
 from kmviz.ui import state
+import dash
+
+from importlib_resources import files
 
 def make_help_layout():
 
@@ -19,38 +22,13 @@ def make_help_layout():
         This instance has loaded one or more plugins. If these provide help, you will find it below.
         """)
 
+    help_md = ""
+
+    with open(files("kmviz").joinpath("assets/help.md"), "r") as doc:
+        help_md = doc.read()
+
     res = html.Div([
-        dcc.Markdown("""
-
-        Here is a condensed version of the documentation for a quickstart. For the complete documentation, please refer to the [wiki](https://github.com/tlemane/kmviz/wiki).
-
-        ### Submit a query
-
-        The configuration and submission of a query take place in the left sidebar. First, you have to choose one or more databases.
-
-        1. Select one or more database
-
-        Upon submitting a query, you will receive a notification containing a session ID, such as
-        `kmviz-f47b1f69-6b6c-4209-b6fa-98d5f78bd9fd`. This ID can be used to reload your results at a later time which useful for queries that require long processing times.
-
-        2.
-
-        ### Result tabs
-
-        **kmviz** allows to visualize results for each pair of database/query. At the top right, there a two selectors: the first one is to choose the database, and the second one is for the query. Query identifiers are the same as in your fasta/q input files.
-
-        #### Index
-
-        #### Table
-
-        #### Map
-
-        #### Plot
-
-        #### Sequence
-
-
-        """, mathjax=True),
+        dcc.Markdown(help_md, mathjax=True),
         plugin_section,
         html.Div([
             *plugin_help
