@@ -7,18 +7,19 @@ from kmviz.ui.layouts.map import make_map_layout, make_map_layout_callbacks, kma
 from kmviz.ui.layouts.sequence import make_sequence_layout, make_sequence_layout_callbacks, kseq
 from kmviz.ui.layouts.plot import make_plot_layout, make_plot_layout_callbacks, kplot
 from kmviz.ui.layouts.help import make_help_layout
+from dash_iconify import DashIconify
 
 def make_tabs():
     tabs = html.Div([
         dmc.Tabs([
             dmc.TabsList([
-                dmc.Tab("Index", value="index", id=kindex.sid("panel")),
-                dmc.Tab("Table", value="table", disabled=True, id=ktable.sid("panel")),
-                dmc.Tab("Map", value="map", disabled=True, id=kmap.sid("panel")),
-                dmc.Tab("Plot", value="plot", disabled=True, id=kplot.sid("panel")),
-                dmc.Tab("Sequence", value="sequence", disabled=True, id=kseq.sid("panel")),
-                dmc.Tab("Help", value="help"),
-            ]),
+                dmc.Tab("Index", value="index", id=kindex.sid("panel"), icon=DashIconify(icon="iconoir:db"),),
+                dmc.Tab("Table", value="table", disabled=True, id=ktable.sid("panel"), icon=DashIconify(icon="material-symbols:table"),),
+                dmc.Tab("Map", value="map", disabled=True, id=kmap.sid("panel"), icon=DashIconify(icon="fluent-mdl2:world"),),
+                dmc.Tab("Plot", value="plot", disabled=True, id=kplot.sid("panel"), icon=DashIconify(icon="carbon:qq-plot"),),
+                dmc.Tab("Sequence", value="sequence", disabled=True, id=kseq.sid("panel"), icon=DashIconify(icon="mdi:dna"),),
+                dmc.Tab("Help", value="help", icon=DashIconify(icon="material-symbols:help-outline"),),
+                ]),
 
             dmc.TabsPanel(make_table_layout(), value="table"),
             dmc.TabsPanel(make_map_layout(), value="map"),
