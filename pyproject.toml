@@ -34,6 +34,7 @@ dash-labs = "^1.2.0"
 dash-auth = "^2.3.0"
 importlib-resources = "^6.4.0"
 executor = "^23.2"
+tomli = "^2.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

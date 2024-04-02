@@ -94,16 +94,28 @@ class kState:
         if "databases" not in config:
             raise KmVizError("'databases' section is missing in the configuration file.")
 
-        for config in config["databases"]:
-            for provider, params in config.items():
-                kmv_info(f"Load provider '{provider}'")
-                p = make_provider_from_dict(provider, params)
-                try:
-                    kmv_info(f"Init provider '{provider}'")
-                    p.connect()
-                except:
-                    raise KmVizError("Init fails for '{provider}'")
-                self._providers.add(p)
+        for name, params in config["databases"].items():
+            kmv_info(f"Load provider '{name}'")
+            p = make_provider_from_dict(name, params)
+            try:
+                kmv_info(f"Init provider '{name}'")
+                p.connect()
+            except:
+                raise KmVizError("Init fails for '{name}'")
+            self._providers.add(p)
+
+        #for name, config in config["databases"].items():
+        #    print(name)
+        #    for provider, params in config.items():
+        #        kmv_info(f"Load provider '{provider}'")
+        #        p = make_provider_from_dict(provider, params)
+        #        try:
+        #            kmv_info(f"Init provider '{provider}'")
+        #            p.connect()
+        #        except:
+        #            raise KmVizError("Init fails for '{provider}'")
+        #        self._providers.add(p)
+
 
 def init_state():
     global kmstate

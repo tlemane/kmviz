@@ -5,6 +5,8 @@ import dash_bootstrap_components as dbc
 from kmviz.core.log import kmv_info, instance_id, setup_logger
 from kmviz.core.provider import make_provider_from_dict
 from kmviz.core.cache import callback_manager
+from kmviz.core import KmVizError
+
 import dash_auth
 
 import os
@@ -15,6 +17,7 @@ try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
+import tomli
 
 def make_app():
     app = DashProxy(
@@ -45,8 +48,15 @@ def init(**kwargs):
     setup_logger()
     kmv_info(f"Starting kmviz (instance_id = {instance_id()})")
 
-    with open(kwargs["config"], "r") as config_file:
-        config = load(config_file, Loader=Loader)
+    cpath = kwargs["config"]
+    config = None
+    with open(cpath, "rb") as config_file:
+        if cpath.endswith(".toml"):
+            config = tomli.load(config_file)
+        elif cpath.split(".")[-1] in ("yml", "yaml"):
+            config = load(config_file, Loader=Loader)
+        else:
+            raise KmVizError("Invalid config file")
 
     state.kmstate.configure(config)
 

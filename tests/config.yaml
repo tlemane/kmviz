@@ -1,31 +1,31 @@
 databases:
-  - MIO:
-      type: "kmindex-server"
+  MIO:
+    type: "kmindex-server"
+    params:
+      url: "127.0.0.1"
+      port: 8080
+    metadata:
+      type: "tsv"
       params:
-        url: "127.0.0.1"
-        port: 8080
-      metadata:
-        type: "tsv"
-        params:
-          path: "./tests/metadata.tsv"
-          sep: "\t"
-          idx: "Sample"
-          geodata:
-            latitude: "Lat"
-            longitude: "Long"
+        path: "./tests/metadata.tsv"
+        sep: "\t"
+        idx: "Sample"
+        geodata:
+          latitude: "Lat"
+          longitude: "Long"
 
-      presets:
-        map:
-          - name: "ORA"
-            priority: True
-            size: "CovXK"
-            opacity: 0.9
-        plot:
-          - name: "ORA"
-            type: "Scatter"
-            size: "CovXK"
-            X: "Depth"
-            Y: "Temp"
+    presets:
+      map:
+        - name: "ORA"
+          priority: True
+          size: "CovXK"
+          opacity: 0.9
+      plot:
+        - name: "ORA"
+          type: "Scatter"
+          size: "CovXK"
+          X: "Depth"
+          Y: "Temp"
 
 plugins:
   - kmviz_example
