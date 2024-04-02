@@ -9,6 +9,8 @@ from kmviz.ui import state
 kpsf = kf.child("select")
 kgsf = kf.child("global-select")
 
+from dash_iconify import DashIconify
+
 def make_select_provider():
     res = html.Div([
         dmc.Divider(size="sm", color="gray", label="DATABASES", labelPosition="center"),
@@ -18,6 +20,7 @@ def make_select_provider():
             data=make_select_data(state.kmstate.providers.list()),
             clearable=True,
             withAsterisk=True,
+            icon=DashIconify(icon="fluent:library-16-regular"),
         )
     ])
     return res

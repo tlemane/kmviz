@@ -11,6 +11,7 @@ from kmviz.ui.utils import make_select_data
 from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.components.store import ksfr
 
+from dash_iconify import DashIconify
 kof = kf.child("option")
 kcf = kf.child("config")
 
@@ -70,7 +71,8 @@ def make_config():
         dmc.Divider(size="sm", color="gray", label="CONFIGURATION", labelPosition="center"),
         dmc.Select(
             id=kf("select-provider-config"),
-            clearable=True
+            clearable=True,
+            icon=DashIconify(icon="mynaui:config")
         ),
         *[make_provider_config(name) for name in provider_names]
     ])
