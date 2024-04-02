@@ -14,6 +14,11 @@ from kmviz.core.io import parse_fastx, KmVizIOError
 from kmviz.ui import state
 from kmviz.ui.components.store import ksf
 from kmviz.ui.components.select import kgsf
+from dataclasses import dataclass
+
+from io import StringIO
+import pandas as pd
+
 kif = kf.child("input")
 kidf = kif.child("div")
 
@@ -52,6 +57,83 @@ def make_input_session_callbacks():
             except:
                 msg = "Session not found. Invalid session id, query still running, or results erased."
                 return no_update, no_update, no_update, no_update, no_update, no_update, msg, None
+
+def make_input_dataframe():
+    upload_style = {
+        'width': '80%%',
+        'height': '40px',
+        'lineHeight': '40px',
+        'borderWidth': '1px',
+        'borderStyle': 'dashed',
+        'borderRadius': '5px',
+        'textAlign': 'center',
+        'margin': '10px',
+        'align': 'center',
+        'display': 'inherit'
+    }
+
+    return [
+        dcc.Upload(
+            id=kif("dataframe"),
+            children=["Drop or ", html.A("Select a file")],
+            style = upload_style
+        ),
+        html.Div(id=kif("dataframe-error"))
+    ]
+
+@dataclass
+class _df_wrap:
+    df: pd.DataFrame
+
+def make_input_dataframe_callbacks():
+
+    @callback(
+        Input(kif("dataframe"), "filename"),
+        Input(kif("dataframe"), "contents"),
+        Output(ksf("query-results"), "data"),
+        Output(kif("dataframe-error"), "children"),
+        Output(kf.sid("sidebar-layout"), "style"),
+        Output(kf.sid("index-panel"), "style"),
+        Output(kf.sid("seq-panel"), "style"),
+        Output(kgsf("provider"), "value"),
+        Output(kgsf("query"), "value"),
+        Output(kgsf("provider"), "style"),
+        Output(kgsf("query"), "style"),
+        Output("tab-select", "value"),
+
+
+        prevent_initial_callbacks=True,
+        prevent_initial_call=True,
+    )
+    def load_input_from_file(filename, contents):
+
+        hide = {"display": "none"}
+
+        prevent_update_on_none(filename, contents)
+
+        content_type, data = contents.split(",")
+        content = base64.b64decode(data).decode()
+
+        try:
+            df = None
+            pdio = StringIO(content)
+            if filename.endswith("csv") or filename.endswith("tsv"):
+                try:
+                    df = pd.read_csv(pdio, sep="\t")
+                except:
+                    raise KmVizIOError(f"Error while loading '{filename}'")
+
+            key = "__kmviz_df"
+
+            res = {}
+            res[key] = {}
+            res[key][key] = _df_wrap(df)
+
+            return Serverside(res), no_update, hide, hide, hide, key, key, hide, hide, "table"
+
+        except KmVizIOError as e:
+            message = dmc.Text(str(e), color="red", weight=500)
+            return Serverside([]), message, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update
 
 
 def make_input_text():
@@ -183,6 +265,7 @@ def make_input():
         html.Div(make_input_text(), id=kidf("text"), style=hidden),
         html.Div(make_input_file(), id=kidf("file"), style=hidden),
         html.Div(make_input_session(), id=kidf("session"), style=hidden),
+        #html.Div(make_input_dataframe(), id=kidf("df"), style=hidden),
     ])
 
     return res
@@ -212,4 +295,5 @@ def make_input_callbacks():
     make_input_text_callbacks()
     make_input_file_callbacks()
     make_input_session_callbacks()
+    #make_input_dataframe_callbacks()
 
