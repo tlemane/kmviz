@@ -304,7 +304,7 @@ def make_map_layout_callbacks():
         kmv_debug(f"{session}: 'update_map' triggered by '{trigger}'")
 
         if not data:
-            return blank_map(), False
+            return blank_map(), True
 
         df = pd.DataFrame.from_dict(data)
 

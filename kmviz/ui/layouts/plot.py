@@ -2,7 +2,7 @@ from dash_extensions.enrich import html, dash_table, Input, Output, dcc, State, 
 import dash_mantine_components as dmc
 import dash_bootstrap_components as dbc
 import dash
-from dash import Patch
+from dash import Patch, no_update
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -72,7 +72,7 @@ def make_plot_layout_callbacks():
     @callback(
         Input(ktrace("type"), "value"),
         State(ktrace.all, "id"),
-        Output(ktrace.all, "style")
+        Output(ktrace.all, "style"),
     )
     def update_constraints(ptype, options):
         show = {"display": "inline"}

@@ -72,8 +72,8 @@ def make_sequence_layout_callbacks():
 
     @callback(
         Input(kseq.sid("select"), "value"),
-        State(kgsf("provider"), "value"),
-        State(kgsf("query"), "value"),
+        Input(kgsf("provider"), "value"),
+        Input(kgsf("query"), "value"),
         State(ksf("query-results"), "data"),
         Output(kseq.sid("figure"), "figure"),
         prevent_initial_callbacks=True,

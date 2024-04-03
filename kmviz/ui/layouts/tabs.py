@@ -21,25 +21,25 @@ def make_tabs():
                 dmc.Tab(
                     "Table",
                     value="table",
-                    disabled=False,
+                    disabled=True,
                     id=ktable.sid("panel"),
                     icon=DashIconify(icon="material-symbols:table")),
                 dmc.Tab(
                     "Map",
                     value="map",
-                    disabled=False,
+                    disabled=True,
                     id=kmap.sid("panel"),
                     icon=DashIconify(icon="fluent-mdl2:world"),),
                 dmc.Tab(
                     "Plot",
                     value="plot",
-                    disabled=False,
+                    disabled=True,
                     id=kplot.sid("panel"),
                     icon=DashIconify(icon="carbon:qq-plot"),),
                 dmc.Tab(
                     "Sequence",
                     value="sequence",
-                    disabled=False,
+                    disabled=True,
                     id=kseq.sid("panel"),
                     icon=DashIconify(icon="mdi:dna"),),
                 dmc.Tab(

@@ -671,7 +671,6 @@ px_options = {
     "Box": px_box_options
 }
 
-
 def fix_px_params(params, ptype):
     for k in list(params):
         if k not in px_options[ptype]:
