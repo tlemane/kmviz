@@ -50,13 +50,15 @@ def make_sequence_layout_callbacks():
         Input(kgsf("query"), "value"),
         State(ksf("query-results"), "data"),
         Output(kseq.sid("select"), "data"),
+        Output(kseq.sid("select"), "value"),
         Output(kseq.sid("panel"), "disabled"),
         prevent_initial_callbacks=True,
     )
     def update_sample_select(provider, query, query_result):
         prevent_update_on_none(provider, query)
         qr = query_result[query][provider]
-        return make_select_data(list(qr.df["ID"])), False
+        ids = list(qr.df["ID"])
+        return make_select_data(ids), ids[0], False
 
     @callback(
         Input(ktable.sid("grid"), "selectedRows"),
