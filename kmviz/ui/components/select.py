@@ -67,8 +67,8 @@ def make_select_callbacks():
         Input(kgsf("provider"), "value"),
         Output(kf.child("map").sid("select-preset"), "data"),
         Output(kf.child("plot").sid("select-preset"), "data"),
-        Output(kf.child("map").sid("presets-div"), "style"),
-        Output(kf.child("plot").sid("presets-div"), "style"),
+        Output(kf.child("map").sid("select-preset"), "style"),
+        Output(kf.child("plot").sid("select-preset"), "style"),
     )
     def update_map_preset(value):
         if not value:

@@ -12,7 +12,7 @@
 }
 
 .kmviz-gselect {
-  width: 100px;
+  width: 130px;
 }
 
 .kmviz-gselect-group {
@@ -20,5 +20,17 @@
   top: 2px;
   right: 1px;
   z-index: 11;
+}
+
+.kmviz-dmc-number-input {
+  width: 100px;
+}
+
+.kmviz-dmc-text-input {
+  width: 315px;
+}
+
+.kmviz-dmc-figure-select {
+  width: 150px;
 }
 

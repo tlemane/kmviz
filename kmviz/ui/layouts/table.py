@@ -70,7 +70,7 @@ def make_table_layout_callbacks():
             {
                 "field": x,
                 "filterParams": {"maxNumConditions": 10000},
-                "suppressMenu": False,
+                "suppressMenu": True,
                 "filter": column_filter(query_result[query][provider].df[x])
             }
             for x in list(query_result[query][provider].df)

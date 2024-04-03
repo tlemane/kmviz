@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash_iconify import DashIconify
-from kmviz.ui.utils import make_select_data, prevent_update_on_none, prevent_update_on_empty
+from kmviz.ui.utils import make_select_data, prevent_update_on_none, prevent_update_on_empty, icons, KMVIZ_ICONS
 from kmviz.ui.patch import patch_value, patch_value_id
 
 import plotly.graph_objects as go
@@ -36,10 +36,11 @@ def make_on_off_radio(id: str, label: str):
 
 def make_hover_color_picker(id: str,
                             label: str="",
-                            color: str=dict(rgb=dict(r=0,g=0,b=0,a=0.9))):
+                            color: str=dict(rgb=dict(r=0,g=0,b=0,a=0.9)),
+                            icon="noto:artist-palette"):
     target = f"{id['type']}-{id['index']}-pop"
     return html.Div([
-        DashIconify(id=target, icon="noto:artist-palette", width=30, style = {"margin":"auto"}),
+        DashIconify(id=target, icon=icon, width=30, style = {"margin":"auto"}),
         dbc.Popover(
             daq.ColorPicker(
                 id=id,
@@ -52,6 +53,50 @@ def make_hover_color_picker(id: str,
             target=target,
         )
     ])
+
+def make_nb_input(id, label: str, params: tuple, precision=None, **kwargs):
+    return dmc.NumberInput(
+        id=id,
+        label=label,
+        min=params[0],
+        step=params[1],
+        max=params[2],
+        value=params[3],
+        precision=precision,
+        className="kmviz-dmc-number-input",
+        **kwargs,
+    )
+
+def make_text_input(id, label: str, value=None, **kwargs):
+    return dmc.TextInput(
+        id=id,
+        label=label,
+        value=value,
+        icon=icons("text"),
+        className="kmviz-dmc-text-input",
+        **kwargs
+    )
+
+def make_select_input(id, label, data=[], value=None, **kwargs):
+    return dmc.Select(
+        id=id,
+        label=label,
+        data=data,
+        value=value,
+        className="kmviz-dmc-figure-select",
+        **kwargs
+    )
+
+def make_font_input(id, label, **kwargs):
+    data = make_select_data([
+        "Arial", "Balto", "Courier New", "Droid Sans",
+        "Droid Serif", "Droid Sans Mono", "Gravitas One",
+        "Old Standard TT", "Open Sans", "Overpass",
+        "PT Sans Narrow", "Raleway", "Times New Roman"
+    ])
+
+    return make_select_input(id, label, data, "Arial", icon=icons("family"), **kwargs)
+
 
 def from_json(value, p=None):
     try:
@@ -636,56 +681,78 @@ def fix_px_params(params, ptype):
 def make_plot_title(factory):
 
     pid = factory
-    return make_accordion([
-        make_accordion_items("Title", [
-            dmc.TextInput(id=pid("title_text"), label="Title", debounce=0.5, value="<b>Title</b>"),
+    #return make_accordion([
+    #    make_accordion_items("Title", [
+
+    return html.Div([
             dmc.Group([
-                dmc.NumberInput(label="Size", id=pid("title_font_size"), min=1, step=1, max=60, value=16),
-                dmc.Select(
-                    id=pid("title_font_family"),
-                    label="Font",
-                    data=make_select_data([
-                        "Arial", "Balto", "Courier New", "Droid Sans",
-                        "Droid Serif", "Droid Sans Mono", "Gravitas One",
-                        "Old Standard TT", "Open Sans", "Overpass",
-                        "PT Sans Narrow", "Raleway", "Times New Roman"
-                    ]),
-                    value="Arial"
+                make_text_input(
+                    pid("title_text"),
+                    "Title",
+                    value="<b>Title</b>"
                 ),
-                make_hover_color_picker(pid("title_font_color"), "", dict(hex="#000000")),
+                make_nb_input(
+                    pid("title_font_size"),
+                    "Size",
+                    (1, 1, 100, 16),
+                    icon=icons("font_size"),
+                ),
+                make_font_input(
+                    pid("title_font_family"),
+                    "Font",
+                ),
+                make_hover_color_picker(
+                    pid("title_font_color"),
+                    "Font",
+                    color=dict(hex="#000000"),
+                    icon=KMVIZ_ICONS["ctext"]),
             ]),
             dmc.Group([
-                dmc.Select(
-                    id=pid("title_xanchor"),
-                    label="Anchor X",
-                    data=make_select_data(["auto", "left", "center", "right"]),
-                    value="center"
+                make_select_input(
+                    pid("title_xanchor"),
+                    "Anchor X",
+                    make_select_data(["auto", "left", "center", "right"]),
+                    value="center",
+                    icon=icons("single")
                 ),
-                dmc.Select(
-                    id=pid("title_xref"),
-                    label="Ref X",
-                    data=make_select_data(["container", "paper"]),
+                make_select_input(
+                    pid("title_xref"),
+                    "Ref X",
+                    make_select_data(["container", "paper"]),
                     value="container",
+                    icon=icons("single")
                 ),
-                dmc.NumberInput(label="x", id=pid("title_x"), min=0.0, precision=2, max=1.0, step=0.01, value=0.5)
-            ]),
-            dmc.Group([
-                dmc.Select(
-                    id=pid("title_yanchor"),
-                    label="Anchor Y",
-                    data=make_select_data(["auto", "top", "middle", "bottom"]),
-                    value="top"
+                make_nb_input(
+                    pid("title_x"),
+                    "x",
+                    (0.0, 0.01, 1.0, 0.5),
+                    2,
+                    icon=icons("floating"),
                 ),
-                dmc.Select(
-                    id=pid("title_yref"),
-                    label="Ref Y",
-                    data=make_select_data(["container", "paper"]),
-                    value="container"
+                make_select_input(
+                    pid("title_yanchor"),
+                    "Anchor Y",
+                    make_select_data(["auto", "top", "middle", "bottom"]),
+                    value="top",
+                    icon=icons("single")
                 ),
-                dmc.NumberInput(label="y", id=pid("title_y"), min=0.0, precision=2, max=1.0, step=0.01, value=0.95)
+                make_select_input(
+                    pid("title_yref"),
+                    "Ref Y",
+                    make_select_data(["container", "paper"]),
+                    value="container",
+                    icon=icons("single")
+                ),
+                make_nb_input(
+                    pid("title_y"),
+                    "y",
+                    (0.0, 0.01, 1.0, 0.95),
+                    2,
+                    icon=icons("floating")
+                )
             ]),
         ])
-    ])
+    #])
 
 
 def make_plot_title_callbacks(factory, figure_id):
@@ -713,100 +780,156 @@ def make_plot_title_callbacks(factory, figure_id):
 def make_plot_legend(factory):
     pid = factory
 
-    res = html.Div([
-        dmc.Switch(id=pid("showlegend"), label="Show", checked=True),
-        make_accordion([
-            make_accordion_items(f"Title", [
-                dmc.Group([
-                    dmc.TextInput(label="Text", id=pid("legend_title_text")),
-                    make_hover_color_picker(pid("legend_title_font_color"), "", dict(hex="#000000"))
-                ]),
-                dmc.Group([
-                    dmc.NumberInput(label="Size", id=pid("legend_title_font_size"), min=0, step=1, value=13),
-                    dmc.Select(
-                        id=pid("legend_title_font_family"),
-                        label="Font",
-                        data=make_select_data([
-                            "Arial", "Balto", "Courier New", "Droid Sans",
-                            "Droid Serif", "Droid Sans Mono", "Gravitas One",
-                            "Old Standard TT", "Open Sans", "Overpass",
-                            "PT Sans Narrow", "Raleway", "Times New Roman"
-                        ]),
-                        value="Arial"
-                    ),
-                    dmc.Select(
-                        id=pid("legend_title_side"),
-                        label="Position",
-                        data=make_select_data(["top", "left", "top left", "top center", "top right"]),
-                        value="top center"
-                    )
-                ]),
-            ]),
-            make_accordion_items(f"Entries", [
-                dmc.Group([
-                    dmc.NumberInput(label="Size", id=pid("legend_font_size"), min=0, step=1, value=10),
-                    dmc.Select(
-                        id=pid("legend_font_family"),
-                        label="Font",
-                        data=make_select_data([
-                            "Arial", "Balto", "Courier New", "Droid Sans",
-                            "Droid Serif", "Droid Sans Mono", "Gravitas One",
-                            "Old Standard TT", "Open Sans", "Overpass",
-                            "PT Sans Narrow", "Raleway", "Times New Roman"
-                        ]),
-                        value="Arial"
-                    ),
-                    make_hover_color_picker(pid("legend_font_color"), "", dict(hex="#000000"))
-                ]),
-            ]),
-            make_accordion_items(f"Box", [
-                dmc.Group([
-                    dmc.NumberInput(label="Width", id=pid("legend_borderwidth"), value=0, min=0, step=1),
-                    make_hover_color_picker(pid("legend_bordercolor"), "Border"),
-                    make_hover_color_picker(pid("legend_bgcolor"), "Background"),
-                ]),
-            ]),
-            make_accordion_items("Position", [
-                dmc.NumberInput(label="Indentation", id=pid("legend_indentation"), min=-15, step=1, value=0),
-                dmc.RadioGroup(
-                    [dmc.Radio("vertical", value="v"), dmc.Radio("horizontal", value="h")],
-                    id=pid("legend_orientation"),
-                    label="Orientation",
-                    value="v"
-                ),
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("legend_xanchor"),
-                        label="Anchor X",
-                        data=make_select_data(["auto", "left", "center", "right"]),
-                        value="right"
-                    ),
-                    dmc.Select(
-                        id=pid("legend_xref"),
-                        label="Ref X",
-                        data=make_select_data(["container", "paper"]),
-                        value="paper"
-                    ),
-                    dmc.NumberInput(label="x", id=pid("legend_x"), min=0.0, precision=2, max=1.0, step=0.01, value=0.9)
-                ]),
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("legend_yanchor"),
-                        label="Anchor Y",
-                        data=make_select_data(["auto", "top", "middle", "bottom"]),
-                        value="top"
-                    ),
-                    dmc.Select(
-                        id=pid("legend_yref"),
-                        label="Ref Y",
-                        data=make_select_data(["container", "paper"]),
-                        value="paper"
-                    ),
-                    dmc.NumberInput(label="y", id=pid("legend_y"), min=0.0, precision=2, max=1.0, step=0.01, value=1.0)
-                ])
-            ])
+    title_panel = dmc.TabsPanel(value="title", children = [
+        dmc.Group([
+            make_text_input(
+                pid("legend_title_text"),
+                "Text",
+            ),
+            make_nb_input(
+                pid("legend_title_font_size"),
+                "Size",
+                (0, 1, 100, 13),
+                icon=icons("font_size")
+            ),
+            make_font_input(
+                pid("legend_title_font_family"),
+                "Font",
+            ),
+            make_select_input(
+                pid("legend_title_side"),
+                "Position",
+                make_select_data(["top", "left", "top left", "top center", "top right"]),
+                value="top center",
+                icon=icons("pos")
+            ),
+            make_hover_color_picker(
+                id=pid("legend_title_font_color"),
+                color=dict(hex="#000000"),
+                icon=KMVIZ_ICONS["ctext"]
+            ),
+        ]),
+    ])
+
+    position_panel = dmc.TabsPanel(value="position", children = [
+        dmc.Group([
+            dmc.SegmentedControl(
+                id=pid("legend_orientation"),
+                data=[{"label":"vertical", "value":"v" }, {"label":"horizontal", "value":"h"}],
+                value="v"
+            ),
+            make_nb_input(
+                pid("legend_indentation"),
+                "Indentation",
+                (-15, 1, 100, 0),
+                icon=icons("indent")
+            ),
+            make_select_input(
+                pid("legend_xanchor"),
+                "Anchor X",
+                make_select_data(["auto", "left", "center", "right"]),
+                value="center",
+                icon=icons("single")
+            ),
+            make_select_input(
+                pid("legend_xref"),
+                "Ref X",
+                make_select_data(["container", "paper"]),
+                value="container",
+                icon=icons("single")
+            ),
+            make_nb_input(
+                pid("legend_x"),
+                "x",
+                (0.0, 0.01, 1.0, 0.5),
+                2,
+                icon=icons("floating"),
+            ),
+            make_select_input(
+                pid("legend_yanchor"),
+                "Anchor Y",
+                make_select_data(["auto", "top", "middle", "bottom"]),
+                value="top",
+                icon=icons("single")
+            ),
+            make_select_input(
+                pid("legend_yref"),
+                "Ref Y",
+                make_select_data(["container", "paper"]),
+                value="container",
+                icon=icons("single")
+            ),
+            make_nb_input(
+                pid("legend_y"),
+                "y",
+                (0.0, 0.01, 1.0, 0.95),
+                2,
+                icon=icons("floating")
+            )
+        ]),
+
+    ])
+
+    entry_panel = dmc.TabsPanel(value="entry", children = [
+        dmc.Group([
+            make_font_input(
+                pid("legend_font_family"),
+                "Font",
+            ),
+            make_nb_input(
+                pid("legend_font_size"),
+                "Size",
+                (0, 1, 100, 10),
+                icon=icons("font_size")
+            ),
+            make_hover_color_picker(
+                pid("legend_font_color"),
+                color=dict(hex="#000000"),
+                icon=KMVIZ_ICONS["ctext"]
+            )
+        ]),
+    ])
+    box_panel = dmc.TabsPanel(value="box", children = [
+        dmc.Group([
+            make_nb_input(
+                pid("legend_borderwidth"),
+                "Width",
+                (0, 1, 100, 0),
+                icon=icons("width", rotate=1)
+            ),
+            make_hover_color_picker(
+                pid("legend_bordercolor"),
+                "Border",
+                icon=KMVIZ_ICONS["cline"]
+            ),
+            make_hover_color_picker(
+                pid("legend_bgcolor"),
+                "Background",
+                icon=KMVIZ_ICONS["cback"]
+            ),
         ])
     ])
+
+
+    res = dmc.Tabs([
+        dmc.TabsList([
+            dmc.Tab("Title", value="title"),
+            dmc.Tab("Position", value="position"),
+            dmc.Tab("Entry", value="entry"),
+            dmc.Tab("Box", value="box"),
+            dmc.Switch(
+                id=pid("showlegend"),
+                checked=True,
+                size="xs",
+                style={"margin-top":"10px"}
+            ),
+        ]),
+        dmc.Space(h=10),
+        title_panel,
+        position_panel,
+        entry_panel,
+        box_panel,
+    ], value = "title")
 
     return res
 
@@ -848,595 +971,912 @@ def make_plot_legend_callbacks(factory, figure_id):
 def make_trace(factory):
     pid = factory
 
-    res = html.Div([
-         make_accordion([
-            dmc.Group([
-                dmc.Select(
-                    id=pid("type") ,
-                    label="Type",
-                    data=make_select_data([
-                        "Scatter",
-                        "Line",
-                        "Area",
-                        "Bar",
-                        "Scatter3D",
-                        "Parallel categories",
-                        "Parallel coordinates",
-                        "Scatter matrix",
-                        "Density heatmap",
-                        "Density contour",
-                        "Violin",
-                        "Box"
-                    ]),
-                    required=True,
-                    clearable=True,
-                    searchable=True
-                ),
-            ]),
-            make_accordion_items("Data", [
-                dmc.Group([
-                    dmc.MultiSelect(
-                        id=pid("xselect"),
-                        label="X",
-                        value=[],
-                    ),
-                    dmc.MultiSelect(
-                        id=pid("yselect"),
-                        label="Y",
-                        value=[]
-                    ),
-                    dmc.MultiSelect(
-                        id=pid("zselect"),
-                        label="Z",
-                        value=[]
-                    ),
-                ]),
-                dmc.Group([
-                    dmc.Select(id=pid("color"), label="Color", clearable=True, searchable=True),
-                    dmc.Select(id=pid("size"), label="Size", clearable=True, searchable=True),
-                    dmc.Select(id=pid("text"), label="Text", clearable=True, searchable=True),
-                    dmc.Select(id=pid("symbol"), label="Symbol", clearable=True, searchable=True),
-                    dmc.Select(id=pid("pattern_shape"), label="Pattern shape", clearable=True, searchable=True),
-                    dmc.Select(id=pid("base"), label="Base", clearable=True, searchable=True),
-                    dmc.Select(id=pid("line_dash"), label="Line dash", clearable=True, searchable=True),
-                    dmc.Select(id=pid("line_group"), label="Line group", clearable=True, searchable=True),
-                    dmc.MultiSelect(id=pid("dimensions"), label="Dimensions", clearable=True, searchable=True),
-                    dmc.Select(id=pid("values"), label="Values", clearable=True, searchable=True),
-                    dmc.Select(id=pid("names"), label="Names", clearable=True, searchable=True),
-                    dmc.Select(
-                        id=pid("barmode"),
-                        label="Bar mode",
-                        clearable=True,
-                        searchable=True,
-                        data=make_select_data(["relative", "group", "overlay"])
-                    ),
-                    dmc.Select(
-                        id=pid("line_shape"),
-                        label="Line shape",
-                        clearable=True,
-                        searchable=True,
-                        data=make_select_data(["hv", "vh", "hvh", "vhv", "spline", "linear"])
-                    ),
-                ])
-            ]),
-            make_accordion_items("Animation", [
-                dmc.Group([
-                    dmc.Select(id=pid("animation_frame"), label="Frame", clearable=True, searchable=True),
-                    dmc.Select(id=pid("animation_group"), label="Group", clearable=True, searchable=True)
-                ])
-            ]),
-            make_accordion_items("Distribution", [
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("violinmode"),
-                        label="Violin mode",
-                        value="group",
-                        data=make_select_data([
-                            "group", "overlay"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                    dmc.Select(
-                        id=pid("boxmode"),
-                        label="Box mode",
-                        value="group",
-                        data=make_select_data([
-                            "group", "overlay"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                    dmc.Select(
-                        id=pid("points"),
-                        label="Points",
-                        value="outliers",
-                        data=make_select_data([
-                            "outliers", "suspectedoutliers", "all", "False"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                    dmc.Select(
-                        id=pid("box"),
-                        label="Violin box",
-                        value="False",
-                        data=make_select_data([
-                            "True", "False"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                    dmc.Select(
-                        id=pid("notched"),
-                        label="Box notches",
-                        value="False",
-                        data=make_select_data([
-                            "True", "False"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                ])
-            ]),
-            make_accordion_items("Density", [
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("histfunc"),
-                        label="Hist function",
-                        value="count",
-                        data=make_select_data([
-                            "count", "sum", "avg", "min", "max"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                    dmc.Select(
-                        id=pid("histnorm"),
-                        label="Hist norm",
-                        data=make_select_data([
-                            "percent", "probability", "density", "probability density"
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-
-                    dmc.NumberInput(
-                        id=pid("nbinsx"),
-                        label="X bins",
-                        min=0,
-                        value=4,
-                        step=1
-                    ),
-                    dmc.NumberInput(
-                        id=pid("nbinsy"),
-                        label="Y bins",
-                        min=0,
-                        value=4,
-                        step=1
-                    ),
-                    dmc.Select(
-                        id=pid("contours_coloring"),
-                        label="Contours coloring",
-                        value="lines",
-                        data=make_select_data([
-                            "fill", "heatmap", "lines", "none",
-                        ]),
-                        clearable=True,
-                        searchable=True,
-                    ),
-                ])
-            ]),
-            make_accordion_items("Facet", [
-                dmc.Group([
-
-                    dmc.Select(
-                        id=pid("facet_row"),
-                        label="Row",
-                        clearable=True,
-                    ),
-                    dmc.Select(
-                        id=pid("facet_col"),
-                        label="Column",
-                        clearable=True,
-                    ),
-                    dmc.NumberInput(
-                        id=pid("facet_col_wrap"),
-                        label="Wrap",
-                        min=0, value=0, max=10, step=1
-                    ),
-                    dmc.NumberInput(
-                        id=pid("facet_row_spacing"),
-                        label="Row spacing",
-                        min=0.0, value=0.03, max=1, step=0.01, precision=2
-                    ),
-                    dmc.NumberInput(
-                        id=pid("facet_col_spacing"),
-                        label="Col spacing",
-                        min=0.0, value=0.02, max=1, step=0.01, precision=2
-                    )
-                ])
-            ]),
-            make_accordion_items("Marginal", [
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("marginal_x"),
-                        label="X",
-                        data=make_select_data(["rug", "box", "violin", "histogram"]),
-                        clearable=True
-                    ),
-                    dmc.Select(
-                        id=pid("marginal_y"),
-                        label="Y",
-                        data=make_select_data(["rug", "box", "violin", "histogram"]),
-                        clearable=True
-                    )
-                ])
-            ]),
-            make_accordion_items("Trendline", [
-                dmc.Select(
-                    id=pid("trendline"),
-                    label="Type",
-                    data=make_select_data(["ols", "lowess", "rolling", "expanding", "ewm"]),
-                    clearable=True,
-                ),
-                dmc.Select(
-                    id=pid("trendline_scope"),
-                    label="Scope",
-                    data=make_select_data(["trace", "overall"]),
-                    value="trace"
-                ),
-                dmc.JsonInput(
-                    id=pid("trendline_options"),
-                    placeholder="ex: {'value1': 'circle-open', 'value2': 'square-open'}",
-                    label="Options",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                )
-            ]),
-            make_accordion_items("Style", [
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("template"),
-                        label="Theme",
-                        data=make_select_data(list(pio.templates)),
-                        clearable=True,
-                        searchable=True,
-                        value="seaborn"
-                    ),
-                    dmc.NumberInput(
-                        id=pid("opacity"),
-                        label="Opacity",
-                        value=0.7,
-                        precision=2,
-                        min=0.0,
-                        max=1.0,
-                        step=0.05
-                    ),
-                    dmc.Select(
-                        id=pid("orientation"),
-                        label="Orientation",
-                        data=[
-                            { "label": "vertical", "value": "v" },
-                            { "label": "horizontal", "value": "h" }
-                        ]
-                    ),
-                    dmc.Select(
-                        id=pid("markers"),
-                        label="Markers",
-                        data=[
-                            { "label": "Show", "value": "True" },
-                            { "label": "Hide", "value": "False" }
-                        ]
-                    )
-                ]),
-                dmc.Group([
-                    dmc.Select(
-                        id=pid("color_seq_continuous_scale"),
-                        label="Color sequential scale",
-                        data=make_select_data(
-                             ['Brwnyl', 'Agsunset', 'Sunsetdark', 'Magenta', 'Sunset',
-                             'Purpor', 'Purp', 'Tealgrn', 'Teal', 'Bluyl', 'Aggrnyl',
-                             'Emrld', 'Darkmint', 'Blugrn', 'Mint', 'Pinkyl',
-                             'Peach', 'Oryel', 'Redor', 'Burgyl', 'Burg',
-                             'tempo', 'amp', 'speed', 'matter', 'algae', 'dense', 'deep',
-                             'gray', 'ice', 'solar', 'haline', 'thermal', 'turbid', 'YlOrRd',
-                             'YlOrBr', 'YlGnBu', 'YlGn', 'Reds', 'RdPu', 'RdBu', 'Purples',
-                             'PuRd', 'PuBuGn', 'PuBu', 'Oranges', 'OrRd', 'Greys', 'Greens',
-                             'GnBu', 'BuPu', 'BuGn', 'Blues', 'Rainbow', 'Jet', 'Hot', 'Electric',
-                             'Bluered', 'Blackbody', 'Turbo', 'Plasma', 'Magma', 'Inferno',
-                             'Cividis', 'Viridis', 'Plotly3']
-                        ),
-                        clearable=True,
-                        searchable=True
-                    ),
-                    dmc.Select(
-                        id=pid("color_div_continuous_scale"),
-                        label="Color diverging scale",
-                        data=make_select_data(
-                            ['Portland', 'Picnic', 'Earth', 'Tropic', 'Tealrose', 'Temps', 'Geyser',
-                             'Fall', 'Armyrose', 'oxy', 'curl', 'delta', 'balance',
-                             'Spectral', 'RdYlGn', 'RdYlBu', 'RdGy', 'RdBu', 'PuOr', 'PiYG',
-                             'PRGn', 'BrBG']
-
-                        ),
-                        clearable=True,
-                        searchable=True
-                    ),
-                    dmc.Select(
-                        id=pid("color_cyc_continuous_scale"),
-                        label="Color cyclical scale",
-                        data=make_select_data(
-                            ['mygbm', 'mrybm', 'HSV', 'Phase', 'Edge', 'IceFire', 'Twilight']
-                        ),
-                        clearable=True,
-                        searchable=True
-                    ),
-                    dmc.NumberInput(
-                        id=pid("color_continuous_midpoint"),
-                        label="Color midpoint",
-                        value=None
-                    ),
-                    dmc.NumberInput(
-                        id=pid("size_max"),
-                        label="Max size",
-                        min=0, step=1, value=20
-                    ),
-                ]),
-                dmc.JsonInput(
-                    id=pid("color_discrete_map"),
-                    placeholder="ex: {'value1': 'blue', 'value2': 'red'}",
-                    label="Color map (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("symbol_map"),
-                    placeholder="ex: {'value1': 'circle-open', 'value2': 'square-open'}",
-                    label="Symbol map (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("color_discrete_sequence"),
-                    placeholder="ex: {'seq': ['red', 'blue'] }",
-                    label="Color sequence (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("symbol_sequence"),
-                    placeholder="ex: {'seq': ['circle-open', 'square-open'] }",
-                    label="Symbol sequence (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("pattern_shape_map"),
-                    placeholder="ex: {'value1': '+', 'value2': '/'}",
-                    label="Pattern shape map (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("pattern_shape_sequence"),
-                    placeholder="ex: {'seq': ['+', '/', '-'] }",
-                    label="Pattern shape sequence (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("line_dash_map"),
-                    placeholder="ex: {'value1': 'dot', 'value2': 'dash'}",
-                    label="Line dash map (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-                dmc.JsonInput(
-                    id=pid("line_dash_sequence"),
-                    placeholder="ex: {'seq': ['longdash', 'dashdot', 'longdashdot'] }",
-                    label="Line dash sequence (json)",
-                    value=None,
-                    formatOnBlur=True,
-                    maxRows=4,
-                    autosize=True,
-                    debounce=1,
-                    validationError="Invalid json"
-                ),
-            ]),
+    data_panel = dmc.TabsPanel(value="data", children=[
+        dmc.Group([
+            dmc.MultiSelect(id=pid("xselect"), label="X", value=[]),
+            dmc.MultiSelect(id=pid("yselect"), label="Y", value=[]),
+            dmc.MultiSelect(id=pid("zselect"), label="Z", value=[]),
+            make_select_input(id=pid("color"), label="Color", clearable=True, searchable=True),
+            make_select_input(id=pid("size"), label="Size", clearable=True, searchable=True),
+            make_select_input(id=pid("text"), label="Text", clearable=True, searchable=True),
+            make_select_input(id=pid("symbol"), label="Symbol", clearable=True, searchable=True),
+            make_select_input(id=pid("pattern_shape"), label="Pattern shape", clearable=True, searchable=True),
+            make_select_input(id=pid("base"), label="Base", clearable=True, searchable=True),
+            make_select_input(id=pid("line_dash"), label="Line dash", clearable=True, searchable=True),
+            make_select_input(id=pid("line_group"), label="Line group", clearable=True, searchable=True),
+            dmc.MultiSelect(id=pid("dimensions"), label="Dimensions", clearable=True, searchable=True),
+            make_select_input(id=pid("values"), label="Values", clearable=True, searchable=True),
+            make_select_input(id=pid("names"), label="Names", clearable=True, searchable=True),
         ])
     ])
 
-    return res
+    anim_panel = dmc.TabsPanel(value="anim", children=[
+        dmc.Group([
+            make_select_input(id=pid("animation_frame"), label="Frame", clearable=True, searchable=True),
+            make_select_input(id=pid("animation_group"), label="Group", clearable=True, searchable=True)
+        ])
+    ])
+
+    dist_panel = dmc.TabsPanel(value="dist", children=[
+        dmc.Group([
+            make_select_input(
+                id=pid("violinmode"),
+                label="Violin mode",
+                value="group",
+                data=make_select_data([
+                    "group", "overlay"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+            make_select_input(
+                id=pid("boxmode"),
+                label="Box mode",
+                value="group",
+                data=make_select_data([
+                    "group", "overlay"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+            make_select_input(
+                id=pid("points"),
+                label="Points",
+                value="outliers",
+                data=make_select_data([
+                    "outliers", "suspectedoutliers", "all", "False"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+            make_select_input(
+                id=pid("box"),
+                label="Violin box",
+                value="False",
+                data=make_select_data([
+                    "True", "False"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+            make_select_input(
+                id=pid("notched"),
+                label="Box notches",
+                value="False",
+                data=make_select_data([
+                    "True", "False"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+        ])
+    ])
+
+    dens_panel = dmc.TabsPanel(value="dens", children=[
+        dmc.Group([
+            make_select_input(
+                id=pid("histfunc"),
+                label="Hist function",
+                value="count",
+                data=make_select_data([
+                    "count", "sum", "avg", "min", "max"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+            make_select_input(
+                id=pid("histnorm"),
+                label="Hist norm",
+                data=make_select_data([
+                    "percent", "probability", "density", "probability density"
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+
+            make_nb_input(
+                pid("nbinsx"),
+                "X bins",
+                (0, 1, 1000, 4),
+                icon=icons("integer")
+            ),
+            make_nb_input(
+                pid("nbinsy"),
+                "Y bins",
+                (0, 1, 1000, 4),
+                icon=icons("integer")
+            ),
+            make_select_input(
+                id=pid("contours_coloring"),
+                label="Contours coloring",
+                value="lines",
+                data=make_select_data([
+                    "fill", "heatmap", "lines", "none",
+                ]),
+                clearable=True,
+                searchable=True,
+            ),
+        ])
+    ])
+
+    facet_panel = dmc.TabsPanel(value="facet", children=[
+        dmc.Group([
+            make_select_input(
+                id=pid("facet_row"),
+                label="Row",
+                clearable=True,
+            ),
+            make_select_input(
+                id=pid("facet_col"),
+                label="Column",
+                clearable=True,
+            ),
+            make_nb_input(
+                pid("facet_col_wrap"),
+                "Wrap",
+                (0, 1, 10, 0),
+                icon=icons("integer")
+            ),
+            make_nb_input(
+                pid("facet_row_spacing"),
+                "Row spacing",
+                (0.0, 0.01, 1, 0.03),
+                2,
+                icon=icons("floating")
+            ),
+            make_nb_input(
+                pid("facet_col_spacing"),
+                "Col spacing",
+                (0.0, 0.01, 1, 0.03),
+                2,
+                icon=icons("integer"),
+            )
+        ])
+
+    ])
+
+    marg_panel = dmc.TabsPanel(value="marg", children=[
+        dmc.Group([
+            dmc.Select(
+                id=pid("marginal_x"),
+                label="X",
+                data=make_select_data(["rug", "box", "violin", "histogram"]),
+                clearable=True
+            ),
+            dmc.Select(
+                id=pid("marginal_y"),
+                label="Y",
+                data=make_select_data(["rug", "box", "violin", "histogram"]),
+                clearable=True
+            )
+        ])
+    ])
+
+    trend_panel = dmc.TabsPanel(value="trend", children=[
+        dmc.Group([
+            dmc.Select(
+                id=pid("trendline"),
+                label="Type",
+                data=make_select_data(["ols", "lowess", "rolling", "expanding", "ewm"]),
+                clearable=True,
+            ),
+            dmc.Select(
+                id=pid("trendline_scope"),
+                label="Scope",
+                data=make_select_data(["trace", "overall"]),
+                value="trace"
+            ),
+            dmc.JsonInput(
+                id=pid("trendline_options"),
+                placeholder="ex: {'value1': 'circle-open', 'value2': 'square-open'}",
+                label="Options",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            )
+        ])
+    ])
+
+    style_panel = dmc.TabsPanel(value="style", children = [
+        dmc.Group([
+            make_select_input(
+                 id=pid("barmode"),
+                 label="Bar mode",
+                 clearable=True,
+                 searchable=True,
+                 data=make_select_data(["relative", "group", "overlay"])
+            ),
+            make_select_input(
+                 id=pid("line_shape"),
+                 label="Line shape",
+                 clearable=True,
+                 searchable=True,
+                 data=make_select_data(["hv", "vh", "hvh", "vhv", "spline", "linear"])
+            ),
+            make_select_input(
+                id=pid("orientation"),
+                label="Orientation",
+                data=[
+                    { "label": "vertical", "value": "v" },
+                    { "label": "horizontal", "value": "h" }
+                ]
+            ),
+            make_select_input(
+                id=pid("markers"),
+                label="Markers",
+                data=[
+                    { "label": "Show", "value": "True" },
+                    { "label": "Hide", "value": "False" }
+                ]
+            )
+        ]),
+        dmc.Group([
+            dmc.Select(
+                id=pid("template"),
+                label="Theme",
+                data=make_select_data(list(pio.templates)),
+                clearable=True,
+                searchable=True,
+                value="seaborn",
+                icon=icons("style")
+            ),
+            make_select_input(
+                id=pid("color_seq_continuous_scale"),
+                label="Color sequential scale",
+                data=make_select_data(
+                     ['Brwnyl', 'Agsunset', 'Sunsetdark', 'Magenta', 'Sunset',
+                     'Purpor', 'Purp', 'Tealgrn', 'Teal', 'Bluyl', 'Aggrnyl',
+                     'Emrld', 'Darkmint', 'Blugrn', 'Mint', 'Pinkyl',
+                     'Peach', 'Oryel', 'Redor', 'Burgyl', 'Burg',
+                     'tempo', 'amp', 'speed', 'matter', 'algae', 'dense', 'deep',
+                     'gray', 'ice', 'solar', 'haline', 'thermal', 'turbid', 'YlOrRd',
+                     'YlOrBr', 'YlGnBu', 'YlGn', 'Reds', 'RdPu', 'RdBu', 'Purples',
+                     'PuRd', 'PuBuGn', 'PuBu', 'Oranges', 'OrRd', 'Greys', 'Greens',
+                     'GnBu', 'BuPu', 'BuGn', 'Blues', 'Rainbow', 'Jet', 'Hot', 'Electric',
+                     'Bluered', 'Blackbody', 'Turbo', 'Plasma', 'Magma', 'Inferno',
+                     'Cividis', 'Viridis', 'Plotly3']
+                ),
+                clearable=True,
+                searchable=True,
+                icon=icons("picker")
+            ),
+            make_select_input(
+                id=pid("color_div_continuous_scale"),
+                label="Color diverging scale",
+                data=make_select_data(
+                    ['Portland', 'Picnic', 'Earth', 'Tropic', 'Tealrose', 'Temps', 'Geyser',
+                     'Fall', 'Armyrose', 'oxy', 'curl', 'delta', 'balance',
+                     'Spectral', 'RdYlGn', 'RdYlBu', 'RdGy', 'RdBu', 'PuOr', 'PiYG',
+                     'PRGn', 'BrBG']
+
+                ),
+                clearable=True,
+                searchable=True,
+                icon=icons("picker")
+            ),
+            make_select_input(
+                id=pid("color_cyc_continuous_scale"),
+                label="Color cyclical scale",
+                data=make_select_data(
+                    ['mygbm', 'mrybm', 'HSV', 'Phase', 'Edge', 'IceFire', 'Twilight']
+                ),
+                clearable=True,
+                searchable=True,
+                icon=icons("picker"),
+            ),
+            make_nb_input(
+                pid("color_continuous_midpoint"),
+                "Color midpoint",
+                (None, None, None, None),
+                icon=icons("floating")
+            ),
+            make_nb_input(
+                pid("opacity"),
+                "Opacity",
+                (0.0, 0.01, 1.0, 0.7),
+                2,
+                icon=icons("floating")
+            ),
+            make_nb_input(
+                pid("size_max"),
+                "Max size",
+                (0, 1, 50, 15),
+                icon=icons("integer"),
+            ),
+        ]),
+        dmc.Group([
+            dmc.JsonInput(
+                id=pid("color_discrete_map"),
+                placeholder='ex: {"v1": "blue", "v2": "red"}',
+                label="Color map",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+            dmc.JsonInput(
+                id=pid("symbol_map"),
+                placeholder='ex: {"v1": "circle-open", "v2": "square-open"}',
+                label="Symbol map",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+            dmc.JsonInput(
+                id=pid("color_discrete_sequence"),
+                placeholder='ex: {"seq": ["red", "blue"] }',
+                label="Color sequence",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+            dmc.JsonInput(
+                id=pid("symbol_sequence"),
+                placeholder='ex: {"seq": ["circle-open", "square-open"] }',
+                label="Symbol sequence",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+        ], grow=True),
+        dmc.Group([
+            dmc.JsonInput(
+                id=pid("pattern_shape_map"),
+                placeholder="ex: {'value1': '+', 'value2': '/'}",
+                label="Pattern shape map (json)",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+            dmc.JsonInput(
+                id=pid("pattern_shape_sequence"),
+                placeholder="ex: {'seq': ['+', '/', '-'] }",
+                label="Pattern shape sequence (json)",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+            dmc.JsonInput(
+                id=pid("line_dash_map"),
+                placeholder="ex: {'value1': 'dot', 'value2': 'dash'}",
+                label="Line dash map (json)",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+            dmc.JsonInput(
+                id=pid("line_dash_sequence"),
+                placeholder="ex: {'seq': ['longdash', 'dashdot', 'longdashdot'] }",
+                label="Line dash sequence (json)",
+                value=None,
+                formatOnBlur=True,
+                maxRows=4,
+                autosize=True,
+                debounce=1,
+                validationError="Invalid json",
+                icon=icons("json")
+            ),
+        ], grow=True)
+    ])
+
+    trace_type = make_select_input(
+        pid("type"),
+        None,
+        data=make_select_data([
+            "Scatter",
+            "Line",
+            "Area",
+            "Bar",
+            #"Scatter3D",
+            "Parallel categories",
+            "Parallel coordinates",
+            "Scatter matrix",
+            "Density heatmap",
+            "Density contour",
+            "Violin",
+            "Box"
+        ]),
+        style={"width":"160px"},
+        placeholder="Type",
+        icon=icons("plot")
+    )
+
+
+    trace_tab = dmc.Tabs([
+        dmc.TabsList([
+            trace_type,
+            dmc.Tab("Data", value="data"),
+            dmc.Tab("Animation", value="anim"),
+            dmc.Tab("Distribution", value="dist"),
+            dmc.Tab("Density", value="dens"),
+            dmc.Tab("Facet", value="facet"),
+            dmc.Tab("Marginal", value="marg"),
+            dmc.Tab("Trendline", value="trend"),
+            dmc.Tab("Style", value="style")
+        ]),
+        data_panel,
+        anim_panel,
+        dist_panel,
+        dens_panel,
+        facet_panel,
+        marg_panel,
+        trend_panel,
+        style_panel
+    ])
+
+    return trace_tab
 
 def make_axis(factory, ax):
     pid = factory
+
+    title_panel = dmc.TabsPanel(value="title", children = [
+        dmc.Group([
+            make_text_input(
+                pid("title_text"),
+                "Text"
+            ),
+            make_nb_input(
+                pid("title_font_size"),
+                "Size",
+                (0, 1, 100, 14),
+                icon=icons("font_size")
+            ),
+            make_font_input(
+                pid("title_font_family"),
+                "Font",
+            ),
+            make_nb_input(
+                pid("title_standoff"),
+                "Standoff",
+                (0, 0.01, None, None),
+                2,
+                icon=icons("floating")
+            ),
+            make_hover_color_picker(pid("title_font_color"), icon=KMVIZ_ICONS["ctext"]),
+        ]),
+    ])
+
+    line_panel = dmc.TabsPanel(value="line", children = [
+        dmc.Group([
+            dmc.Switch(
+                id=pid("visible"),
+                size="lg",
+                onLabel="ON",
+                offLabel="OFF",
+                checked=True
+            ),
+            dmc.SegmentedControl(
+                data= make_select_data(["top", "bottom"], True)
+                      if ax == "x" else
+                      make_select_data(["left", "right"], True)
+                ,
+                fullWidth=True,
+                id=pid("side"),
+                value="left" if ax == "x" else "bottom",
+                size="xs",
+                color="#1C7ED6"
+            ),
+
+            make_nb_input(
+                pid("linewidth"),
+                "Width",
+                (0, 1, None, 1),
+                icon=icons("width", rotate=1)
+            ),
+            make_select_input(
+                pid("type"),
+                "Type",
+                make_select_data(["linear", "log", "date", "category", "multicategory"]),
+                icon=icons("axis")
+            ),
+            make_select_input(
+                pid("mirror"),
+                "Mirror",
+                make_select_data(["True", "False", "ticks", "all", "allticks"]),
+                "False",
+                icon=icons("single")
+            ),
+            make_hover_color_picker(pid("linecolor"), icon=KMVIZ_ICONS["cline"]),
+        ]),
+    ])
+
+    zero_panel = dmc.TabsPanel(value="zeroline", children = [
+        dmc.Group([
+            dmc.Switch(
+                id=pid("zeroline"),
+                size="lg",
+                onLabel="ON",
+                offLabel="OFF",
+                checked=False
+            ),
+            make_nb_input(
+                pid("zerolinewidth"),
+                "Width",
+                (0, 1, None, 1),
+                icon=icons("width", rotate=1)
+            ),
+            make_hover_color_picker(
+                pid("zerolinecolor"),
+                icon=KMVIZ_ICONS["cline"]
+            ),
+        ])
+    ])
+
+    grid_panel = dmc.TabsPanel(value="grid", children = [
+        dmc.Group([
+            dmc.Switch(
+                id=pid("showgrid"),
+                size="lg",
+                onLabel="ON",
+                offLabel="OFF",
+                checked=False
+            ),
+            make_nb_input(
+                pid("gridwidth"),
+                "Width",
+                (0, 1, None, 1),
+                icon=icons("width", rotate=1)
+            ),
+            make_select_input(
+                pid("griddash"),
+                "Dash",
+                data=make_select_data([
+                    "solid", "dot", "dash", "longdash", "dashdot", "longdashdot"
+                ]),
+                value="solid",
+                icon=icons("dash")
+            ),
+            make_hover_color_picker(pid("gridcolor"), icon=KMVIZ_ICONS["cline"]),
+        ])
+    ])
+
+    label_panel = dmc.TabsPanel(value="ticklabels", children = [
+        dmc.Group([
+            dmc.Switch(
+                id=pid("showticklabels"),
+                onLabel="ON",
+                offLabel="OFF",
+                size="lg",
+                checked=True
+            ),
+            dmc.Switch(
+                id=pid("automargin"),
+                onLabel="Automargin",
+                offLabel="Automargin",
+                size="lg",
+                checked=True
+            ),
+            make_nb_input(
+                pid("tickangle"),
+                "Angle",
+                (-180, 1, 180, 0),
+                icon=icons("angle")
+            ),
+            make_select_input(
+                pid("ticklabelposition"),
+                "Position",
+                data=make_select_data([
+                    "outside", "inside", "outside top", "inside top",
+                    "outside left", "inside left", "outside right", "inside right",
+                    "outside bottom", "inside bottom"
+                ]),
+                icon=icons("pos")
+            ),
+            make_nb_input(
+                pid("tickfont_size"),
+                "Size",
+                (0, 1, 100, 14),
+                "Size",
+                icon=icons("font_size")
+            ),
+            make_font_input(
+                pid("tickfont_family"),
+                "Font",
+            ),
+            make_hover_color_picker(pid("tickfont_color"), icon=KMVIZ_ICONS["ctext"])
+        ])
+    ])
+
+    marker_panel = dmc.TabsPanel(value="tickmarkers", children = [
+        dmc.Group([
+            dmc.SegmentedControl(
+                data=make_select_data(["inside", "outside", "hide"], True),
+                fullWidth=True,
+                id=pid("ticks"),
+                size="xs",
+                value="hide",
+                color="#1C7ED6"
+            ),
+            make_nb_input(
+                pid("ticklen"),
+                "Length",
+                (0, 1, 100, 1),
+                icon=icons("width", rotate=1)
+            ),
+            make_nb_input(
+                pid("tickwidth"),
+                "Width",
+                (0, 1, 100, 1),
+                icon=icons("width")
+            ),
+            make_nb_input(
+                pid("nticks"),
+                "Max",
+                (0, 1, 1000, 10),
+                icon=icons("nindex")
+            ),
+            make_hover_color_picker(pid("tickcolor"), icon=KMVIZ_ICONS["cline"])
+        ])
+    ])
+
+
+    res = dmc.Tabs([
+        dmc.TabsList([
+            icons(
+                "X" if ax == "x" else "Y",
+                color="#1C7ED6",
+                width=30
+            ),
+            dmc.Tab("Title", value="title"),
+            dmc.Tab("Line", value="line"),
+            dmc.Tab("Zeroline", value="zeroline"),
+            dmc.Tab("Grid", value="grid"),
+            dmc.Tab("Ticks labels", value="ticklabels"),
+            dmc.Tab("Ticks markers", value="tickmarkers"),
+            dmc.NumberInput(
+                id=pid("axis-index"),
+                min=0, step=1, max=20, value=0,
+                size="xs",
+                style = {"width": "55px", "height": "20px", "margin-top": "1px"}
+            ),
+        ]),
+        title_panel,
+        line_panel,
+        zero_panel,
+        grid_panel,
+        label_panel,
+        marker_panel
+    ], value = "title")
+
+    return res
+
 
     res = html.Div([
         dmc.Center([
             html.H3(f"{ax.upper()} Axis")
         ]),
-        dmc.NumberInput(
-            id=pid("axis-index"),
-            label="Index",
-            min=0,
-            step=1,
-            max=20,
-            value=0,
+        make_nb_input(
+            pid("axis-index"),
+            "Axis",
+            (0, 1, 20, 0),
+            icon=icons("nindex")
         ),
         make_accordion([
             make_accordion_items("Title", [
                 dmc.Group([
-                    dmc.TextInput(
-                        id=pid("title_text"),
-                        label="Text"
+                    make_text_input(
+                        pid("title_text"),
+                        "Text"
                     ),
-                    make_hover_color_picker(pid("title_font_color"))
+                    make_nb_input(
+                        pid("title_font_size"),
+                        "Size",
+                        (0, 1, 100, 14),
+                        icon=icons("font_size")
+                    ),
+                    make_font_input(
+                        pid("title_font_family"),
+                        "Font",
+                    ),
+                    make_nb_input(
+                        pid("title_standoff"),
+                        "Standoff",
+                        (0, 0.01, None, None),
+                        2,
+                        icon=icons("floating")
+                    ),
+                    make_hover_color_picker(pid("title_font_color"), icon=KMVIZ_ICONS["ctext"]),
                 ]),
-                dmc.NumberInput(
-                    id=pid("title_font_size"),
-                    label="Size",
-                    min=0,
-                    step=1,
-                    value=14
-                ),
-                dmc.Select(
-                    id=pid("title_font_family"),
-                    label="Font",
-                    data=make_select_data([
-                        "Arial", "Balto", "Courier New", "Droid Sans",
-                        "Droid Serif", "Droid Sans Mono", "Gravitas One",
-                        "Old Standard TT", "Open Sans", "Overpass",
-                        "PT Sans Narrow", "Raleway", "Times New Roman"
-                    ]),
-                    value="Arial"
-                ),
-                dmc.NumberInput(
-                    id=pid("title_standoff"),
-                    label="Standoff",
-                    min=0,
-                    value=None,
-                    precision=2,
-                    step=0.01
-                )
             ]),
             make_accordion_items("Line", [
                 dmc.Group([
-                    dmc.Switch(id=pid("visible"), label="Show", checked=True),
-                    dmc.NumberInput(id=pid("linewidth"), label="Width",min=0, step=1, value=1),
-                    dmc.Select(
-                        id=pid("type"),
-                        label="Type",
-                        data=make_select_data(
-                            ["linear", "log", "date", "category", "multicategory"]
-                        ),
+                    dmc.Switch(
+                        id=pid("visible"),
+                        size="lg",
+                        onLabel="ON",
+                        offLabel="OFF",
+                        checked=True
                     ),
-                    make_hover_color_picker(pid("linecolor")),
-                ]),
-                dmc.Group([
-                    dmc.RadioGroup(
-                        [dmc.Radio("Top", value="top"), dmc.Radio("Bottom", value="bottom")]
-                        if ax == "x" else
-                        [dmc.Radio("Left", value="left"), dmc.Radio("Right", value="right")],
+                    dmc.SegmentedControl(
+                        data= make_select_data(["top", "bottom"], True)
+                              if ax == "x" else
+                              make_select_data(["left", "right"], True)
+                        ,
+                        fullWidth=True,
                         id=pid("side"),
-                        label="Position",
-                        value="left" if ax == "x" else "bottom"
+                        value="left" if ax == "x" else "bottom",
+                        size="xs",
+                        color="#1C7ED6"
                     ),
-                    dmc.Select(
-                        id=pid("mirror"),
-                        label="Mirror",
-                        data=make_select_data(["True", "False", "ticks", "all", "allticks"]),
-                        value="False"
+
+                    make_nb_input(
+                        pid("linewidth"),
+                        "Width",
+                        (0, 1, None, 1),
+                        icon=icons("width", rotate=1)
                     ),
-                ])
+                    make_select_input(
+                        pid("type"),
+                        "Type",
+                        make_select_data(["linear", "log", "date", "category", "multicategory"]),
+                        icon=icons("axis")
+                    ),
+                    make_select_input(
+                        pid("mirror"),
+                        "Mirror",
+                        make_select_data(["True", "False", "ticks", "all", "allticks"]),
+                        "False",
+                        icon=icons("single")
+                    ),
+                    make_hover_color_picker(pid("linecolor"), icon=KMVIZ_ICONS["cline"]),
+                ]),
             ]),
             make_accordion_items("Zero line", [
                 dmc.Group([
-                    dmc.Switch(id=pid("zeroline"), label="Show", checked=False),
-                    make_hover_color_picker(pid("zerolinecolor")),
-                    dmc.NumberInput(id=pid("zerolinewidth"), label="Width",min=0, step=1, value=1),
+                    dmc.Switch(
+                        id=pid("zeroline"),
+                        size="lg",
+                        onLabel="ON",
+                        offLabel="OFF",
+                        checked=False
+                    ),
+                    make_nb_input(
+                        pid("zerolinewidth"),
+                        "Width",
+                        (0, 1, None, 1),
+                        icon=icons("width", rotate=1)
+                    ),
+                    make_hover_color_picker(
+                        pid("zerolinecolor"),
+                        icon=KMVIZ_ICONS["cline"]
+                    ),
                 ])
             ]),
             make_accordion_items("Grid", [
                 dmc.Group([
-                    dmc.Switch(id=pid("showgrid"), label="Show", checked=False),
-                    dmc.NumberInput(id=pid("gridwidth"), label="Width", min=0, step=1, value=1),
-                    dmc.Select(
-                        id=pid("griddash"),
-                        label="Dash",
+                    dmc.Switch(
+                        id=pid("showgrid"),
+                        size="lg",
+                        onLabel="ON",
+                        offLabel="OFF",
+                        checked=False
+                    ),
+                    make_nb_input(
+                        pid("gridwidth"),
+                        "Width",
+                        (0, 1, None, 1),
+                        icon=icons("width", rotate=1)
+                    ),
+                    make_select_input(
+                        pid("griddash"),
+                        "Dash",
                         data=make_select_data([
                             "solid", "dot", "dash", "longdash", "dashdot", "longdashdot"
                         ]),
-                        value="solid"
+                        value="solid",
+                        icon=icons("dash")
                     ),
-                    make_hover_color_picker(pid("gridcolor")),
+                    make_hover_color_picker(pid("gridcolor"), icon=KMVIZ_ICONS["cline"]),
                 ])
             ]),
             make_accordion_items("Tick Labels", [
                 dmc.Group([
-                    dmc.Switch(id=pid("showticklabels"), label="Show", checked=True),
-                    dmc.Switch(id=pid("automargin"), label="Automargin", checked=True),
+                    dmc.Switch(
+                        id=pid("showticklabels"),
+                        onLabel="ON",
+                        offLabel="OFF",
+                        size="lg",
+                        checked=True
+                    ),
+                    dmc.Switch(
+                        id=pid("automargin"),
+                        onLabel="Automargin",
+                        offLabel="Automargin",
+                        size="lg",
+                        checked=True
+                    ),
                 ]),
                 dmc.Group([
-                    dmc.Select(
-                        id=pid("tickangle"),
-                        label="Angle",
-                        data=make_select_data(["0", "45", "90", "135", "180", "-45", "-90", "-135", "-180"]),
-                        value="0"
+                    make_nb_input(
+                        pid("tickangle"),
+                        "Angle",
+                        (-180, 1, 180, 0),
+                        icon=icons("angle")
                     ),
-                    dmc.Select(
-                        id=pid("ticklabelposition"),
-                        label="Position",
+                    make_select_input(
+                        pid("ticklabelposition"),
+                        "Position",
                         data=make_select_data([
                             "outside", "inside", "outside top", "inside top",
                             "outside left", "inside left", "outside right", "inside right",
                             "outside bottom", "inside bottom"
-                        ])
-                    ),
-
-                    dmc.NumberInput(label="Size", id=pid("tickfont_size"), min=0, value=14, step=1),
-                    dmc.Select(
-                        id=pid("tickfont_family"),
-                        label="Font",
-                        data=make_select_data([
-                            "Arial", "Balto", "Courier New", "Droid Sans",
-                            "Droid Serif", "Droid Sans Mono", "Gravitas One",
-                            "Old Standard TT", "Open Sans", "Overpass",
-                            "PT Sans Narrow", "Raleway", "Times New Roman"
                         ]),
-                        value="Arial"
+                        icon=icons("pos")
                     ),
-                    make_hover_color_picker(pid("tickfont_color"))
+                    make_nb_input(
+                        pid("tickfont_size"),
+                        "Size",
+                        (0, 1, 100, 14),
+                        "Size",
+                        icon=icons("font_size")
+                    ),
+                    make_font_input(
+                        pid("tickfont_family"),
+                        "Font",
+                    ),
+                    make_hover_color_picker(pid("tickfont_color"), icon=KMVIZ_ICONS["ctext"])
                 ])
             ]),
             make_accordion_items("Tick Markers", [
                 dmc.Group([
-                    dmc.RadioGroup(
-                        [
-                            dmc.Radio("Inside", value="inside"),
-                            dmc.Radio("Outside", value="outside"),
-                            dmc.Radio("Hide", "")
-                        ],
+                    dmc.SegmentedControl(
+                        data=make_select_data(["inside", "outside", "hide"], True),
+                        fullWidth=True,
                         id=pid("ticks"),
-                        label="Position",
-                        value="outside"
+                        size="xs",
+                        value="hide",
+                        color="#1C7ED6"
                     ),
-                    dmc.NumberInput(label="Length", id=pid("ticklen"), min=0, step=1, value=1),
-                    dmc.NumberInput(label="Width", id=pid("tickwidth"), min=0, step=1, value=1),
-                    dmc.NumberInput(label="Max markers", id=pid("nticks"), min=0, step=1, value=10),
-                    make_hover_color_picker(pid("tickcolor"))
+                    make_nb_input(
+                        pid("ticklen"),
+                        "Length",
+                        (0, 1, 100, 1),
+                        icon=icons("width", rotate=1)
+                    ),
+                    make_nb_input(
+                        pid("tickwidth"),
+                        "Width",
+                        (0, 1, 100, 1),
+                        icon=icons("width")
+                    ),
+                    make_nb_input(
+                        pid("nticks"),
+                        "Max",
+                        (0, 1, 1000, 10),
+                        icon=icons("nindex")
+                    ),
+                    make_hover_color_picker(pid("tickcolor"), icon=KMVIZ_ICONS["cline"])
                 ])
             ]),
         ])
@@ -1492,11 +1932,11 @@ def make_axis_callbacks(factory, ax, figure_id):
             return patch_figure(ctx, ["layout", n])
         return no_update
 
-
 def make_axes(factory):
     pid = factory.child("rangeslider")
 
     res = html.Div([
+        dmc.Space(h=10),
         dmc.Grid([
             dmc.Col(make_axis(factory.child("xaxis"), "x"), span=6),
             dmc.Col(make_axis(factory.child("yaxis"), "y"), span=6),
@@ -1504,9 +1944,26 @@ def make_axes(factory):
         make_accordion([
             make_accordion_items("Range slider", [
                 dmc.Group([
-                    dmc.Switch(id=pid("rangeslider_visible"), label="Show", checked=False),
-                    dmc.NumberInput(label="Width", id=pid("rangeslider_borderwidth"), min=0, step=1, value=1),
-                    dmc.NumberInput(label="Thickness", id=pid("rangeslider_thickness"), min=0, max=1, precision=2, step=0.01, value=0.1),
+                    dmc.Switch(
+                        id=pid("rangeslider_visible"),
+                        size="lg",
+                        onLabel="ON",
+                        offLabel="OFF",
+                        checked=False
+                    ),
+                    make_nb_input(
+                        pid("rangeslider_borderwidth"),
+                        "Width",
+                        (0, 1, None, 1),
+                        icon=icons("cline"),
+                    ),
+                    make_nb_input(
+                        pid("rangeslider_thickness"),
+                        "Thickness",
+                        (0.0, 0.01, 1, 0.1),
+                        2,
+                        icon=icons("floating"),
+                    ),
                     dmc.RadioGroup(
                         [
                             dmc.Radio("Auto", value="auto"),
@@ -1517,8 +1974,16 @@ def make_axes(factory):
                         label="Mode",
                         value="auto",
                     ),
-                    make_hover_color_picker(pid("rangeslider_bordercolor"), "Border color"),
-                    make_hover_color_picker(pid("rangeslider_bgcolor"), "Background color")
+                    make_hover_color_picker(
+                        pid("rangeslider_bordercolor"),
+                        "Border color",
+                        icon=KMVIZ_ICONS["cline"]
+                    ),
+                    make_hover_color_picker(
+                        pid("rangeslider_bgcolor"),
+                        "Background color",
+                        icon=KMVIZ_ICONS["cback"]
+                    )
                 ])
             ]),
         ])
@@ -1553,6 +2018,40 @@ def make_axes_callbacks(factory, figure_id):
 
 def make_plot(factory):
     pid = factory
+
+    preset_select = make_select_input(
+        pid.sid("select-preset"),
+        None,
+        placeholder="Select preset",
+        clearable=True,
+        icon=icons("preset"),
+        style={"width": "170px"}
+    )
+
+    trace_type = make_select_input(
+        pid.child("trace")("type"),
+        None,
+        data=make_select_data([
+            "Scatter",
+            "Line",
+            "Area",
+            "Bar",
+            "Scatter3D",
+            "Parallel categories",
+            "Parallel coordinates",
+            "Scatter matrix",
+            "Density heatmap",
+            "Density contour",
+            "Violin",
+            "Box"
+        ]),
+        required=True,
+        clearable=True,
+        searchable=True,
+        icon=icons("plot"),
+        style={"width": "170px"},
+    )
+
     res =  html.Div([
         dcc.Graph(
             figure=blank_figure(),
@@ -1561,26 +2060,23 @@ def make_plot(factory):
             mathjax=True,
             style = {"margin-left": "auto", "margin-right": "auto", "height":"70vh", "width":"90%"}
         ),
-        html.Div([
-            dmc.Group([
-                dmc.Select(
-                    id=pid.sid("select-preset"),
-                    placeholder="Select preset",
-                    clearable=True
-                ),
-            ])
-        ], id=pid.sid("presets-div")),
         dmc.Tabs([
             dmc.TabsList([
-                dmc.Tab("Trace", value="trace", disabled=False,   id=pid.sid("trace-tab")),
-                dmc.Tab("Title", value="title", disabled=False,   id=pid.sid("title-tab")),
-                dmc.Tab("Axes", value="axes", disabled=False,     id=pid.sid("axes-tab")),
-                dmc.Tab("Legend", value="legend", disabled=False, id=pid.sid("legend-tab"))
+                dmc.Tab("Trace", value="trace", disabled=False, id=pid.sid("trace-tab")),
+                #trace_type,
+                dmc.Tab("Title", value="title", disabled=False, id=pid.sid("title-tab")),
+                dmc.Tab("Axes", value="axes", disabled=False, id=pid.sid("axes-tab")),
+                dmc.Tab("Legend", value="legend", disabled=False, id=pid.sid("legend-tab")),
+                preset_select
             ]),
-            dmc.TabsPanel(make_trace(pid.child("trace")), value="trace"),
-            dmc.TabsPanel(make_plot_title(pid.child("title")), value="title"),
-            dmc.TabsPanel(make_axes(pid.child("axes")), value="axes"),
-            dmc.TabsPanel(make_plot_legend(pid.child("legend")), value="legend")
+            dmc.TabsPanel(
+                make_trace(pid.child("trace")), value="trace"),
+            dmc.TabsPanel(
+                make_plot_title(pid.child("title")), value="title"),
+            dmc.TabsPanel(
+                make_axes(pid.child("axes")), value="axes"),
+            dmc.TabsPanel(
+                make_plot_legend(pid.child("legend")), value="legend")
         ], value="trace")
     ])
 

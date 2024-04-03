@@ -9,7 +9,7 @@ def make_ag_grid(id: Union[str, dict],
 
     default_params = {
         "columnSize": "autoSize",
-        "className": "ag-theme-quartz"
+        "className": "ag-theme-balham"
     }
 
     default_col = {

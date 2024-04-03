@@ -13,12 +13,39 @@ def make_tabs():
     tabs = html.Div([
         dmc.Tabs([
             dmc.TabsList([
-                dmc.Tab("Index", value="index", id=kindex.sid("panel"), icon=DashIconify(icon="iconoir:db"),),
-                dmc.Tab("Table", value="table", disabled=True, id=ktable.sid("panel"), icon=DashIconify(icon="material-symbols:table"),),
-                dmc.Tab("Map", value="map", disabled=True, id=kmap.sid("panel"), icon=DashIconify(icon="fluent-mdl2:world"),),
-                dmc.Tab("Plot", value="plot", disabled=True, id=kplot.sid("panel"), icon=DashIconify(icon="carbon:qq-plot"),),
-                dmc.Tab("Sequence", value="sequence", disabled=True, id=kseq.sid("panel"), icon=DashIconify(icon="mdi:dna"),),
-                dmc.Tab("Help", value="help", icon=DashIconify(icon="material-symbols:help-outline"),),
+                dmc.Tab(
+                    "Index",
+                    value="index",
+                    id=kindex.sid("panel"),
+                    icon=DashIconify(icon="iconoir:db")),
+                dmc.Tab(
+                    "Table",
+                    value="table",
+                    disabled=False,
+                    id=ktable.sid("panel"),
+                    icon=DashIconify(icon="material-symbols:table")),
+                dmc.Tab(
+                    "Map",
+                    value="map",
+                    disabled=False,
+                    id=kmap.sid("panel"),
+                    icon=DashIconify(icon="fluent-mdl2:world"),),
+                dmc.Tab(
+                    "Plot",
+                    value="plot",
+                    disabled=False,
+                    id=kplot.sid("panel"),
+                    icon=DashIconify(icon="carbon:qq-plot"),),
+                dmc.Tab(
+                    "Sequence",
+                    value="sequence",
+                    disabled=False,
+                    id=kseq.sid("panel"),
+                    icon=DashIconify(icon="mdi:dna"),),
+                dmc.Tab(
+                    "Help",
+                    value="help",
+                    icon=DashIconify(icon="material-symbols:help-outline")),
             ], className="kmviz-tab-header"),
 
             html.Div([

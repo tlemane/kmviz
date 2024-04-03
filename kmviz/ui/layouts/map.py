@@ -18,7 +18,7 @@ from kmviz.ui.components.store import ksf
 from kmviz.ui.components.figure import make_accordion, make_accordion_items
 from kmviz.ui.components.figure import make_plot_title, make_plot_title_callbacks
 from kmviz.ui.components.figure import make_plot_legend, make_plot_legend_callbacks
-from kmviz.ui.components.figure import apply_presets
+from kmviz.ui.components.figure import apply_presets, make_select_input, icons, make_nb_input
 from kmviz.ui.layouts.table import ktable
 from kmviz.ui.layouts.sequence import kseq
 from kmviz.ui.id_factory import kmviz_factory as kf
@@ -36,156 +36,198 @@ def blank_map():
 
 def make_map_layout():
 
-    map_tab = make_accordion([
-      make_accordion_items("Data", [
-            dmc.Group([
-                dmc.Select(id=kmap("color"), label="Color", clearable=True),
-                dmc.Select(id=kmap("size"), label="Size", clearable=True),
-                dmc.Select(id=kmap("text"), label="Text", clearable=True),
-                dmc.Select(id=kmap("symbol"), label="Symbol", clearable=True),
-            ])
-        ]),
-        make_accordion_items("Animation", [
-            dmc.Group([
-                dmc.Select(id=kmap("animation_frame"), label="Frame", clearable=True),
-                dmc.Select(id=kmap("animation_group"), label="Group", clearable=True)
-            ])
-        ]),
-        make_plot_title(kmap.child("title")),
-        make_accordion_items("Style", [
-            dmc.Group([
-                dmc.Select(
-                    id=kmap("template"),
-                    label="Theme",
-                    data=make_select_data(list(pio.templates)),
-                    clearable=True,
-                    searchable=True,
-                    value="seaborn"
-                ),
-                dmc.Select(
-                    id=kmap("projection"),
-                    label="Projection",
-                    data=make_select_data([
-                        'equirectangular', 'mercator', 'orthographic', 'natural earth',
-                        'kavrayskiy7', 'miller', 'robinson', 'eckert4', 'azimuthal equal area',
-                        'azimuthal equidistant', 'conic equal area', 'conic conformal',
-                        'conic equidistant', 'gnomonic', 'stereographic', 'mollweide', 'hammer',
-                        'transverse mercator', 'albers usa', 'winkel tripel', 'aitoff', 'sinusoidal'
-                    ]),
-                    value="equirectangular",
-                    clearable=True,
-                    searchable=True
-                ),
-                dmc.NumberInput(
-                    id=kmap("opacity"),
-                    label="Opacity",
-                    value=0.7,
-                    precision=2,
-                    min=0.0,
-                    max=1.0,
-                    step=0.05
-                ),
-            ]),
-            dmc.Group([
-                dmc.Select(
-                    id=kmap("color_seq_continuous_scale"),
-                    label="Color sequential scale",
-                    data=make_select_data(
-                         ['Brwnyl', 'Agsunset', 'Sunsetdark', 'Magenta', 'Sunset',
-                         'Purpor', 'Purp', 'Tealgrn', 'Teal', 'Bluyl', 'Aggrnyl',
-                         'Emrld', 'Darkmint', 'Blugrn', 'Mint', 'Pinkyl',
-                         'Peach', 'Oryel', 'Redor', 'Burgyl', 'Burg',
-                         'tempo', 'amp', 'speed', 'matter', 'algae', 'dense', 'deep',
-                         'gray', 'ice', 'solar', 'haline', 'thermal', 'turbid', 'YlOrRd',
-                         'YlOrBr', 'YlGnBu', 'YlGn', 'Reds', 'RdPu', 'RdBu', 'Purples',
-                         'PuRd', 'PuBuGn', 'PuBu', 'Oranges', 'OrRd', 'Greys', 'Greens',
-                         'GnBu', 'BuPu', 'BuGn', 'Blues', 'Rainbow', 'Jet', 'Hot', 'Electric',
-                         'Bluered', 'Blackbody', 'Turbo', 'Plasma', 'Magma', 'Inferno',
-                         'Cividis', 'Viridis', 'Plotly3']
-                    ),
-                    clearable=True,
-                    searchable=True
-                ),
-                dmc.Select(
-                    id=kmap("color_div_continuous_scale"),
-                    label="Color diverging scale",
-                    data=make_select_data(
-                        ['Portland', 'Picnic', 'Earth', 'Tropic', 'Tealrose', 'Temps', 'Geyser',
-                         'Fall', 'Armyrose', 'oxy', 'curl', 'delta', 'balance',
-                         'Spectral', 'RdYlGn', 'RdYlBu', 'RdGy', 'RdBu', 'PuOr', 'PiYG',
-                         'PRGn', 'BrBG']
+    data_panel = dmc.TabsPanel(value="data", children = [
+        dmc.Group([
+            make_select_input(
+                kmap("color"), "Color", clearable=True, icon=icons("single")
+            ),
+            make_select_input(
+                kmap("size"), "Size", clearable=True, icon=icons("single")
+            ),
+            make_select_input(
+                kmap("text"), "Text", clearable=True, icon=icons("single")
+            ),
+            make_select_input(
+                kmap("symbol"), "Symbol", clearable=True, icon=icons("single")
+            ),
+        ])
+    ])
 
-                    ),
-                    clearable=True,
-                    searchable=True
+    anim_panel = dmc.TabsPanel(value="anim", children = [
+        dmc.Group([
+            make_select_input(
+                kmap("animation_frame"), "Frame", clearable=True, icon=icons("single")
+            ),
+            make_select_input(
+                kmap("animation_group"), "Group", clearable=True, icon=icons("single")
+            )
+        ])
+
+    ])
+
+    style_panel = dmc.TabsPanel(value="style", children = [
+        dmc.Group([
+            dmc.Select(
+                id=kmap("template"),
+                label="Theme",
+                data=make_select_data(list(pio.templates)),
+                clearable=True,
+                searchable=True,
+                value="seaborn",
+                icon=icons("style")
+            ),
+            dmc.Select(
+                id=kmap("projection"),
+                label="Projection",
+                data=make_select_data([
+                    'equirectangular', 'mercator', 'orthographic', 'natural earth',
+                    'kavrayskiy7', 'miller', 'robinson', 'eckert4', 'azimuthal equal area',
+                    'azimuthal equidistant', 'conic equal area', 'conic conformal',
+                    'conic equidistant', 'gnomonic', 'stereographic', 'mollweide', 'hammer',
+                    'transverse mercator', 'albers usa', 'winkel tripel', 'aitoff', 'sinusoidal'
+                ]),
+                value="equirectangular",
+                clearable=True,
+                searchable=True,
+                icon=icons("map")
+            ),
+            make_select_input(
+                id=kmap("color_seq_continuous_scale"),
+                label="Color sequential scale",
+                data=make_select_data(
+                     ['Brwnyl', 'Agsunset', 'Sunsetdark', 'Magenta', 'Sunset',
+                     'Purpor', 'Purp', 'Tealgrn', 'Teal', 'Bluyl', 'Aggrnyl',
+                     'Emrld', 'Darkmint', 'Blugrn', 'Mint', 'Pinkyl',
+                     'Peach', 'Oryel', 'Redor', 'Burgyl', 'Burg',
+                     'tempo', 'amp', 'speed', 'matter', 'algae', 'dense', 'deep',
+                     'gray', 'ice', 'solar', 'haline', 'thermal', 'turbid', 'YlOrRd',
+                     'YlOrBr', 'YlGnBu', 'YlGn', 'Reds', 'RdPu', 'RdBu', 'Purples',
+                     'PuRd', 'PuBuGn', 'PuBu', 'Oranges', 'OrRd', 'Greys', 'Greens',
+                     'GnBu', 'BuPu', 'BuGn', 'Blues', 'Rainbow', 'Jet', 'Hot', 'Electric',
+                     'Bluered', 'Blackbody', 'Turbo', 'Plasma', 'Magma', 'Inferno',
+                     'Cividis', 'Viridis', 'Plotly3']
                 ),
-                dmc.Select(
-                    id=kmap("color_cyc_continuous_scale"),
-                    label="Color cyclical scale",
-                    data=make_select_data(
-                        ['mygbm', 'mrybm', 'HSV', 'Phase', 'Edge', 'IceFire', 'Twilight']
-                    ),
-                    clearable=True,
-                    searchable=True
+                clearable=True,
+                searchable=True,
+                icon=icons("picker")
+            ),
+            make_select_input(
+                id=kmap("color_div_continuous_scale"),
+                label="Color diverging scale",
+                data=make_select_data(
+                    ['Portland', 'Picnic', 'Earth', 'Tropic', 'Tealrose', 'Temps', 'Geyser',
+                     'Fall', 'Armyrose', 'oxy', 'curl', 'delta', 'balance',
+                     'Spectral', 'RdYlGn', 'RdYlBu', 'RdGy', 'RdBu', 'PuOr', 'PiYG',
+                     'PRGn', 'BrBG']
+
                 ),
-                dmc.NumberInput(
-                    id=kmap("color_continuous_midpoint"),
-                    label="Color midpoint",
-                    value=None
+                clearable=True,
+                searchable=True,
+                icon=icons("picker")
+            ),
+            make_select_input(
+                id=kmap("color_cyc_continuous_scale"),
+                label="Color cyclical scale",
+                data=make_select_data(
+                    ['mygbm', 'mrybm', 'HSV', 'Phase', 'Edge', 'IceFire', 'Twilight']
                 ),
-                dmc.NumberInput(
-                    id=kmap("size_max"),
-                    label="Max size",
-                    min=0, step=1, value=20
-                ),
-            ]),
+                clearable=True,
+                searchable=True,
+                icon=icons("picker"),
+            ),
+
+            make_nb_input(
+                kmap("color_continuous_midpoint"),
+                "Color midpoint",
+                (None, None, None, None),
+                icon=icons("floating")
+            ),
+            make_nb_input(
+                kmap("opacity"),
+                "Opacity",
+                (0.0, 0.01, 1.0, 0.7),
+                2,
+                icon=icons("floating")
+            ),
+            make_nb_input(
+                kmap("size_max"),
+                "Max size",
+                (0, 1, 50, 15),
+                icon=icons("integer"),
+            ),
+        ]),
+
+        dmc.Group([
             dmc.JsonInput(
                 id=kmap("color_discrete_map"),
-                placeholder="ex: {'value1': 'blue', 'value2': 'red'}",
-                label="Color map (json)",
+                placeholder='ex: {"v1": "blue", "v2": "red"}',
+                label="Color map",
                 value=None,
                 formatOnBlur=True,
                 maxRows=4,
                 autosize=True,
                 debounce=1,
-                validationError="Invalid json"
+                validationError="Invalid json",
+                icon=icons("json")
             ),
             dmc.JsonInput(
                 id=kmap("symbol_map"),
-                placeholder="ex: {'value1': 'circle-open', 'value2': 'square-open'}",
-                label="Symbol map (json)",
+                placeholder='ex: {"v1": "circle-open", "v2": "square-open"}',
+                label="Symbol map",
                 value=None,
                 formatOnBlur=True,
                 maxRows=4,
                 autosize=True,
                 debounce=1,
-                validationError="Invalid json"
+                validationError="Invalid json",
+                icon=icons("json")
             ),
             dmc.JsonInput(
                 id=kmap("color_discrete_sequence"),
-                placeholder="ex: {'seq': ['red', 'blue'] }",
-                label="Color sequence (json)",
+                placeholder='ex: {"seq": ["red", "blue"] }',
+                label="Color sequence",
                 value=None,
                 formatOnBlur=True,
                 maxRows=4,
                 autosize=True,
                 debounce=1,
-                validationError="Invalid json"
+                validationError="Invalid json",
+                icon=icons("json")
             ),
             dmc.JsonInput(
                 id=kmap("symbol_sequence"),
-                placeholder="ex: {'seq': ['circle-open', 'square-open'] }",
-                label="Symbol sequence (json)",
+                placeholder='ex: {"seq": ["circle-open", "square-open"] }',
+                label="Symbol sequence",
                 value=None,
                 formatOnBlur=True,
                 maxRows=4,
                 autosize=True,
                 debounce=1,
-                validationError="Invalid json"
+                validationError="Invalid json",
+                icon=icons("json")
             ),
-
-        ]),
+        ], grow=True)
     ])
+
+    map_tab = dmc.Tabs([
+        dmc.TabsList([
+            dmc.Tab("Data", value="data"),
+            dmc.Tab("Animation", value="anim"),
+            dmc.Tab("Style", value="style"),
+        ]),
+        data_panel,
+        anim_panel,
+        style_panel
+    ], value = "data")
+
+    preset_select = make_select_input(
+        kmap.sid("select-preset"),
+        None,
+        placeholder="Select preset",
+        clearable=True,
+        icon=icons("preset"),
+        style={"width": "170px"}
+    )
 
     res =  html.Div([
         dcc.Graph(figure=blank_map(),
@@ -198,22 +240,15 @@ def make_map_layout():
                             "width":"95%" }
         ),
 
-
-        html.Div([
-            dmc.Group([
-                dmc.Select(
-                    id=kmap.sid("select-preset"),
-                    placeholder="Select preset",
-                    clearable=True
-                ),
-            ])
-        ], id=kmap.sid("presets-div")),
         dmc.Tabs([
             dmc.TabsList([
                 dmc.Tab("Map", value="map-MAP"),
+                dmc.Tab("Title", value="map-TITLE"),
                 dmc.Tab("Legend", value="map-LEGEND"),
+                preset_select,
             ]),
             dmc.TabsPanel(map_tab, value="map-MAP"),
+            dmc.TabsPanel(make_plot_title(kmap.child("title")), value="map-TITLE"),
             dmc.TabsPanel(make_plot_legend(kmap.child("legend")), value="map-LEGEND")
         ], value="map-MAP")
 
@@ -269,7 +304,7 @@ def make_map_layout_callbacks():
         kmv_debug(f"{session}: 'update_map' triggered by '{trigger}'")
 
         if not data:
-            return blank_map(), True
+            return blank_map(), False
 
         df = pd.DataFrame.from_dict(data)
 
