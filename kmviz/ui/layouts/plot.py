@@ -31,9 +31,7 @@ def make_plot_layout_callbacks():
     ktrace = kplot.child("trace")
 
     @callback(
-        Input(kgsf("provider"), "value"),
-        Input(kgsf("query"), "value"),
-        State(ksf("query-results"), "data"),
+        Input(ktable.sid("grid"), "virtualRowData"),
         Output(ktrace("xselect"), "data"),
         Output(ktrace("yselect"), "data"),
         Output(ktrace("zselect"), "data"),
@@ -55,14 +53,13 @@ def make_plot_layout_callbacks():
         Output(kplot.sid("panel"), "disabled"),
         prevent_initial_callbacks=True
     )
-    def updateXY(provider, query, query_result):
-        df = query_result[query][provider].df
+    def updateXY(data):
+        df = pd.DataFrame.from_dict(data)
         cols = make_select_data(list(df))
-
         cols_size = []
         for c in list(df):
             if is_numeric_dtype(df[c]):
-                if all(x > 0 for x in df[c]):
+                if all(x >= 0 for x in df[c]):
                     cols_size.append(c)
 
         return (cols, cols, cols, cols_size, cols, cols, cols, cols,

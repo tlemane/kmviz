@@ -232,7 +232,7 @@ def make_input_file_callbacks():
         prevent_update_on_none(filename, contents)
 
         content_type, data = contents.split(",")
-        content = base64.b64decode(data).decode()
+        content = base64.b64decode(data).decode("utf-8")
 
         try:
             queries = [Query(name, seq) for name, seq, _ in parse_fastx(content)]

@@ -8,6 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
 
+import numpy as np
 from pandas.api.types import is_numeric_dtype
 import json
 
@@ -346,9 +347,7 @@ def make_map_layout_callbacks():
         return px.scatter_geo(df, hover_name="ID", **params), False
 
     @callback(
-        Input(kgsf("provider"), "value"),
-        Input(kgsf("query"), "value"),
-        State(ksf("query-results"), "data"),
+        Input(ktable.sid("grid"), "virtualRowData"),
         Output(kmap("color"), "data"),
         Output(kmap("size"), "data"),
         Output(kmap("text"), "data"),
@@ -358,17 +357,17 @@ def make_map_layout_callbacks():
         prevent_initial_callbacks=True,
         prevent_initial_call=True
     )
-    def init_map_selectors(provider, query, qr):
-        prevent_update_on_none(provider)
+    def init_map_selectors(data):
 
-        df = qr[query][provider].df
+        df = pd.DataFrame.from_dict(data)
         cols = make_select_data(list(df))
 
         cols_size = []
         for c in list(df):
             if is_numeric_dtype(df[c]):
-                if all(x > 0 for x in df[c]):
+                if all(x >= 0 for x in df[c]):
                     cols_size.append(c)
+
 
         return cols, cols_size, cols, cols, cols, cols
 
