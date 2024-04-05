@@ -109,8 +109,6 @@ def magic_json(d: dict):
                 v = magic_json(v)
             c[sk][sv] = v
             c[sk] = magic_json(c[sk])
-            print(sv)
-
             del c[k]
     return c
 
@@ -2038,7 +2036,6 @@ def make_axis(factory, ax):
     ])
     return res
 
-import pprint
 def make_axis_callbacks(factory, ax, figure_id):
     pid = factory
     @callback(
@@ -2213,7 +2210,14 @@ def make_plot(factory):
             id=pid.sid("figure"),
             responsive=True,
             mathjax=True,
-            style = {"margin-left": "auto", "margin-right": "auto", "height":"70vh", "width":"90%"}
+            style = {"margin-left": "auto", "margin-right": "auto", "height":"70vh", "width":"90%"},
+            config={'modeBarButtonsToAdd':['drawline',
+                                        'drawopenpath',
+                                        'drawclosedpath',
+                                        'drawcircle',
+                                        'drawrect',
+                                        'eraseshape'
+                                       ]}
         ),
         dmc.Tabs([
             dmc.TabsList([

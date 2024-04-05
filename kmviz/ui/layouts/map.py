@@ -242,7 +242,14 @@ def make_map_layout():
                   style = { "margin-left": "auto",
                             "margin-right": "auto",
                             "height": "65vh",
-                            "width":"95%" }
+                            "width":"95%" },
+                  config = {'modeBarButtonsToAdd':['drawline',
+                                        'drawopenpath',
+                                        'drawclosedpath',
+                                        'drawcircle',
+                                        'drawrect',
+                                        'eraseshape'
+                                       ]}
         ),
 
         dmc.Tabs([
