@@ -1,4 +1,4 @@
-from dash_extensions.enrich import html, dash_table, Input, Output, dcc, State, callback
+from dash_extensions.enrich import html, dash_table, Input, Output, dcc, State, callback, ctx
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
@@ -50,14 +50,15 @@ def make_table_layout_callbacks():
 
     @callback(
         Input(kgsf("query"), "value"),
+        Input(kf.sid("plot-only"), "data"),
         State(kgsf("provider"), "value"),
         State(ksf("query-results"), "data"),
         Output(ktable.sid("grid"), "rowData"),
         Output(ktable.sid("grid"), "columnDefs"),
         Output(ktable.sid("panel"), "disabled"),
-        prevent_initial_callbacks=True,
+        prevent_initial_call=True,
     )
-    def update_table_grid(query, provider, query_result):
+    def update_table_grid(query, plot_only, provider, query_result):
 
         def column_filter(data):
             if is_numeric_dtype(data):
@@ -66,17 +67,25 @@ def make_table_layout_callbacks():
                 return "agDateColumnFilter"
             return "agTextColumnFilter"
 
+        if not plot_only:
+            df = query_result[query][provider].df
+        else:
+            df = plot_only["df"]
+
         fields = [
             {
                 "field": x,
                 "filterParams": {"maxNumConditions": 10000},
                 "suppressMenu": True,
-                "filter": column_filter(query_result[query][provider].df[x])
+                #"filter": column_filter(query_result[query][provider].df[x])
+                "filter": column_filter(df[x])
             }
-            for x in list(query_result[query][provider].df)
+            #for x in list(query_result[query][provider].df)
+            for x in list(df)
         ]
 
-        return query_result[query][provider].df.to_dict("records"), fields, False
+        #return query_result[query][provider].df.to_dict("records"), fields, False
+        return df.to_dict("records"), fields, False
 
     @callback(
         Input(ktable.sid("button"), "n_clicks"),
@@ -91,12 +100,13 @@ def make_table_layout_callbacks():
     @callback(
         Input(kgsf("query"), "value"),
         State(kgsf("provider"), "value"),
+        Input(kf.sid("plot-only"), "data"),
         Output(ktable.sid("button"), "disabled"),
         Output(ktable.sid("rmf"), "disabled"),
         Output(ktable.sid("nan"), "disabled"),
         prevent_initial_callbacks=True,
     )
-    def enable_table_grid_buttons(query, provider):
+    def enable_table_grid_buttons(query, provider, po):
         prevent_update_on_none(query, provider)
         return False, False, False
 

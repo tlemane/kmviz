@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash_extensions.enrich import Input, Output, html, callback
-
-from kmviz.ui.utils import prevent_update_on_empty, make_select_data
+from dash import no_update
+from kmviz.ui.utils import prevent_update_on_empty, make_select_data, prevent_update_on_none
 from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.components.store import ksfr
 from kmviz.ui import state
@@ -72,7 +72,10 @@ def make_select_callbacks():
     )
     def update_map_preset(value):
         if not value:
-            return None, None
+            return None, None, {"display": "none"}, {"display": "none"}
+
+        if value.startswith("__kmviz_df"):
+            prevent_update_on_none(None)
 
         p = state.kmstate.providers.get(value).presets
 

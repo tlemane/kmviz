@@ -7,8 +7,9 @@ from typing import Optional, Union, List
 from .provider import Provider
 from .options import RangeOption
 from kmviz.core.query import Query, Response, QueryResponse
-from kmviz.core.utils import covxb_from_covxk
+from kmviz.core.utils import covxb_from_covxk, covyb_from_covyk
 from kmviz.core.io import KmVizInvalidQuery
+from statistics import mean
 
 import json
 
@@ -55,6 +56,8 @@ class KmindexServerProvider(KmindexProvider):
 
         rj = response.json()
 
+        print(rj)
+
         responses = {}
         for k, v in rj.items():
             for qid, results in v.items():
@@ -67,8 +70,8 @@ class KmindexServerProvider(KmindexProvider):
         covxbs = []
 
         for r in responses.values():
-            covxks.append(r.xk)
-            covxbs.append(r.xb)
+            covxks.append(round(r.xk, 3))
+            covxbs.append(round(r.xb, 3))
 
         metadata.insert(1, "CovXK", covxks, True)
         metadata.insert(2, "CovXB", covxbs, True)
@@ -78,12 +81,12 @@ class KmindexServerProvider(KmindexProvider):
             covybs = []
 
             for r in responses.values():
-                covyks.append(r.yk)
-                covybs.append(r.yb)
+                covyks.append(round(r.yk, 3))
+                covybs.append(round(r.yb, 3))
 
 
             metadata.insert(3, "CovYK", covyks , True)
-            metadata.insert(4, "CovXK", covybs, True)
+            metadata.insert(4, "CovYB", covybs, True)
 
         return QueryResponse(
             query,
@@ -117,10 +120,25 @@ class KmindexServerProvider(KmindexProvider):
         )
 
     def _response_from_dict_abs(self, response: dict, size: int) -> Response:
-        return Response()
+        covyk = response["P"]
+        xk = response["R"]
+
+        yk, xb, yb, covyb = covyb_from_covyk(covyk, self.kmer_size(), size)
+
+        return Response(
+            self.kmer_size(),
+            xk,
+            yk,
+            None,
+            covyk,
+            xb,
+            yb,
+            None,
+            covyb,
+        )
 
     def has_abs(self) -> bool:
-        smer_size = self.index_infos[list(self.index_infos.keys())[0]]["bw"] > 1
+        return self.index_infos[list(self.index_infos.keys())[0]]["bw"] > 1
 
     def kmer_size(self) -> int:
         smer_size = self.index_infos[list(self.index_infos.keys())[0]]["smer_size"]

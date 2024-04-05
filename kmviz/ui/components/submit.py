@@ -45,7 +45,6 @@ def make_submit():
         dmc.NotificationsProvider([
             html.Div(id=kf.sid("notification")),
         ], limit=1),
-        dcc.Store(id=kf.sid("session-id"))
     ])
 
     return res

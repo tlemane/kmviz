@@ -11,12 +11,13 @@ class kState:
         self._providers: Providers = Providers()
         #self.queries = []
         #self.results = {}
-        self.dashboard_path = None
+        self.dashboard_path = "/"
         self._manager = None
         self._cache = None
         self._plugins = {}
         self._external_css = []
         self._external_js = []
+        self.plot_only = False
 
     def store_result(self, uid: str, results: tuple):
         self._cache[uid] = results

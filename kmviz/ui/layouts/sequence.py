@@ -1,6 +1,6 @@
 from dash_extensions.enrich import html, dash_table, Input, Output, dcc, State, callback
 import dash_mantine_components as dmc
-
+from dash import no_update
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -56,8 +56,14 @@ def make_sequence_layout_callbacks():
     )
     def update_sample_select(provider, query, query_result):
         prevent_update_on_none(provider, query)
+
+        if provider.startswith("__kmviz_df"):
+            prevent_update_on_none(None)
+
         qr = query_result[query][provider]
         ids = list(qr.df["ID"])
+        if not ids:
+            return no_update, no_update, True
         return make_select_data(ids), ids[0], False
 
     @callback(
@@ -81,6 +87,9 @@ def make_sequence_layout_callbacks():
         prevent_initial_callbacks=True,
     )
     def update_sequence_graph(sample, provider, query, query_result):
+        if provider.startswith("__kmviz_df"):
+            prevent_update_on_none(None)
+
         prevent_update_on_none(sample, provider, query)
 
         qr = query_result[query][provider]
@@ -90,7 +99,7 @@ def make_sequence_layout_callbacks():
         index = list(range(len(qr.query.seq)))
 
         if qr.response[sample].has_abs():
-            fig = px.line(x=index, y=qr.response[sample].covyb, line_shape="hv")
+            fig = px.line(x=index, y=qr.response[sample].covyb, line_shape="linear")
         else:
             fig = px.line(x=index, y=qr.response[sample].covxb, line_shape="hv")
 

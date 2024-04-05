@@ -21,6 +21,7 @@ import uuid
 def make_dashboard():
 
     layout = html.Div([
+        dcc.Store(kf.sid("session-id")),
         make_stores(),
         make_select(),
         dmc.Grid([

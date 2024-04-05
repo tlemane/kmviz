@@ -125,7 +125,9 @@ def make_input_dataframe_callbacks():
                 except:
                     raise KmVizIOError(f"Error while loading '{filename}'")
 
-            key = "__kmviz_df"
+            key = "__kmviz_df_nogeo"
+            if "Latitude" in df and "Longitude" in df:
+                key = "__kmviz_df"
 
             res = {}
             res[key] = {}
@@ -191,26 +193,27 @@ def make_input_text_callbacks():
             return True
         return False
 
-def make_input_file():
+KMVIZ_UPLOAD_STYLE = {
+    'width': '80%%',
+    'height': '40px',
+    'lineHeight': '40px',
+    'borderWidth': '1px',
+    'borderStyle': 'dashed',
+    'borderRadius': '5px',
+    'textAlign': 'center',
+    'margin': '10px',
+    'align': 'center',
+    'display': 'inherit'
+}
 
-    upload_style = {
-        'width': '80%%',
-        'height': '40px',
-        'lineHeight': '40px',
-        'borderWidth': '1px',
-        'borderStyle': 'dashed',
-        'borderRadius': '5px',
-        'textAlign': 'center',
-        'margin': '10px',
-        'align': 'center',
-        'display': 'inherit'
-    }
+
+def make_input_file():
 
     return [
         dcc.Upload(
             id=kif("file"),
             children=["Drop or ", html.A("Select a file")],
-            style = upload_style
+            style = KMVIZ_UPLOAD_STYLE
         ),
         html.Div(id=kif("file-error"))
     ]
@@ -303,5 +306,5 @@ def make_input_callbacks():
     make_input_text_callbacks()
     make_input_file_callbacks()
     make_input_session_callbacks()
-    #make_input_dataframe_callbacks()
+
 

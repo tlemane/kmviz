@@ -54,6 +54,9 @@ def make_plot_layout_callbacks():
         prevent_initial_callbacks=True
     )
     def updateXY(data):
+        if not data:
+            prevent_update_on_none(None)
+
         df = pd.DataFrame.from_dict(data)
         cols = make_select_data(list(df))
         cols_size = []
@@ -299,23 +302,24 @@ def make_plot_layout_callbacks():
         return p
 
 
-    @callback(
-        Input(kplot.sid("figure"), "clickData"),
-        State(kgsf("query"), "value"),
-        State(kgsf("provider"), "value"),
-        State(ksf("query-results"), "data"),
-        Output(kseq.sid("select"), "value"),
-        Output(ktable.sid("grid"), "filterModel"),
-        Output("tab-select", "value"),
-        prevent_initial_callbacks=True
-    )
-    def on_click(data, query, provider, query_result):
+    if not state.kmstate.plot_only:
+        @callback(
+            Input(kplot.sid("figure"), "clickData"),
+            State(kgsf("query"), "value"),
+            State(kgsf("provider"), "value"),
+            State(ksf("query-results"), "data"),
+            Output(kseq.sid("select"), "value"),
+            Output(ktable.sid("grid"), "filterModel"),
+            Output("tab-select", "value"),
+            prevent_initial_callbacks=True
+        )
+        def on_click(data, query, provider, query_result):
 
-        qr = query_result[query][provider]
-        sample = data["points"][0]["hovertext"]
+            qr = query_result[query][provider]
+            sample = data["points"][0]["hovertext"]
 
-        p = Patch()
-        p["ID"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
-        return sample, p, "sequence"
+            p = Patch()
+            p["ID"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
+            return sample, p, "sequence"
 
 

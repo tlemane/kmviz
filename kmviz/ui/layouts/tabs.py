@@ -8,8 +8,12 @@ from kmviz.ui.layouts.sequence import make_sequence_layout, make_sequence_layout
 from kmviz.ui.layouts.plot import make_plot_layout, make_plot_layout_callbacks, kplot
 from kmviz.ui.layouts.help import make_help_layout
 from dash_iconify import DashIconify
+from kmviz.ui import state
 
 def make_tabs():
+
+    hide = {"display":"none"} if state.kmstate.plot_only else {}
+
     tabs = html.Div([
         dmc.Tabs([
             dmc.TabsList([
@@ -17,7 +21,8 @@ def make_tabs():
                     "Index",
                     value="index",
                     id=kindex.sid("panel"),
-                    icon=DashIconify(icon="iconoir:db")),
+                    icon=DashIconify(icon="iconoir:db"),
+                    style = hide),
                 dmc.Tab(
                     "Table",
                     value="table",
@@ -41,7 +46,8 @@ def make_tabs():
                     value="sequence",
                     disabled=True,
                     id=kseq.sid("panel"),
-                    icon=DashIconify(icon="mdi:dna"),),
+                    icon=DashIconify(icon="mdi:dna"),
+                    style = hide),
                 dmc.Tab(
                     "Help",
                     value="help",
@@ -63,7 +69,7 @@ def make_tabs():
             dmc.TabsPanel(
                 make_help_layout(), value="help"),
             ], className="kmviz-tabs")
-        ], value="index", id="tab-select"),
+        ], value="index" if not state.kmstate.plot_only else None, id="tab-select"),
     ])
 
     make_table_layout_callbacks()

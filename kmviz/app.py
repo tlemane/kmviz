@@ -58,7 +58,10 @@ def init(**kwargs):
         else:
             raise KmVizError("Invalid config file format, supported formats are 'yaml' and 'toml'.")
 
-    state.kmstate.configure(config)
+    if "plot_only" in kwargs and kwargs["plot_only"]:
+        state.kmstate.plot_only = True
+    else:
+        state.kmstate.configure(config)
 
     return config
 
@@ -69,6 +72,9 @@ def init(**kwargs):
               help="Logging level.",
               default="debug",
               type=click.Choice(["debug", "info", "warning", "error"]))
+@click.option("--plot-only",
+              help="Plot only mode",
+              is_flag=True)
 @click.option("--host",
               help="host",
               default="127.0.0.1")

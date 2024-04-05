@@ -104,6 +104,9 @@ def make_index_layout_callbacks():
         prevent_initial_callbacks=True
     )
     def update_index_table(provider):
+        if provider == "__kmviz_df":
+            prevent_update_on_none(None)
+
         p = state.kmstate.providers.get(provider)
 
         infos_rd = p.infos_df.to_dict("records")

@@ -293,16 +293,21 @@ def make_map_layout_callbacks():
         Input(kmap.sid("select-preset"), "value"),
         State(kgsf("provider"), "value"),
         State(kf.sid("session-id"), "data"),
+        State(kf.sid("plot-only"), "data"),
         prevent_initial_callbacks=True,
         prevent_initial_call=True
     )
     def update_map(data, template, color, size, text, symbol, aframe, agroup,
                    projection, cscs, cdcs, cccs, ccm, smap, sseq, cdm, cds, opacity,
-                   size_max, preset_name, provider, session):
+                   size_max, preset_name, provider, session, plot_only):
         trigger = ctx.triggered_id
         args = ctx.args_grouping
 
+
         kmv_debug(f"{session}: 'update_map' triggered by '{trigger}'")
+
+        if plot_only and "geodata" not in plot_only:
+            return None, True
 
         if not data:
             return blank_map(), True
@@ -314,8 +319,12 @@ def make_map_layout_callbacks():
         if any(scales):
             scale = next(s for s in scales if s is not None)
 
-        geo = state.kmstate.providers.get(provider).db.geodata
+        if "geodata" in plot_only:
+            geo = plot_only["geodata"]
+        else:
+            geo = state.kmstate.providers.get(provider).db.geodata
 
+        print(plot_only)
         params = {
             "lat": geo["latitude"],
             "lon": geo["longitude"],
@@ -336,7 +345,6 @@ def make_map_layout_callbacks():
             "template": template,
             "projection": projection,
         }
-
         if preset_name:
             presets = state.kmstate.providers.get(provider).presets["map"][preset_name].copy()
             priority = presets["priority"]
@@ -371,20 +379,6 @@ def make_map_layout_callbacks():
 
         return cols, cols_size, cols, cols, cols, cols
 
-    @callback(
-        Input(kmap.sid("figure"), "clickData"),
-        Output(kseq.sid("select"), "value"),
-        Output(ktable.sid("grid"), "filterModel"),
-        Output("tab-select", "value"),
-        prevent_initial_callbacks=True,
-    )
-    def on_click_data_map(value):
-        sample = value["points"][0]["hovertext"]
-
-        p = Patch()
-        p["ID"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
-
-        return sample, p, "sequence"
 
     @callback(
         Input(kmap.sid("figure"), "selectedData"),
@@ -411,6 +405,22 @@ def make_map_layout_callbacks():
             return p
 
         raise dash.exceptions.PreventUpdate()
+
+    if not state.kmstate.plot_only:
+        @callback(
+            Input(kmap.sid("figure"), "clickData"),
+            Output(kseq.sid("select"), "value"),
+            Output(ktable.sid("grid"), "filterModel"),
+            Output("tab-select", "value"),
+            prevent_initial_callbacks=True,
+        )
+        def on_click_data_map(value):
+            sample = value["points"][0]["hovertext"]
+
+            p = Patch()
+            p["ID"] = {'filterType': 'text', 'type': 'equals', 'filter': sample}
+
+            return sample, p, "sequence"
 
     make_plot_legend_callbacks(kmap.child("legend"), kmap.sid("figure"))
     make_plot_title_callbacks(kmap.child("title"), kmap.sid("figure"))
