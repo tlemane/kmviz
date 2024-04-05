@@ -56,8 +56,6 @@ class KmindexServerProvider(KmindexProvider):
 
         rj = response.json()
 
-        print(rj)
-
         responses = {}
         for k, v in rj.items():
             for qid, results in v.items():
