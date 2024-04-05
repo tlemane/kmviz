@@ -98,6 +98,22 @@ def make_font_input(id, label, **kwargs):
     return make_select_input(id, label, data, "Arial", icon=icons("family"), **kwargs)
 
 
+def magic_json(d: dict):
+    c = d.copy()
+    for k, v in d.items():
+        if "_" in k:
+            sk, sv = k.split("_", 1)
+            if sk not in c:
+                c[sk] = {}
+            if isinstance(v, dict):
+                v = magic_json(v)
+            c[sk][sv] = v
+            c[sk] = magic_json(c[sk])
+            print(sv)
+
+            del c[k]
+    return c
+
 def from_json(value, p=None):
     try:
         value = json.loads(value)
@@ -776,6 +792,40 @@ def make_plot_title_callbacks(factory, figure_id):
     def update_title(inputs):
         return patch_figure(ctx)
 
+def make_plot_shape(factory):
+    pid = factory
+
+    res = html.Div([
+        dmc.JsonInput(
+            id=pid("shapes"),
+            placeholder='ex: { "shapes": [ { "type": "circle", "x0": 0, "x1": 2, "y0": 0.1, "y1": 0.8 } ] }',
+            label="Shape parameters",
+            value=None,
+            autosize=True,
+            debounce=2,
+            validationError="Invalid json",
+            icon=icons("json")
+        ),
+    ])
+
+    return res
+
+def make_plot_shape_callbacks(factory, figure_id):
+    pid = factory
+    @callback(
+        Input(pid("shapes"), "value"),
+        Output(figure_id, "figure"),
+        prevent_initial_call=True
+    )
+    def add_shapes(shapes):
+        p = Patch()
+        js = from_json(shapes, "shapes")
+        if not js:
+            return no_update
+        all_shapes = [magic_json(x) for x in js]
+        p["layout"]["shapes"] = all_shapes
+        return p
+
 def make_plot_legend(factory):
     pid = factory
 
@@ -932,6 +982,88 @@ def make_plot_legend(factory):
 
     return res
 
+def make_color_legend(factory):
+    pid = factory
+
+    title_panel = dmc.TabsPanel(value="title", children = [
+        dmc.Group([
+            make_text_input(
+                pid("colorbar_title_text"),
+                "Text",
+            ),
+            make_nb_input(
+                pid("colorbar_title_font_size"),
+                "Size",
+                (0, 1, 100, 13),
+                icon=icons("font_size")
+            ),
+            make_font_input(
+                pid("colorbar_title_font_family"),
+                "Font",
+            ),
+            make_select_input(
+                pid("colorbar_title_side"),
+                "Position",
+                make_select_data(["top", "right", "bottom"]),
+                value="top",
+                icon=icons("pos")
+            ),
+            make_hover_color_picker(
+                id=pid("colorbar_title_font_color"),
+                color=dict(hex="#000000"),
+                icon=KMVIZ_ICONS["ctext"]
+            ),
+        ]),
+    ])
+
+    box_panel = dmc.TabsPanel(value="box", children = [
+        dmc.Group([
+            make_nb_input(
+                pid("colorbar_x"),
+                "x",
+                (-10.0, 0.01, 10.0, 1),
+                2,
+                icon=icons("floating"),
+            ),
+            make_nb_input(
+                pid("colorbar_y"),
+                "y",
+                (-10.0, 0.01, 10.0, 0.5),
+                2,
+                icon=icons("floating")
+            ),
+            make_nb_input(
+                pid("colorbar_borderwidth"),
+                "Width",
+                (0, 1, 100, 0),
+                icon=icons("width", rotate=1)
+            ),
+            make_hover_color_picker(
+                pid("colorbar_bordercolor"),
+                "Border",
+                icon=KMVIZ_ICONS["cline"]
+            ),
+            make_hover_color_picker(
+                pid("colorbar_bgcolor"),
+                "Background",
+                icon=KMVIZ_ICONS["cback"]
+            ),
+        ])
+    ])
+
+    res = dmc.Tabs([
+        dmc.TabsList([
+            dmc.Tab("Title", value="title"),
+            dmc.Tab("Box", value="box"),
+        ]),
+        dmc.Space(h=10),
+        title_panel,
+        box_panel,
+    ], value = "title")
+
+    return res
+
+
 def make_plot_legend_callbacks(factory, figure_id):
 
     pid = factory
@@ -953,7 +1085,6 @@ def make_plot_legend_callbacks(factory, figure_id):
             Input(pid("legend_bgcolor"), "value"),
             Input(pid("legend_indentation"), "value"),
             Input(pid("legend_orientation"), "value"),
-            Input(pid("legend_orientation"), "value"),
             Input(pid("legend_xanchor"), "value"),
             Input(pid("legend_xref"), "value"),
             Input(pid("legend_x"), "value"),
@@ -966,6 +1097,31 @@ def make_plot_legend_callbacks(factory, figure_id):
     )
     def update_legend(inputs):
         return patch_figure(ctx)
+
+def make_color_legend_callbacks(factory, figure_id):
+
+    pid = factory
+
+    @callback(
+        Output(figure_id, "figure", allow_duplicate=True),
+        inputs=dict(inputs=(
+            Input(pid("colorbar_title_text"), "value"),
+            Input(pid("colorbar_title_font_size"), "value"),
+            Input(pid("colorbar_title_font_family"), "value"),
+            Input(pid("colorbar_title_font_color"), "value"),
+            Input(pid("colorbar_title_side"), "value"),
+            Input(pid("colorbar_borderwidth"), "value"),
+            Input(pid("colorbar_bordercolor"), "value"),
+            Input(pid("colorbar_bgcolor"), "value"),
+            Input(pid("colorbar_x"), "value"),
+            Input(pid("colorbar_y"), "value"),
+        )),
+        prevent_initial_call=True,
+        prevent_initial_callbacks= True
+    )
+    def update_legend(inputs):
+        return patch_figure(ctx, ["layout", "coloraxis"])
+
 
 def make_trace(factory):
     pid = factory
@@ -2062,10 +2218,11 @@ def make_plot(factory):
         dmc.Tabs([
             dmc.TabsList([
                 dmc.Tab("Trace", value="trace", disabled=False, id=pid.sid("trace-tab")),
-                #trace_type,
                 dmc.Tab("Title", value="title", disabled=False, id=pid.sid("title-tab")),
                 dmc.Tab("Axes", value="axes", disabled=False, id=pid.sid("axes-tab")),
                 dmc.Tab("Legend", value="legend", disabled=False, id=pid.sid("legend-tab")),
+                dmc.Tab("Colorbar", value="colorbar", disabled=False, id=pid.sid("colobar-tab")),
+                dmc.Tab("Shape", value="shape", disabled=False, id=pid.sid("shape-tab")),
                 preset_select
             ]),
             dmc.TabsPanel(
@@ -2075,7 +2232,12 @@ def make_plot(factory):
             dmc.TabsPanel(
                 make_axes(pid.child("axes")), value="axes"),
             dmc.TabsPanel(
-                make_plot_legend(pid.child("legend")), value="legend")
+                make_plot_legend(pid.child("legend")), value="legend"),
+            dmc.TabsPanel(
+                make_color_legend(pid.child("colorbar")), value="colorbar"),
+            dmc.TabsPanel(
+                make_plot_shape(pid.child("shape")), value="shape")
+
         ], value="trace")
     ])
 
@@ -2086,5 +2248,8 @@ def make_plot_callbacks(factory):
     figure_id = pid.sid("figure")
     make_plot_title_callbacks(pid.child("title"), figure_id),
     make_plot_legend_callbacks(pid.child("legend"), figure_id)
+    make_color_legend_callbacks(pid.child("colorbar"), figure_id)
     make_axes_callbacks(pid.child("axes"), figure_id)
+    make_plot_shape_callbacks(pid.child("shape"), figure_id)
+
 

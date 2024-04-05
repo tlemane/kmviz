@@ -20,6 +20,8 @@ from kmviz.ui.components.figure import make_accordion, make_accordion_items
 from kmviz.ui.components.figure import make_plot_title, make_plot_title_callbacks
 from kmviz.ui.components.figure import make_plot_legend, make_plot_legend_callbacks
 from kmviz.ui.components.figure import apply_presets, make_select_input, icons, make_nb_input
+from kmviz.ui.components.figure import make_plot_shape, make_plot_shape_callbacks
+from kmviz.ui.components.figure import make_color_legend, make_color_legend_callbacks
 from kmviz.ui.layouts.table import ktable
 from kmviz.ui.layouts.sequence import kseq
 from kmviz.ui.id_factory import kmviz_factory as kf
@@ -215,10 +217,12 @@ def make_map_layout():
             dmc.Tab("Data", value="data"),
             dmc.Tab("Animation", value="anim"),
             dmc.Tab("Style", value="style"),
+            dmc.Tab("Shape", value="shape"),
         ]),
         data_panel,
         anim_panel,
-        style_panel
+        style_panel,
+        dmc.TabsPanel(make_plot_shape(kmap.child("shape")), value="shape")
     ], value = "data")
 
     preset_select = make_select_input(
@@ -246,11 +250,13 @@ def make_map_layout():
                 dmc.Tab("Map", value="map-MAP"),
                 dmc.Tab("Title", value="map-TITLE"),
                 dmc.Tab("Legend", value="map-LEGEND"),
+                dmc.Tab("Colorbar", value="map-COLORBAR"),
                 preset_select,
             ]),
             dmc.TabsPanel(map_tab, value="map-MAP"),
             dmc.TabsPanel(make_plot_title(kmap.child("title")), value="map-TITLE"),
-            dmc.TabsPanel(make_plot_legend(kmap.child("legend")), value="map-LEGEND")
+            dmc.TabsPanel(make_plot_legend(kmap.child("legend")), value="map-LEGEND"),
+            dmc.TabsPanel(make_color_legend(kmap.child("colorbar")), value="map-COLORBAR")
         ], value="map-MAP")
 
     ], id="map-panel", style = {"height":"100%", "width":"100%"})
@@ -424,3 +430,5 @@ def make_map_layout_callbacks():
 
     make_plot_legend_callbacks(kmap.child("legend"), kmap.sid("figure"))
     make_plot_title_callbacks(kmap.child("title"), kmap.sid("figure"))
+    make_plot_shape_callbacks(kmap.child("shape"), kmap.sid("figure"))
+    make_color_legend_callbacks(kmap.child("colorbar"), kmap.sid("figure"))
