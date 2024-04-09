@@ -351,7 +351,6 @@ def make_map_layout_callbacks():
         else:
             geo = state.kmstate.providers.get(provider).db.geodata
 
-        print(plot_only)
         params = {
             "lat": geo["latitude"],
             "lon": geo["longitude"],
