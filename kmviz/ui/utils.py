@@ -47,6 +47,8 @@ KMVIZ_ICONS = dict(
     style = "logos:stylefmt",
     picker = "mage:color-picker",
     json = "bi:filetype-json",
+    autoff = "ic:outline-auto-fix-off",
+    auton = "ic:outline-auto-fix-high"
 )
 
 

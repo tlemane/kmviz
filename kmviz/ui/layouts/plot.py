@@ -30,6 +30,16 @@ def make_plot_layout_callbacks():
     make_plot_callbacks(kplot)
     ktrace = kplot.child("trace")
 
+
+    @callback(
+        Input(kplot.sid("rmf"), "n_clicks"),
+        Output(ktable.sid("grid"), "filterModel")
+    )
+    def remove_table_filters(n_clicks):
+        if n_clicks:
+            return {}
+        prevent_update_on_none(None)
+
     @callback(
         Input(ktable.sid("grid"), "virtualRowData"),
         Output(ktrace("xselect"), "data"),

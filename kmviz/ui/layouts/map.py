@@ -3,7 +3,7 @@ import dash_mantine_components as dmc
 import dash
 import pandas as pd
 from dash import Patch
-
+from dash_iconify import DashIconify
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -251,7 +251,6 @@ def make_map_layout():
                                         'eraseshape'
                                        ]}
         ),
-
         dmc.Tabs([
             dmc.TabsList([
                 dmc.Tab("Map", value="map-MAP"),
@@ -259,6 +258,13 @@ def make_map_layout():
                 dmc.Tab("Legend", value="map-LEGEND"),
                 dmc.Tab("Colorbar", value="map-COLORBAR"),
                 preset_select,
+                dmc.ActionIcon(
+                    DashIconify(icon="lucide:filter-x", width=20),
+                    id=kmap.sid("rmf"),
+                    variant="filled",
+                    style = {"margin-left": "auto", "margin-right": 0},
+                    color = "#1C7ED6"
+                ),
             ]),
             dmc.TabsPanel(map_tab, value="map-MAP"),
             dmc.TabsPanel(make_plot_title(kmap.child("title")), value="map-TITLE"),
@@ -280,6 +286,14 @@ def from_json(value, p=None):
         return None
 
 def make_map_layout_callbacks():
+    @callback(
+        Input(kmap.sid("rmf"), "n_clicks"),
+        Output(ktable.sid("grid"), "filterModel")
+    )
+    def remove_table_filters(n_clicks):
+        if n_clicks:
+            return {}
+        prevent_update_on_none(None)
 
     @callback(
         Output(kmap.sid("figure"), "figure"),

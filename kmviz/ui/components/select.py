@@ -1,7 +1,7 @@
 import dash_mantine_components as dmc
 from dash_extensions.enrich import Input, Output, html, callback
 from dash import no_update
-from kmviz.ui.utils import prevent_update_on_empty, make_select_data, prevent_update_on_none
+from kmviz.ui.utils import prevent_update_on_empty, make_select_data, prevent_update_on_none, icons
 from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.components.store import ksfr
 from kmviz.ui import state
@@ -47,6 +47,12 @@ def make_select_provider_callbacks():
 
 def make_select():
     return dmc.Group([
+        dmc.Switch(
+            id=kf.sid("auto-apply"),
+            offLabel=icons("autoff", width=20),
+            onLabel=icons("auton", width=20),
+            checked=True,
+        ),
         dmc.Select(
             id=kgsf("provider"),
             placeholder="Select database",

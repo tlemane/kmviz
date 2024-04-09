@@ -80,20 +80,12 @@ class Providers:
 
     def add(self, provider: Provider) -> None:
         self._providers[provider.name()] = provider
-        #if active:
-        #    self._active.add(provider.name())
-
-    #def set_active(self, providers: List[str]):
-    #    self._active = set(providers)
 
     def list(self) -> List[str]:
         return list(self._providers.keys())
 
     def all(self):
         return self._providers
-
-    #def active(self) -> set:
-    #    return self._active
 
     def get(self, name: str):
         return self._providers[name]

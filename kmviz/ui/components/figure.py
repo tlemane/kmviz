@@ -122,6 +122,8 @@ def from_json(value, p=None):
         return None
 
 def color_to_string(c):
+    if not c:
+        return c
     if "rgb" in c:
         m = c["rgb"]
         return f"rgba({m['r']},{m['g']},{m['b']},{m['a']})"
@@ -173,6 +175,19 @@ def patch_figure(context, paths = ["layout"]):
             return patch_value_id(Patch(paths), trigger, e["value"])
 
     return no_update
+
+def patch_figure_all(context, paths = ["layout"], skip = set()):
+    args = context.args_grouping
+    p = Patch(paths)
+    for e in args["inputs"]:
+        if e["str_id"] not in skip:
+            if (isinstance(e["value"], list) and not e["value"]) or e["value"] is None:
+                continue
+
+            if isinstance(e["value"], dict):
+                e["value"] = color_to_string(e["value"])
+            patch_value_id(p, e["id"], e["value"])
+    return p
 
 def apply_presets(presets: dict, params: dict, priority: True):
     if not presets:
@@ -694,15 +709,13 @@ def fix_px_params(params, ptype):
 def make_plot_title(factory):
 
     pid = factory
-    #return make_accordion([
-    #    make_accordion_items("Title", [
 
     return html.Div([
             dmc.Group([
                 make_text_input(
                     pid("title_text"),
                     "Title",
-                    value="<b>Title</b>"
+                    placeholder="<b>Title</b>"
                 ),
                 make_nb_input(
                     pid("title_font_size"),
@@ -774,6 +787,8 @@ def make_plot_title_callbacks(factory, figure_id):
     @callback(
         Output(figure_id, "figure", allow_duplicate=True),
         inputs=dict(inputs=(
+            Input(figure_id, "figure"),
+            Input("kmviz-auto-apply", "checked"),
             Input(pid("title_text"), "value"),
             Input(pid("title_font_size"), "value"),
             Input(pid("title_font_family"), "value"),
@@ -788,6 +803,10 @@ def make_plot_title_callbacks(factory, figure_id):
         prevent_initial_callbacks=True
     )
     def update_title(inputs):
+        if ctx.triggered_id == figure_id:
+            if not inputs[1]:
+                return no_update
+            return patch_figure_all(ctx, ["layout"], set([figure_id, "kmviz-auto-apply"]))
         return patch_figure(ctx)
 
 def make_plot_shape(factory):
@@ -817,6 +836,8 @@ def make_plot_shape_callbacks(factory, figure_id):
     )
     def add_shapes(shapes):
         p = Patch()
+        if not shapes:
+            p["layout"]["shapes"] = []
         js = from_json(shapes, "shapes")
         if not js:
             return no_update
@@ -832,6 +853,7 @@ def make_plot_legend(factory):
             make_text_input(
                 pid("legend_title_text"),
                 "Text",
+                placeholder="<b>Legend title</b>"
             ),
             make_nb_input(
                 pid("legend_title_font_size"),
@@ -847,7 +869,7 @@ def make_plot_legend(factory):
                 pid("legend_title_side"),
                 "Position",
                 make_select_data(["top", "left", "top left", "top center", "top right"]),
-                value="top center",
+                value="top",
                 icon=icons("pos")
             ),
             make_hover_color_picker(
@@ -875,43 +897,47 @@ def make_plot_legend(factory):
                 pid("legend_xanchor"),
                 "Anchor X",
                 make_select_data(["auto", "left", "center", "right"]),
-                value="center",
+                #value="auto",
                 icon=icons("single")
             ),
             make_select_input(
                 pid("legend_xref"),
                 "Ref X",
                 make_select_data(["container", "paper"]),
-                value="container",
+                #value="container",
                 icon=icons("single")
             ),
             make_nb_input(
                 pid("legend_x"),
                 "x",
-                (0.0, 0.01, 1.0, 0.5),
+                (0.0, 0.01, 1.0, None),
                 2,
                 icon=icons("floating"),
+                placeholder="0.5",
+                startValue=0.9
             ),
             make_select_input(
                 pid("legend_yanchor"),
                 "Anchor Y",
                 make_select_data(["auto", "top", "middle", "bottom"]),
-                value="top",
-                icon=icons("single")
+                #value="auto",
+                icon=icons("single"),
             ),
             make_select_input(
                 pid("legend_yref"),
                 "Ref Y",
                 make_select_data(["container", "paper"]),
-                value="container",
+                #value="container",
                 icon=icons("single")
             ),
             make_nb_input(
                 pid("legend_y"),
                 "y",
-                (0.0, 0.01, 1.0, 0.95),
+                (0.0, 0.01, 1.0, None),
                 2,
-                icon=icons("floating")
+                icon=icons("floating"),
+                placeholder="0.95",
+                startValue=0.9
             )
         ]),
 
@@ -947,12 +973,14 @@ def make_plot_legend(factory):
             make_hover_color_picker(
                 pid("legend_bordercolor"),
                 "Border",
-                icon=KMVIZ_ICONS["cline"]
+                icon=KMVIZ_ICONS["cline"],
+                color=None
             ),
             make_hover_color_picker(
                 pid("legend_bgcolor"),
                 "Background",
-                icon=KMVIZ_ICONS["cback"]
+                icon=KMVIZ_ICONS["cback"],
+                color=None
             ),
         ])
     ])
@@ -1069,6 +1097,8 @@ def make_plot_legend_callbacks(factory, figure_id):
     @callback(
         Output(figure_id, "figure", allow_duplicate=True),
         inputs=dict(inputs=(
+            Input(figure_id, "figure"),
+            Input("kmviz-auto-apply", "checked"),
             Input(pid("showlegend"), "checked"),
             Input(pid("legend_title_text"), "value"),
             Input(pid("legend_title_font_size"), "value"),
@@ -1094,7 +1124,12 @@ def make_plot_legend_callbacks(factory, figure_id):
         prevent_initial_callbacks= True
     )
     def update_legend(inputs):
+        if ctx.triggered_id == figure_id:
+            if not inputs[1]:
+                return no_update
+            return patch_figure_all(ctx, ["layout"], set([figure_id, "kmviz-auto-apply"]))
         return patch_figure(ctx)
+
 
 def make_color_legend_callbacks(factory, figure_id):
 
@@ -1597,13 +1632,15 @@ def make_axis(factory, ax):
         dmc.Group([
             make_text_input(
                 pid("title_text"),
-                "Text"
+                "Text",
+                placeholder="<b>Title</b>"
             ),
             make_nb_input(
                 pid("title_font_size"),
                 "Size",
-                (0, 1, 100, 14),
-                icon=icons("font_size")
+                (0, 1, 100, None),
+                icon=icons("font_size"),
+                placeholder="14"
             ),
             make_font_input(
                 pid("title_font_family"),
@@ -1616,7 +1653,7 @@ def make_axis(factory, ax):
                 2,
                 icon=icons("floating")
             ),
-            make_hover_color_picker(pid("title_font_color"), icon=KMVIZ_ICONS["ctext"]),
+            make_hover_color_picker(pid("title_font_color"), icon=KMVIZ_ICONS["ctext"], color=None),
         ]),
     ])
 
@@ -1644,7 +1681,7 @@ def make_axis(factory, ax):
             make_nb_input(
                 pid("linewidth"),
                 "Width",
-                (0, 1, None, 1),
+                (0, 1, None, 0),
                 icon=icons("width", rotate=1)
             ),
             make_select_input(
@@ -1660,7 +1697,7 @@ def make_axis(factory, ax):
                 "False",
                 icon=icons("single")
             ),
-            make_hover_color_picker(pid("linecolor"), icon=KMVIZ_ICONS["cline"]),
+            make_hover_color_picker(pid("linecolor"), icon=KMVIZ_ICONS["cline"], color=None),
         ]),
     ])
 
@@ -1681,7 +1718,8 @@ def make_axis(factory, ax):
             ),
             make_hover_color_picker(
                 pid("zerolinecolor"),
-                icon=KMVIZ_ICONS["cline"]
+                icon=KMVIZ_ICONS["cline"],
+                color=None
             ),
         ])
     ])
@@ -1693,7 +1731,7 @@ def make_axis(factory, ax):
                 size="lg",
                 onLabel="ON",
                 offLabel="OFF",
-                checked=False
+                checked=True
             ),
             make_nb_input(
                 pid("gridwidth"),
@@ -1710,7 +1748,7 @@ def make_axis(factory, ax):
                 value="solid",
                 icon=icons("dash")
             ),
-            make_hover_color_picker(pid("gridcolor"), icon=KMVIZ_ICONS["cline"]),
+            make_hover_color_picker(pid("gridcolor"), icon=KMVIZ_ICONS["cline"], color=None),
         ])
     ])
 
@@ -1733,7 +1771,7 @@ def make_axis(factory, ax):
             make_nb_input(
                 pid("tickangle"),
                 "Angle",
-                (-180, 1, 180, 0),
+                (-180, 1, 180, None),
                 icon=icons("angle")
             ),
             make_select_input(
@@ -1749,15 +1787,14 @@ def make_axis(factory, ax):
             make_nb_input(
                 pid("tickfont_size"),
                 "Size",
-                (0, 1, 100, 14),
-                "Size",
+                (0, 1, 100, None),
                 icon=icons("font_size")
             ),
             make_font_input(
                 pid("tickfont_family"),
                 "Font",
             ),
-            make_hover_color_picker(pid("tickfont_color"), icon=KMVIZ_ICONS["ctext"])
+            make_hover_color_picker(pid("tickfont_color"), icon=KMVIZ_ICONS["ctext"], color=None)
         ])
     ])
 
@@ -1786,10 +1823,10 @@ def make_axis(factory, ax):
             make_nb_input(
                 pid("nticks"),
                 "Max",
-                (0, 1, 1000, 10),
+                (0, 1, 1000, None),
                 icon=icons("nindex")
             ),
-            make_hover_color_picker(pid("tickcolor"), icon=KMVIZ_ICONS["cline"])
+            make_hover_color_picker(pid("tickcolor"), icon=KMVIZ_ICONS["cline"], color=None)
         ])
     ])
 
@@ -1845,8 +1882,10 @@ def make_axis(factory, ax):
                     make_nb_input(
                         pid("title_font_size"),
                         "Size",
-                        (0, 1, 100, 14),
-                        icon=icons("font_size")
+                        (0, 1, 100, None),
+                        startValue=16,
+                        icon=icons("font_size"),
+                        placeholder="14"
                     ),
                     make_font_input(
                         pid("title_font_family"),
@@ -1859,7 +1898,7 @@ def make_axis(factory, ax):
                         2,
                         icon=icons("floating")
                     ),
-                    make_hover_color_picker(pid("title_font_color"), icon=KMVIZ_ICONS["ctext"]),
+                    make_hover_color_picker(pid("title_font_color"), icon=KMVIZ_ICONS["ctext"], color=None),
                 ]),
             ]),
             make_accordion_items("Line", [
@@ -1869,7 +1908,7 @@ def make_axis(factory, ax):
                         size="lg",
                         onLabel="ON",
                         offLabel="OFF",
-                        checked=True
+                        checked=False
                     ),
                     dmc.SegmentedControl(
                         data= make_select_data(["top", "bottom"], True)
@@ -1878,7 +1917,7 @@ def make_axis(factory, ax):
                         ,
                         fullWidth=True,
                         id=pid("side"),
-                        value="left" if ax == "x" else "bottom",
+                        #value="left" if ax == "x" else "bottom",
                         size="xs",
                         color="#1C7ED6"
                     ),
@@ -1899,7 +1938,6 @@ def make_axis(factory, ax):
                         pid("mirror"),
                         "Mirror",
                         make_select_data(["True", "False", "ticks", "all", "allticks"]),
-                        "False",
                         icon=icons("single")
                     ),
                     make_hover_color_picker(pid("linecolor"), icon=KMVIZ_ICONS["cline"]),
@@ -1922,7 +1960,8 @@ def make_axis(factory, ax):
                     ),
                     make_hover_color_picker(
                         pid("zerolinecolor"),
-                        icon=KMVIZ_ICONS["cline"]
+                        icon=KMVIZ_ICONS["cline"],
+                        color=None
                     ),
                 ])
             ]),
@@ -1947,10 +1986,9 @@ def make_axis(factory, ax):
                         data=make_select_data([
                             "solid", "dot", "dash", "longdash", "dashdot", "longdashdot"
                         ]),
-                        value="solid",
                         icon=icons("dash")
                     ),
-                    make_hover_color_picker(pid("gridcolor"), icon=KMVIZ_ICONS["cline"]),
+                    make_hover_color_picker(pid("gridcolor"), icon=KMVIZ_ICONS["cline"], color=None),
                 ])
             ]),
             make_accordion_items("Tick Labels", [
@@ -1998,7 +2036,7 @@ def make_axis(factory, ax):
                         pid("tickfont_family"),
                         "Font",
                     ),
-                    make_hover_color_picker(pid("tickfont_color"), icon=KMVIZ_ICONS["ctext"])
+                    make_hover_color_picker(pid("tickfont_color"), icon=KMVIZ_ICONS["ctext"], color=None)
                 ])
             ]),
             make_accordion_items("Tick Markers", [
@@ -2029,7 +2067,7 @@ def make_axis(factory, ax):
                         (0, 1, 1000, 10),
                         icon=icons("nindex")
                     ),
-                    make_hover_color_picker(pid("tickcolor"), icon=KMVIZ_ICONS["cline"])
+                    make_hover_color_picker(pid("tickcolor"), icon=KMVIZ_ICONS["cline"], color=None)
                 ])
             ]),
         ])
@@ -2042,6 +2080,8 @@ def make_axis_callbacks(factory, ax, figure_id):
         Output(figure_id, "figure"),
         inputs=dict(inputs=(
             State(pid("axis-index"), "value"),
+            Input("kmviz-auto-apply", "checked"),
+            Input(figure_id, "figure"),
             Input(pid("title_text"), "value"),
             Input(pid("title_font_size"), "value"),
             Input(pid("title_font_color"), "value"),
@@ -2076,12 +2116,23 @@ def make_axis_callbacks(factory, ax, figure_id):
         prevent_initial_callbacks=True,
     )
     def update_axis(inputs):
+        if ctx.triggered_id == figure_id and not inputs[1]:
+            return no_update
+
+        skip = set(["axis-index", figure_id, "kmviz-auto-apply"])
+
         if ax == "x":
             n = "xaxis" if inputs[0] == 0 else f"xaxis{inputs[0]+1}"
-            return patch_figure(ctx, ["layout", n])
+            if ctx.triggered_id == figure_id:
+                return patch_figure_all(ctx, ["layout", n], skip)
+            else:
+                return patch_figure(ctx, ["layout", n])
         elif ax == "y":
             n = "yaxis" if inputs[0] == 0 else f"yaxis{inputs[0]+1}"
-            return patch_figure(ctx, ["layout", n])
+            if ctx.triggered_id == figure_id:
+                return patch_figure_all(ctx, ["layout", n], skip)
+            else:
+                return patch_figure(ctx, ["layout", n])
         return no_update
 
 def make_axes(factory):
@@ -2129,12 +2180,14 @@ def make_axes(factory):
                     make_hover_color_picker(
                         pid("rangeslider_bordercolor"),
                         "Border color",
-                        icon=KMVIZ_ICONS["cline"]
+                        icon=KMVIZ_ICONS["cline"],
+                        color=None
                     ),
                     make_hover_color_picker(
                         pid("rangeslider_bgcolor"),
                         "Background color",
-                        icon=KMVIZ_ICONS["cback"]
+                        icon=KMVIZ_ICONS["cback"],
+                        color=None
                     )
                 ])
             ]),
@@ -2227,7 +2280,14 @@ def make_plot(factory):
                 dmc.Tab("Legend", value="legend", disabled=False, id=pid.sid("legend-tab")),
                 dmc.Tab("Colorbar", value="colorbar", disabled=False, id=pid.sid("colobar-tab")),
                 dmc.Tab("Shape", value="shape", disabled=False, id=pid.sid("shape-tab")),
-                preset_select
+                preset_select,
+                dmc.ActionIcon(
+                    DashIconify(icon="lucide:filter-x", width=20),
+                    id=pid.sid("rmf"),
+                    variant="filled",
+                    style = {"margin-left": "auto", "margin-right": 0},
+                    color = "#1C7ED6"
+                ),
             ]),
             dmc.TabsPanel(
                 make_trace(pid.child("trace")), value="trace"),
@@ -2255,5 +2315,6 @@ def make_plot_callbacks(factory):
     make_color_legend_callbacks(pid.child("colorbar"), figure_id)
     make_axes_callbacks(pid.child("axes"), figure_id)
     make_plot_shape_callbacks(pid.child("shape"), figure_id)
+
 
 

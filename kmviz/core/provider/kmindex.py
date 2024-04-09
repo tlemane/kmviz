@@ -13,11 +13,6 @@ from statistics import mean
 
 import json
 
-class KMIndexProvider(Provider):
-
-    def ksize(self, index):
-        return self.index_infos["index"]["all"]["smer_size"]
-
 class KmindexProvider(Provider):
     pass
 
