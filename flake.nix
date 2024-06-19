@@ -26,6 +26,7 @@
         pkgs.python310Packages.virtualenv
         pkgs.stdenv.cc.cc.lib
         pkgs.zlib
+        pkgs.mkdocs
       ];
 
       in rec {
