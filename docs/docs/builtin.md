@@ -34,6 +34,41 @@ port = 8080
 
 ## MetaDB
 
+### `sqlite`
+
+|Parameter|Description|Default|Required|
+|---|---|---|---|
+|path|Path to the `sqlite` file |-|:white_check_mark:|
+|table|The name of table|-|:white_check_mark:|
+|idx|The name of the column containing identifiers|-|:white_check_mark:|
+|geodata|The name of the columns containing geographical data, if applicable|-|:x:|
+
+<div class="grid" markdown>
+
+```yaml title="tsv_ex.yaml"
+metadata:
+  type: "sqlite"
+  params:
+    path: "./metadata.sqlite"
+    table: "table"
+    idx: "Sample"
+    geodata:
+      latitude: "Lat"
+      longitude: "Long"
+```
+
+```toml title="tsv_ex.toml"
+[databases.Example.metadata]
+type = "sqlite"
+[databases.Example.metadata.params]
+path = "./metadata.sqlite"
+table = "table"
+idx = "Sample"
+geodata = { latitude = "Lat", longitude = "Long"}
+```
+</div>
+
+
 ### `tsv`
 
 |Parameter|Description|Default|Required|
