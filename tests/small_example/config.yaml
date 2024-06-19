@@ -14,34 +14,18 @@ databases:
           latitude: "Lat"
           longitude: "Long"
 
-    presets:
-      map:
-        - name: "ORA"
-          priority: True
-          size: "CovXK"
-          opacity: 0.9
-      plot:
-        - name: "ORA"
-          type: "Scatter"
-          size: "CovXK"
-          X: "Depth"
-          Y: "Temp"
-
-plugins:
-  - kmviz_example
-
 cache:
   manager:
     type: "disk"
     params:
-      directory: "./kmviz_manager_cache"
+      directory: ".results/kmviz_manager_cache"
 
   result:
     params:
-      directory: "./kmviz_result_cache"
+      directory: ".results/kmviz_result_cache"
       size_limit: 20000000000
 
-  backend: "./kmviz_fs_backend"
+  backend: ".results/kmviz_fs_backend"
   
 auth:
-  orav2: "orav2-password"
+  small: "small-password"

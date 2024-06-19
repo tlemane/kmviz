@@ -8,37 +8,22 @@ port = 8080
 [databases.TARA.metadata]
 type = "tsv"
 [databases.TARA.metadata.params]
-path = "./tests/metadata.tsv"
+path = "./metadata.tsv"
 sep = "\t"
 idx = "Sample"
 geodata = { latitude = "Lat", longitude = "Long"}
 
-[[databases.TARA.presets.map]]
-name = "Coverage"
-priority = true
-size = "CovXK"
-opacity = 0.9
-
-[[databases.TARA.presets.plot]]
-name = "Temperature / Depth / Cov"
-priority = true
-type = "Scatter"
-size = "CovXK"
-X = "Depth"
-Y = "Temp"
-
 [cache]
-backend = "./kmviz_fs_backend"
+backend = ".results/kmviz_fs_backend"
 
 [cache.manager]
 type = "disk"
-params.directory = "./kmviz_manager_cache"
+params.directory = ".results/kmviz_manager_cache"
 
 [cache.result]
-params.directory = "./kmviz_result_cache"
+params.directory = ".results/kmviz_result_cache"
 params.size_limit = 20000000
 
 [auth]
-orav2 = "orav2-password"
-[plugins.kmviz_example]
+small = "small_password"
 
