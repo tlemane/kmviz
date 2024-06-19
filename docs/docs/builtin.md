@@ -45,7 +45,7 @@ port = 8080
 
 <div class="grid" markdown>
 
-```yaml title="tsv_ex.yaml"
+```yaml title="sqlite_ex.yaml"
 metadata:
   type: "sqlite"
   params:
@@ -57,7 +57,7 @@ metadata:
       longitude: "Long"
 ```
 
-```toml title="tsv_ex.toml"
+```toml title="sqlite_ex.toml"
 [databases.Example.metadata]
 type = "sqlite"
 [databases.Example.metadata.params]

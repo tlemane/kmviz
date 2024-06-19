@@ -25,6 +25,7 @@ In short, you select one or more `Databases`, you provide one or more `Queries`.
 * [Quickstart](quickstart.md)
 * [Configuration](configuration.md)
 * [Interface](interface.md)
+* [Plot-Only mode](plot_only.md)
 
 ## Advanced
 

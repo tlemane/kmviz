@@ -6,7 +6,9 @@ nav:
     - 'Installation': 'installation.md'
     - 'Quickstart': 'quickstart.md'
     - 'Configuration': 'configuration.md'
+      - 'Builtins': 'builtin.md'
     - 'Interface': 'interface.md'
+    - 'Plot-Only mode': 'plot_only.md'
   - 'Advanced':
     - 'Plugin': 'plugin.md'
     - 'Deployment': 'deploy.md'

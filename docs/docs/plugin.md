@@ -1,6 +1,8 @@
+:construction: WIP :construction:
+
 **kmviz** features are extensible through plugins, as independent python packages. They can be used to add support for new provider types or metadata databases, or to add features to the interface by adding new analysis tabs. 
 
-If you want to deploy an instance for a specific project, you can use [instance plugins](.#instance-plugin). These plugins are useful for defining specific elements for a project, such as a home page or specific help, details about indexes and associated metadata.
+If you want to deploy an instance for a specific project, you can use [instance plugins](#instance-plugin). These plugins are useful for defining specific elements for a project, such as a home page or specific help, details about indexes and associated metadata.
 
 This section describes a step-by-step plugin implementation, see [`kmviz_example` plugin](https://github.com/tlemane/kmviz/plugins/kmviz_example) for the complete source code.
 
