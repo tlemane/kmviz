@@ -30,15 +30,18 @@ databases:
 plugins:
   - kmviz_example
 
-manager:
-  type: "disk"
-  params:
-    directory: "./kmviz_manager_cache"
-
 cache:
-  params:
-    directory: "./kmviz_result_cache"
-    size_limit: 20000000000
+  manager:
+    type: "disk"
+    params:
+      directory: "./kmviz_manager_cache"
 
+  result:
+    params:
+      directory: "./kmviz_result_cache"
+      size_limit: 20000000000
+
+  backend: "./kmviz_fs_backend"
+  
 auth:
   orav2: "orav2-password"

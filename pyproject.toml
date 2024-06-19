@@ -42,6 +42,8 @@ jupyter = "^1.0.0"
 gunicorn = "^21.2.0"
 fastwsgi = "^0.0.9"
 socketify = "^0.0.27"
+mkdocs-material = "^9.5.27"
+pytest = "^8.2.2"
 
 [build-system]
 requires = ["poetry-core"]

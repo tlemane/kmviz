@@ -1,38 +1,40 @@
 [databases]
 
-[databases.MIO]
+[databases.TARA]
 type = "kmindex-server"
-[databases.MIO.params]
+[databases.TARA.params]
 url = "127.0.0.1"
 port = 8080
-[databases.MIO.metadata]
+[databases.TARA.metadata]
 type = "tsv"
-[databases.MIO.metadata.params]
+[databases.TARA.metadata.params]
 path = "./tests/metadata.tsv"
 sep = "\t"
 idx = "Sample"
 geodata = { latitude = "Lat", longitude = "Long"}
 
-[[databases.MIO.presets.map]]
-name = "ORA"
+[[databases.TARA.presets.map]]
+name = "Coverage"
 priority = true
 size = "CovXK"
 opacity = 0.9
 
-[[databases.MIO.presets.plot]]
-name = "ORA"
+[[databases.TARA.presets.plot]]
+name = "Temperature / Depth / Cov"
 priority = true
 type = "Scatter"
 size = "CovXK"
 X = "Depth"
 Y = "Temp"
 
+[cache]
+backend = "./kmviz_fs_backend"
 
-[manager]
+[cache.manager]
 type = "disk"
 params.directory = "./kmviz_manager_cache"
 
-[cache]
+[cache.result]
 params.directory = "./kmviz_result_cache"
 params.size_limit = 20000000
 
