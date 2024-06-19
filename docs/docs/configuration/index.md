@@ -1,3 +1,5 @@
+#
+
 **kmviz** can be configured using [`yaml`](https://yaml.org/) or [`toml`](https://toml.io/en/) configuration file. This documentation uses `yaml` as examples but `toml` versions are available [here]().
 
 The **kmviz** configuration is divided into 3 sections: `databases`, `cache` and `auth`, described separately here for clarity, but in practice the configuration must be kept within a single `yaml`/`toml` file.

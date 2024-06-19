@@ -1,3 +1,5 @@
+# Plot-Only mode
+
 :construction: WIP :construction:
 
 ```bash

@@ -1,8 +1,3 @@
----
-hide:
- - navigation
----
-
 ## Provider
 
 ### `kmindex-server`

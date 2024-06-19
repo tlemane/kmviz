@@ -2,16 +2,20 @@ site_name: kmviz documentation
 
 nav:
   - Home: 'index.md'
-  - 'User Guide':
-    - 'Installation': 'installation.md'
-    - 'Quickstart': 'quickstart.md'
-    - 'Configuration': 'configuration.md'
-      - 'Builtins': 'builtin.md'
-    - 'Interface': 'interface.md'
-    - 'Plot-Only mode': 'plot_only.md'
-  - 'Advanced':
-    - 'Plugin': 'plugin.md'
-    - 'Deployment': 'deploy.md'
+  - User Guide:
+    - Installation: 'installation.md'
+    - Quickstart: 'quickstart.md'
+    - Configuration:
+      - configuration/index.md
+      - Builtins: 'builtin.md'
+    - Interface: 
+      - interface/index.md
+      - Database mode: 'database.md'
+      - Plot-Only mode: 'plot_only.md'
+  - Advanced:
+    - Plugin: 'plugin.md'
+    - Deployment: 'deploy.md'
+
 theme:
     name: material
     highlightjs: true
@@ -26,9 +30,14 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
 
+    navigation_depth: 3
     features:
       - navigation.tabs
       - navigation.tracking
+      - navigation.section
+      - navigation.path
+      - navigation.expand
+      - navigation.indexes
       - content.code.copy
       - content.code.select
       - content.code.annotate
