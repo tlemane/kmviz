@@ -1,6 +1,6 @@
 import click
 import dash
-from dash_extensions.enrich import DashProxy, LogTransform, NoOutputTransform, ServersideOutputTransform, html
+from dash_extensions.enrich import DashProxy, LogTransform, NoOutputTransform, ServersideOutputTransform, html, FileSystemBackend
 import dash_bootstrap_components as dbc
 from kmviz.core.log import kmv_info, instance_id, setup_logger, kmv_ex
 from kmviz.core.provider import make_provider_from_dict
@@ -65,6 +65,7 @@ def make_app():
 def init(**kwargs):
     if "plot_only" in kwargs and kwargs["plot_only"]:
         state.kmstate.plot_only = True
+        state.kmstate.backend = FileSystemBackend(".kmviz_backend")
         return []
 
     if not kwargs:

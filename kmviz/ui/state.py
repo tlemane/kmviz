@@ -19,6 +19,7 @@ class kState:
         self._external_css = []
         self._external_js = []
         self.plot_only = False
+        self.backend = None
 
     def store_result(self, uid: str, results: tuple):
         self._cache[uid] = results
