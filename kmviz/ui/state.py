@@ -1,3 +1,4 @@
+from dash_extensions.enrich import FileSystemBackend
 from kmviz.core.provider import Providers, make_provider_from_dict
 from kmviz.core.cache import result_cache_manager, callback_manager
 from kmviz.core import KmVizError
@@ -60,13 +61,22 @@ class kState:
         return None
 
     def _configure_caches(self, config: dict):
-        if "manager" not in config:
-            raise KmVizError("'manager' section is missing in the configuration file.")
-        self._manager = callback_manager(config["manager"])
-
         if "cache" not in config:
             raise KmVizError("'cache' section is missing in the configuration file.")
-        self._init_cache(config["cache"])
+        
+        if "manager" not in config["cache"]:
+            raise KmVizError("'cache.manager' section is missing in the configuration file.")
+        self._manager = callback_manager(config["cache"]["manager"])
+
+        if "result" not in config["cache"]:
+            raise KmVizError("'cache.result' section is missing in the configuration file.")
+        
+        if "backend" not in config["cache"]:
+            self.backend = FileSystemBackend("file_system_backend")
+        else:
+            self.backend = FileSystemBackend(config["cache"]["backend"])
+        
+        self._init_cache(config["cache"]["result"])
 
     def _init_cache(self, params: dict):
         self._cache = result_cache_manager(params["params"])

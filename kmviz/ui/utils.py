@@ -2,10 +2,9 @@ from typing import List, Dict
 from dash.exceptions import PreventUpdate
 from dash_iconify import DashIconify
 
-
 def prevent_update_on_none(*values):
     if any(value is None for value in values):
-            raise PreventUpdate()
+        raise PreventUpdate()
 
 def prevent_update_on_empty(*values):
     prevent_update_on_none(*values)
@@ -50,7 +49,6 @@ KMVIZ_ICONS = dict(
     autoff = "ic:outline-auto-fix-off",
     auton = "ic:outline-auto-fix-high"
 )
-
 
 def icons(name, **kwargs):
     return DashIconify(icon=KMVIZ_ICONS[name], **kwargs)

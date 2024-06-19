@@ -19,6 +19,7 @@ class ProviderOption:
 class NumericOption(ProviderOption):
     min: Optional[Union[int, float]]
     max: Optional[Union[int, float]]
+    step: Optional[Union[int, float]]
     value: Union[int, float] = None
 
 @dataclass
@@ -40,6 +41,7 @@ class RangeOption(ProviderOption):
 
 @dataclass
 class TextOption(ProviderOption):
+    placeholder: str = None
     value: str = None
 
 

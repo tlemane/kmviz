@@ -25,7 +25,7 @@ def make_app():
         transforms=[
             LogTransform(),
             NoOutputTransform(),
-            ServersideOutputTransform(),
+            ServersideOutputTransform(backends=[state.kmstate.backend]),
         ],
         prevent_initial_callbacks=True,
         use_pages=True,
@@ -42,6 +42,10 @@ def make_app():
     return app
 
 def init(**kwargs):
+    if "plot_only" in kwargs and kwargs["plot_only"]:
+        state.kmstate.plot_only = True
+        return []
+
     if not kwargs:
         kwargs["config"] = os.environ["KMVIZ_CONF"]
 
@@ -58,10 +62,7 @@ def init(**kwargs):
         else:
             raise KmVizError("Invalid config file format, supported formats are 'yaml' and 'toml'.")
 
-    if "plot_only" in kwargs and kwargs["plot_only"]:
-        state.kmstate.plot_only = True
-    else:
-        state.kmstate.configure(config)
+    state.kmstate.configure(config)
 
     return config
 
