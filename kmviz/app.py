@@ -19,6 +19,27 @@ except ImportError:
     from yaml import Loader, Dumper
 import tomli
 
+import keyring
+
+def make_auth_function(usernames):
+    def auth_function(username, password):
+        if username not in usernames:
+            return False
+        
+        p = keyring.get_password("kmviz", username)
+        if p == password:
+            return True
+        return False
+    return auth_function
+
+def make_auth(application, config):
+    if isinstance(config, dict):
+        return dash_auth.BasicAuth(application, config)
+    elif isinstance(config, list):
+        return dash_auth.BasicAuth(application, auth_func=make_auth_function(set(config)))
+    else:
+        raise KmVizError("auth configuration is not valid")
+
 def make_app():
     app = DashProxy(
         __name__,
@@ -99,7 +120,7 @@ def main(**kwargs):
     app = make_app()
 
     if "auth" in config:
-        auth = dash_auth.BasicAuth(app, config["auth"])
+        auth = make_auth(app, config["auth"])
 
     app.run_server(debug=kwargs["debug"], host=kwargs["host"], port=kwargs["port"])
 
@@ -110,7 +131,7 @@ config = init()
 app = make_app()
 
 if "auth" in config:
-    auth = dash_auth.BasicAuth(app, config["auth"])
+    auth = make_auth(app, config["auth"])
 app = app.server
 
 
