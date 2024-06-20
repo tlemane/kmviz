@@ -29,6 +29,7 @@ nav:
 
 plugins:
   - mike
+  - search
 
 theme:
     name: material
@@ -57,6 +58,10 @@ theme:
       - content.code.copy
       - content.code.select
       - content.code.annotate
+      - search.suggest
+      - search.highlight
+      - search.share
+
 
 markdown_extensions:
   - pymdownx.arithmatex:
