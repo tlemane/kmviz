@@ -36,6 +36,8 @@ importlib-resources = "^6.4.0"
 executor = "^23.2"
 tomli = "^2.0.1"
 keyring = "^25.2.1"
+mysql-connector-python = "^8.4.0"
+sqlalchemy = "^2.0.31"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -45,6 +47,8 @@ fastwsgi = "^0.0.9"
 socketify = "^0.0.27"
 mkdocs-material = "^9.5.27"
 pytest = "^8.2.2"
+mkdocs-git-revision-date-localized-plugin = "^1.2.6"
+mike = "^2.1.1"
 
 [build-system]
 requires = ["poetry-core"]
