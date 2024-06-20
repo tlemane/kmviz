@@ -2,7 +2,7 @@ name: kmviz-doc
 
 on:
   push:
-    paths: ['docs/**']
+    paths: ['docs/**', '.github/workflows/doc.yml']
     branches: ['main']
 
 permissions:
