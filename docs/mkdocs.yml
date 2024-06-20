@@ -1,7 +1,7 @@
 site_name: kmviz documentation
 site_url: https://tlemane.github.io/kmviz
 
-repo_url:  https://github.com/squidfunk/mkdocs-material
+repo_url:  https://github.com/tlemane/kmviz
 repo_name: tlemane/kmviz
 edit_uri: edit/main/docs/
 
