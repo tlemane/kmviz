@@ -1,8 +1,10 @@
-#
+# Configuration
 
-**kmviz** can be configured using [`yaml`](https://yaml.org/) or [`toml`](https://toml.io/en/) configuration file. This documentation uses `yaml` as examples but `toml` versions are available [here]().
+**kmviz** can be configured using a [`yaml`](https://yaml.org/) or [`toml`](https://toml.io/en/) configuration file. This documentation uses `yaml` as examples but `toml` version is available [here](https://github.com/tlemane/kmviz/tests/small_example/config.toml).
 
-The **kmviz** configuration is divided into 3 sections: `databases`, `cache` and `auth`, described separately here for clarity, but in practice the configuration must be kept within a single `yaml`/`toml` file.
+The **kmviz** configuration is divided into 3 main sections: `databases`, `cache` and `auth` (optional), described separately here for clarity, but in practice the configuration must be kept within a single `yaml`/`toml` file.
+
+An optional section can also be used to describe visualization presets, see [Presets](#presets-section).
 
 ## Databases section
 
@@ -23,8 +25,6 @@ databases:
             latitude: "Lat"
             longitude: "Long"
 ```
-
-Builtin providers and metaDBs are listed [here](builtin.md).
 
 ## Cache section
 
@@ -49,7 +49,10 @@ cache:
 
 ## Authentication section
 
-At the moment, **kmviz** has limited authentication support with only [HTTP BasicAuth](). Crendentials can be specified directly in the configuration file, or retrieved through the system keyring service. See [jaraco/keyring](https://github.com/jaraco/keyring) for the list of supported keyring backends.
+At the moment, **kmviz** has limited authentication support with only [HTTP BasicAuth](https://datatracker.ietf.org/doc/html/rfc7617). Crendentials can be specified directly in the configuration file, or retrieved through the system keyring service. See [jaraco/keyring](https://github.com/jaraco/keyring) for the list of supported keyring backends.
+
+Note that authentication section is optional.
+
  
 ```yaml title="Inline"
 auth:
@@ -62,3 +65,5 @@ auth:
   - username
   - username_2
 ```
+
+## Presets section
