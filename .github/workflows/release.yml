@@ -20,4 +20,4 @@ jobs:
           file: 'dist/kmviz-*.tar.gz'
           tag: ${{ github.ref }}
           body: kmviz ${{ github.ref }}
-          prerelase: true
+          prerelease: true
