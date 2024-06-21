@@ -9,10 +9,37 @@ from kmviz.ui.layouts.plot import make_plot_layout, make_plot_layout_callbacks, 
 from kmviz.ui.layouts.help import make_help_layout
 from dash_iconify import DashIconify
 from kmviz.ui import state
+from kmviz.core.log import kmv_info
+
+def _make_plugin_tab(plugin, name, icon):
+    hide = {"display":"none"} if state.kmstate.plot_only else {}
+
+    return dmc.Tab(
+        name,
+        value=f"{plugin}-{name}-value",
+        id=f"kmviz-plugin-{plugin}-{name}-id",
+        style=hide,
+        icon=DashIconify(icon=icon) if icon else None
+    )
+
+def _make_plugin_panel(plugin, name, panel):
+    return dmc.TabsPanel(
+        panel, value=f"{plugin}-{name}-value"
+    )
 
 def make_tabs():
-
     hide = {"display":"none"} if state.kmstate.plot_only else {}
+
+    pTabs = []
+    pPanels = []
+
+    for name, plugin in state.kmstate.plugins.items():
+        layouts = plugin.layouts()
+        if layouts:
+            for tab_name, panel, icon in layouts:
+                kmv_info(f"Load layout '{tab_name}' from plugin '{name}'")
+                pTabs.append(_make_plugin_tab(name, tab_name, icon))
+                pPanels.append(_make_plugin_panel(name, tab_name, panel))
 
     tabs = html.Div([
         dmc.Tabs([
@@ -48,6 +75,7 @@ def make_tabs():
                     id=kseq.sid("panel"),
                     icon=DashIconify(icon="mdi:dna"),
                     style = hide),
+                *pTabs,
                 dmc.Tab(
                     "Help",
                     value="help",
@@ -66,6 +94,7 @@ def make_tabs():
                 make_sequence_layout(), value="sequence"),
             dmc.TabsPanel(
                 make_plot_layout(), value="plot"),
+            *pPanels,
             dmc.TabsPanel(
                 make_help_layout(), value="help"),
             ], className="kmviz-tabs")

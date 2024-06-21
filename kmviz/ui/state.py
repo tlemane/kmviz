@@ -4,14 +4,14 @@ from kmviz.core.cache import result_cache_manager, callback_manager
 from kmviz.core import KmVizError
 from kmviz.core.plugin import installed_plugins, search_for_plugins
 from kmviz.core.log import kmv_info
+from kmviz.core.provider import PROVIDERS
+from kmviz.core.metadata import METADBS
 from importlib_resources import files
 import shutil
 
 class kState:
     def __init__(self):
         self._providers: Providers = Providers()
-        #self.queries = []
-        #self.results = {}
         self.dashboard_path = "/"
         self._manager = None
         self._cache = None
@@ -64,19 +64,19 @@ class kState:
     def _configure_caches(self, config: dict):
         if "cache" not in config:
             raise KmVizError("'cache' section is missing in the configuration file.")
-        
+
         if "manager" not in config["cache"]:
             raise KmVizError("'cache.manager' section is missing in the configuration file.")
         self._manager = callback_manager(config["cache"]["manager"])
 
         if "result" not in config["cache"]:
             raise KmVizError("'cache.result' section is missing in the configuration file.")
-        
+
         if "backend" not in config["cache"]:
             self.backend = FileSystemBackend("file_system_backend")
         else:
             self.backend = FileSystemBackend(config["cache"]["backend"])
-        
+
         self._init_cache(config["cache"]["result"])
 
     def _init_cache(self, params: dict):
@@ -95,6 +95,21 @@ class kState:
                 self._external_css.extend(plugin.external_styles())
                 self._external_js.extend(plugin.external_scripts())
                 self._copy_plugin_assets(name)
+
+                p_providers = plugin.providers()
+                p_metadb = plugin.databases()
+
+                if p_providers:
+                    for pname, prov in p_providers:
+                        if pname not in PROVIDERS:
+                            kmv_info(f"Load external Provider '{pname}' from '{name}' plugin")
+                            PROVIDERS[pname] = prov
+
+                if p_metadb:
+                    for pname, metadb in p_metadb:
+                        if pname not in METADBS:
+                            kmv_info(f"Load external MetaDB '{pname}' from '{name}' plugin")
+                            METADBS[pname] = metadb
 
     def _copy_plugin_assets(self, plugin_name):
         p = files(plugin_name).joinpath("assets")
