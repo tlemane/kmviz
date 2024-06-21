@@ -37,10 +37,14 @@ class InstancePlugin(KmVizPlugin):
                 dmc.Button(
                     "Go to dashboard",
                     leftIcon=DashIconify(icon="noto:rocket", width=20),
-                    style={"position":"fixed", "top": "50%", "left":"50%"}
+                    style={"position":"fixed", "top": "30%", "left":"50%"}
                 ),
                 href="/dashboard"
-            )
+            ),
+            dcc.Markdown("""
+            *Instance* plugin can also provide additional assets:
+            """),
+            html.Img(src="assets/_kmviz_instance_plugin_assets/placeholder.png")
         ])
 
         return layout
