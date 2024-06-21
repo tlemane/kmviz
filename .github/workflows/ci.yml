@@ -39,5 +39,6 @@ jobs:
           mysql database: 'kmviz'
           mysql root password: 'pass'
 
-      - run: mysql kmviz < tests/kmviz/metadata/test_sql.sql
+      - run: mysql --host=127.0.0.1 --user=root --password=pass kmviz < tests/kmviz/metadata/test_sql.sql
+
       - run: poetry run pytest

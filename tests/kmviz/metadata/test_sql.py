@@ -2,15 +2,11 @@ import pytest
 from kmviz.core.metadata.mysql import MySQLMetaDB
 
 class TestSQLiteDB:
-    #@pytest.fixture(scope="class")
-    #def create_db_from_file(self):
-    #    path = "tests/kmviz/metadata/test_sql.sql"
-
     @pytest.fixture(scope="class")
     def db(self):
         return MySQLMetaDB(
-            host="localhost", table="table_test", idx="ID", database="kmviz", user="root", password="pass", geodata={"latitude": "Lat", "longitude": "Lon"})
-    
+            host="127.0.0.1", table="table_test", idx="ID", database="kmviz", user="root", password="pass", geodata={"latitude": "Lat", "longitude": "Lon"})
+
     @pytest.fixture(scope="class")
     def connect(self, db):
         db.connect()
@@ -22,7 +18,7 @@ class TestSQLiteDB:
     def test_query(self, connect):
         df = connect.query(["S1", "S2"])
         assert len(df) == 2
-    
+
     def test_df(self, connect):
         df = connect.df()
         assert len(df) == 8
