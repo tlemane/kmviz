@@ -12,6 +12,7 @@ jobs:
           python-version: 3.x
 
       - run: pip install build
+      - run: python -m build
 
       - name: Upload to github release
         uses: svenstaro/upload-release-action@v2
