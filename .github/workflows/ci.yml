@@ -29,4 +29,15 @@ jobs:
       - run: poetry install --no-interaction --no-root
         if: steps.cache-deps.outputs.cache-hit != 'true'
       - run: poetry install --no-interaction
+
+      - name: Shutdown Ubuntu MySQL
+        run: sudo service mysql stop
+
+      - uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: '8.0'
+          mysql database: 'kmviz'
+          mysql root password: 'pass'
+
+      - run: mysql kmviz < tests/kmviz/metadata/test_sql.sql
       - run: poetry run pytest
