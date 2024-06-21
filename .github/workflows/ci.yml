@@ -7,6 +7,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: kmviz
+          MYSQL_ROOT_PASSWORD: pass
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -30,15 +40,5 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
       - run: poetry install --no-interaction
 
-      - name: Shutdown Ubuntu MySQL
-        run: sudo service mysql stop
-
-      - uses: mirromutth/mysql-action@v1.1
-        with:
-          mysql version: '8.0'
-          mysql database: 'kmviz'
-          mysql root password: 'pass'
-
       - run: sudo mysql --host=127.0.0.1 --user=root --password=pass kmviz < tests/kmviz/metadata/test_sql.sql
-
       - run: poetry run pytest
