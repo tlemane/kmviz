@@ -12,25 +12,12 @@ hide:
 
 Before installing and playing with **kmviz**, let's quickly introduce the **kmviz** vocabulary.
 
-* `Query` refers to a pair `id`:`sequence`. 
+* `Query` refers to a pair `id`:`sequence`.
 * `Provider` refers to an index engine, *e.g.* one capable of querying a kmindex db.
 * `MetaDB` refers to a db engine, *e.g.* one capable of load and query `.tsv` files.
 * `Database` refers to a pair of configured `Provider`/`MetaDB`.
 
 In short, you select one or more `Databases`, you provide one or more `Queries`. For each `Database` and `Query`, the `Provider` responds with a list of identifiers matching your `Query`, and the `MetaDB` returns the metadata associated with these identifiers to finally serves them into the interface.
-
-## User guide
-
-* [Installation](installation.md)
-* [Quickstart](quickstart.md)
-* [Configuration](configuration.md)
-* [Interface](interface.md)
-* [Plot-Only mode](plot_only.md)
-
-## Advanced
-
-* [Plugin](plugin.md)
-* [Deployment](deploy.md)
 
 !!! info "Contact"
     Teo Lemane: teo[dot]lemane[at]genoscope[dot]cns[dot]fr
