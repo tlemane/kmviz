@@ -11,7 +11,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 loguru = "^0.7.2"
 numpy = "^1.26.4"
 pandas = "^2.2.1"
