@@ -1,10 +1,6 @@
-:construction: WIP :construction:
+# Plugins
 
-**kmviz** features are extensible through plugins, as independent python packages. They can be used to add support for new provider types or metadata databases, or to add features to the interface by adding new analysis tabs. 
-
-If you want to deploy an instance for a specific project, you can use [instance plugins](#instance-plugin). These plugins are useful for defining specific elements for a project, such as a home page or specific help, details about indexes and associated metadata.
-
-This section describes a step-by-step plugin implementation, see [`kmviz_example` plugin](https://github.com/tlemane/kmviz/plugins/kmviz_example) for the complete source code.
+**kmviz** features are extensible through plugins, as independent python packages. They can be used to add support for new provider types or metadata databases, or to add features to the interface by adding new analysis tabs.
 
 ## Setup
 
@@ -38,180 +34,75 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 ```
 
-## Implementation
-
-### Provider
-
-```py title="Provider Interface"
-class Provider(ABC):
-    def __init__(self, name: str):
-        self._name = name
-        self.index_infos: Dict[str, Any] = None
-        self.db: MetaDB = None
-        self.options = {}
-        self._presets = {}
-
-    @abstractmethod
-    def connect(self):
-        """
-        Initialization, like database login, should take place here
-        """
-        ...
-
-    @abstractmethod
-    def index_list(self) -> List[str]:
-        """
-        :returns: The list of sub-index names
-        """
-        ...
-
-    @abstractmethod
-    def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
-        """
-        :param query: The query
-        :param options: The user-defined options 
-        :param idx: A unique id representing the query
-        :returns: T
-        """
-        ...
-
-    @abstractmethod
-    def samples(self, index=None) -> Union[Dict[str, list], List[str]]:
-        """
-        :param index: The sub-index name
-        :returns: The list of sample indexed by the sub-index, or a dict of list with one key per sub-index
-        """
-        ...
-
-    @abstractmethod
-    def kmer_size(self) -> int:
-        """
-        :returns: The kmer size for kmer-based index, 0 otherwise
-        """
-        ...
-```
-
-
-```py
-self.options = {
-    "coverage": RangeOption("coverage", 0.2, min=0.0, max=1.0, step=0.05)
-}
-```
-
-![image](assets/option.png)
-
-
-```py title="Builtin options"
-@dataclass
-class NumericOption(ProviderOption):
-    min: Optional[Union[int, float]]
-    max: Optional[Union[int, float]]
-    value: Union[int, float] = None
-
-@dataclass
-class ChoiceOption(ProviderOption):
-    choices: Iterable[Union[str, int, float]]
-    value: Union[str, int, float] = None
-
-@dataclass
-class MultiChoiceOption(ProviderOption):
-    choices: Iterable[Union[str, int, float]]
-    value: Iterable[Union[str, int, float]] = None
-
-@dataclass
-class RangeOption(ProviderOption):
-    min: Union[int, float]
-    max: Union[int, float]
-    step: Union[int, float]
-    value: [int, float] = None
-
-@dataclass
-class TextOption(ProviderOption):
-    value: str = None
-```
-
-### MetaDB
-
-```py title="MetaDB Interface"
-class MetaDB(ABC):
-    def __init__(self, idx: str, geodata: Dict[str, str] = {}) -> None:
-        self._geodata = geodata
-        self._idx = idx
-
-    @abstractmethod
-    def connect(self):
-        """
-        Initialization, like database login, should take place here
-        """
-        ...
-
-    @abstractmethod
-    def query(self, keys: List[str]) -> pd.DataFrame:
-        """
-        Select a subset of metadata
-
-        :param keys: A sequence of identifiers
-        :returns: A dataframe with the metadata corresponding to the keys
-        """
-        ...
-
-    @abstractmethod
-    def df(self) -> pd.DataFrame:
-        """
-        Get all metadata
-
-        :returns: A dataframe with all metadata
-        """
-        ...
-
-    @abstractmethod
-    def keys(self) -> List[str]:
-        """
-        Get all fields
-
-        :returns: The list of all fields
-        """
-        ...
-```
-
-
-
 ## Plugin interface
 
-```py title="The KmVizPlugin interface"
+The interface to implement is described below. A plugin can implement from one to all of these features.
+
+```py
 class KmVizPlugin:
 
-    def providers(self) -> List[Provider]:
+    def providers(self) -> List[Tuple[str, Provider]]:
+        """
+        :returns: The providers implemented by the plugin, as list of tuples <name,'Provider'>
+        """
         return []
 
-    def databases(self) -> List[MetaDB]:
+    def databases(self) -> List[Tuple[str, MetaDB]]:
+        """
+        :returns: The metadbs implemented by the plugin, as list of tuples <name,'MetaDB'>
+        """
         return []
 
-    def layouts(self) -> List[Tuple[str, Any]]:
+    def layouts(self) -> List[Tuple[str, Any, str]]:
+        """
+        :returns: The layouts implemented by the plugin, as list of tuples <name, dash_component, icon_name>
+        """
         return []
 
     def external_scripts(self) -> List[Union[dict, str]]:
+        """
+        :returns: A list of js scripts to load, see https://dash.plotly.com/external-resources
+        """
         return []
 
     def external_styles(self) -> List[Union[dict, str]]:
+        """
+        :returns: A list of css stylesheets to load, see https://dash.plotly.com/external-resources
+        """
         return []
 
     def help(self) -> Any:
+        """
+        :returns: A Dash Component which will be displayed in the help tab.
+        """
         return None
 
     def is_instance_plugin(self) -> bool:
+        """
+        :returns: True if the plugin is an instance plugin, False otherwise
+        """
         return False
 
     def instance(self) -> Any:
+        """
+        :returns: A Dash Component which will be used as a homepage
+        """
         return None
 
     def name(self) -> str:
+        """
+        :returns: The plugin name
+        """
         return None
 ```
 
+## Assets
 
-### Assets
+A plugin can also provide additional assets. Assets will be automatically available if put at the right location. See [instance plugin](plugin_instance.md) example.
 
-### Layout
+## Examples
 
-## Instance plugin
+* [Provider](plugin_provider.md)
+* [MetaDB](plugin_metadb.md)
+* [Layout](plugin_layout.md)
+* [Instance](plugin_instance.md)

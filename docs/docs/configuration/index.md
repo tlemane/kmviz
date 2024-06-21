@@ -53,7 +53,7 @@ At the moment, **kmviz** has limited authentication support with only [HTTP Basi
 
 Note that authentication section is optional.
 
- 
+
 ```yaml title="Inline"
 auth:
   username: "password"
@@ -67,3 +67,5 @@ auth:
 ```
 
 ## Presets section
+
+:construction:

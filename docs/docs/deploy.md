@@ -10,4 +10,7 @@ The following WSGI servers have been tested:
 
 :construction: WIP :construction:
 
-The complete documentation relative to **kmviz** deployment is coming soon.
+## Instance
+
+:construction: WIP :construction:
+

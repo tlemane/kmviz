@@ -13,6 +13,7 @@ The **kmviz** interface is divided into 4 major areas:
 
 ### Select database(s)
 
+:construction:
 
 ### Import query
 
@@ -58,7 +59,11 @@ When a plugin provides a new layout, it appears as a new tab. See [plugin](plugi
 
 ### Index tab
 
+:construction:
+
 ### Table tab
+
+:construction:
 
 ### Making production-grade representation
 
@@ -68,4 +73,8 @@ When making figures, there are 2 types of action: those that **create a new figu
 
 #### Maps
 
+:construction:
+
 #### Plots
+
+:construction:
