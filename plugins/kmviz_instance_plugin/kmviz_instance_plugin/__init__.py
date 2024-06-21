@@ -6,12 +6,20 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from dash_extensions.enrich import html
 
+from typing import List, Tuple, Any
+
 class InstancePlugin(KmVizPlugin):
     def is_instance_plugin(self) -> bool:
         return True
 
     def name(self) -> str:
         return "InstancePlugin"
+
+    def layouts(self) -> List[Tuple[str, Any, Any]]:
+        panel = html.Div([
+            "Plugin Layout Example"
+        ])
+        return [("NewTab", panel, "mdi:new-box")]
 
     def instance(self) -> html.Div:
         layout = html.Div([
