@@ -1,4 +1,12 @@
-**kmviz** is in the early development stages and not yet packaged. It can be installed from sources following the instructions below.
+# Installation
+
+## Using pip
+
+```bash
+pip install kmviz
+```
+
+## From sources
 
 ### Clone the repository
 ```bash
