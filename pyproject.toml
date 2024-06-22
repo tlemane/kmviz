@@ -19,9 +19,9 @@ dash = {extras = ["diskcache"], version = "^2.16.1"}
 dash-bio = "^1.0.2"
 uplink = {extras = ["aiohttp"], version = "^0.9.7"}
 click = "^8.1.7"
-dash-extensions = "^1.0.14"
+dash-extensions = "=1.0.14"
 dash-bootstrap-components = "^1.5.0"
-dash-mantine-components = "^0.12.1"
+dash-mantine-components = "~0.12.1"
 dash-iconify = "^0.1.2"
 pyyaml = "^6.0.1"
 dash-ag-grid = "^31.0.1"
