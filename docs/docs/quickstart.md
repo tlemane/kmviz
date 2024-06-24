@@ -57,13 +57,21 @@ geodata = { latitude = "Lat", longitude = "Long"}
 
 [cache]
 
+[cache.serverside]
+type = "disk"
+params.cache_dir = ".results/kmviz_serverside_cache"
+params.threshold = 0
+params.default_timeout = 86400
+
 [cache.manager]
 type = "disk"
-params.directory = "./kmviz_manager_cache"
+params.directory = ".results/kmviz_manager_cache"
 
-[cache.cache]
-params.directory = "./kmviz_result_cache"
-params.size_limit = 20000000
+[cache.result]
+type = "disk"
+params.cache_dir = ".results/kmviz_result_cache"
+params.threshold = 0
+params.default_timeout = 1209600
 
 [auth]
 small = "small-password"
