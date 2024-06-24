@@ -98,6 +98,8 @@ services:
       MYSQL_ROOT_PASSWORD: kmviz_password
     volumes:
       - mysql-storage:/var/lib/mysql
+      - init.sql:/home/init.sql
+    command: "--init-file /home/init.sql"
     ports:
       - "3036:3036"
 
@@ -108,27 +110,6 @@ services:
 volumes:
   - mysql-storage:
 ```
-
-
-??? Tip "How to populate the database?"
-
-    ```yaml
-    metadata-service:
-      volumes:
-        - mydb.sql:/docker-entrypoint-initdb.d/mydb.sql
-    ```
-
-    ```bash title="populate_db.sh"
-
-    ```
-
-    ```bash
-    docker compose up -d
-    docker exec -it metadata-service_cnt bash
-    mysql -u root -pkmviz_password < mydb.sql
-    exit
-    docker compose down
-    ```
 
 ## 3. The `kmviz-service`
 
@@ -240,6 +221,90 @@ docker compose up -d
 
 The **kmviz** instance is now available at `localhost:5000`.
 
+
+## Appendix: Load a kmindex plugin
+
+:construction: WIP :construction:
+
+## Appendix: Use [Redis] caching
+
+```yaml title="compose.yml"
+services:
+  kmindex-service:
+    image: tlemane/kmindex:latest
+    volumes:
+      - ./kmindex_directory:/home/
+    entrypoint: kmindex-server
+    command: "--index /home/index -a 0.0.0.0 --port 8080 -d /home/kmindex_logs"
+    ports:
+      - "8080:8080"
+
+  metadata-service:
+    image: mysql/mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - mysql-storage:/var/lib/mysql
+    ports:
+      - "3036:3036"
+
+  redis-service:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  kmviz-service:
+    image: tlemane/kmviz:latest
+    volumes:
+      - ./kmviz_directory:/home/
+    depends_on:
+      - kmindex-service
+      - metadata-service
+      - redis-service
+    command: "-w 1 -b 0.0.0.0:5000"
+    ports:
+      - "5000:5000"
+
+volumes:
+  mysql-storage:
+```
+
+```toml title="kmviz_directory/config.toml"
+[databases]
+
+[databases.TARA]
+type = "kmindex-server"
+[databases.TARA.params]
+url = "kmindex-service"
+port = 8080
+[databases.TARA.metadata]
+type = "mysql"
+[databases.TARA.metadata.params]
+host = "metadata-service"
+database = "mydb"
+user = "root"
+password = "kmviz_example"
+idx = "ID"
+table = "mytable"
+geodata = { latitude = "Lat", longitude = "Long"}
+
+[cache]
+
+[cache.serverside]
+type = "redis"
+params.host = "redis-service"
+params.db = 0
+
+[cache.manager]
+type = "disk"
+params.directory = ".results/kmviz_manager_cache"
+
+[cache.result]
+type = "redis"
+params.host = "redis-service"
+params.db = 1
+```
+
 ## Self-contained example
 
-You can download a self-contained example [here](https://github.com/tlemane/kmviz/blob/main/tests/deploy_example/self.tar.gz), which only requires [Docker](https://www.docker.com/). The example is based on data used by the [Quickstart](../quickstart.md) example. The archive contains a `README.md` file with the instructions.
+:construction: WIP :construction:
