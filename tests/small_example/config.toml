@@ -13,16 +13,21 @@ sep = "\t"
 idx = "Sample"
 geodata = { latitude = "Lat", longitude = "Long"}
 
-[cache]
-backend = ".results/kmviz_fs_backend"
+[cache.serverside]
+type = "disk"
+params.cache_dir = ".results/kmviz_serverside_cache"
+params.threshold = 0
+params.default_timeout = 86400
 
 [cache.manager]
 type = "disk"
 params.directory = ".results/kmviz_manager_cache"
 
 [cache.result]
-params.directory = ".results/kmviz_result_cache"
-params.size_limit = 20000000
+type = "disk"
+params.cache_dir = ".results/kmviz_result_cache"
+params.threshold = 0
+params.default_timeout = 1209600
 
 [auth]
 small = "small_password"

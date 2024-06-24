@@ -21,11 +21,18 @@ cache:
       directory: ".results/kmviz_manager_cache"
 
   result:
+    type: "disk"
     params:
-      directory: ".results/kmviz_result_cache"
-      size_limit: 20000000000
+      cache_dir: ".results/kmviz_result_cache"
+      threshold: 0
+      default_timeout: 1209600
 
-  backend: ".results/kmviz_fs_backend"
-  
+  serverside:
+    type: "disk"
+    params:
+      cache_dir: ".results/kmviz_serverside_cache"
+      threshold: 0
+      default_timeout: 86400
+
 auth:
   small: "small-password"
