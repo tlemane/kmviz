@@ -55,10 +55,18 @@ def make_input_session_callbacks():
         if n_clicks:
             try:
                 res = state.kmstate.get_result(session_id)
+                print(res[0])
+                print(res[1])
+                print(res[2])
+                print(res[4])
+                print(no_update)
+                print(session_id)
+
                 return Serverside(res[0]), res[1], res[2], res[3], res[4], {"display":"none"}, no_update, session_id
             except:
                 msg = "Session not found. Invalid session id, query still running, or results erased."
                 return no_update, no_update, no_update, no_update, no_update, no_update, msg, None
+        return no_update, no_update, no_update, no_update, no_update, no_update, no_update, None
 
 def make_input_dataframe():
     upload_style = {
