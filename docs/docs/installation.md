@@ -1,5 +1,7 @@
 # Installation
 
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kmviz?style=for-the-badge&logo=python)
+
 ## Using pip
 
 ```bash
@@ -8,27 +10,12 @@ pip install kmviz
 
 ## From sources
 
-### Clone the repository
 ```bash
-git clone https://github.com/tlemane/kmviz.git
+pip install git+https://github.com/tlemane/kmviz.git
 ```
 
-### Install
-
-Requires `python` and `poetry`.
+## Docker
 
 ```bash
-cd kmviz
-poetry shell
-poetry install
+docker pull tlemane/kmviz
 ```
-
-### For nix users
-
-```bash
-cd kmviz
-nix develop
-poetry shell
-poetry install
-```
-

@@ -2,14 +2,25 @@ The repository includes small data and configuration files to quickly run an ins
 
 ### Requirements
 
-* [kmindex](https://tlemane.github.io/kmindex/), see [instructions](https://tlemane.github.io/kmindex/installation/) for installation. We recommend the conda installation that includes **kmindex** dependencies.
+* [kmindex](https://tlemane.github.io/kmindex/) (>=0.5.3), see [instructions](https://tlemane.github.io/kmindex/installation/) for installation. We recommend the conda installation that includes **kmindex** dependencies.
 * **kmviz** should be installed, see [Installation](installation.md).
 
-### Construct an index 
+### Construct an index
+
+Presence/absence and abundance indexes are supported.
+
+#### Presence/absence mode
 
 ```bash
 cd tests/small_example
 kmindex build -i index -f fof.txt -r my_index -d my_index_store -k 25 --hard-min 1 --bloom-size 100000 --cpr --nb-partitions 8 --threads 8
+```
+
+#### Abundance mode
+
+```bash
+cd tests/small_example
+kmindex build -i index -f fof.txt -r my_index -d my_index_store -k 25 --hard-min 1 --nb-cell 100000 --bitw 4 --cpr --nb-partitions 8 --threads 8
 ```
 
 ### Start a **kmindex-server**
@@ -44,11 +55,13 @@ sep = "\t"
 idx = "Sample"
 geodata = { latitude = "Lat", longitude = "Long"}
 
-[manager]
+[cache]
+
+[cache.manager]
 type = "disk"
 params.directory = "./kmviz_manager_cache"
 
-[cache]
+[cache.cache]
 params.directory = "./kmviz_result_cache"
 params.size_limit = 20000000
 
@@ -57,3 +70,5 @@ small = "small-password"
 ```
 
 The **kmviz** instance is now available at `127.0.0.1:8050`.
+
+A query test file is available [here](https://github.com/tlemane/kmviz/blob/main/tests/small_example/query.fa).

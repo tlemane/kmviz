@@ -41,10 +41,27 @@ class InstancePlugin(KmVizPlugin):
                     style={"position":"fixed", "top": "50%", "left":"50%"}
                 ),
                 href="/dashboard"
-            )
+            ),
+            dcc.Markdown("""
+            *Instance* plugin can also provide additional assets:
+            """),
+            html.Img(src="assets/_kmviz_instance_plugin_assets/placeholder.png")
         ])
 
         return layout
 
 kmviz_plugin = InstancePlugin()
 ```
+
+Assets will be automatically available if put at the right location, *i.e.* `assets` directory in sources. To access a resource, use the following path prefix: `assets/_kmviz_{plugin_name}_assets/`, ex: `assets/_kmviz_instance_plugin_assets/image.png`.
+
+``` title="plugin structure"
+kmviz_instance_plugin
+├── kmviz_instance_plugin
+│   ├── assets             <---
+│   └── __init__.py
+├── poetry.lock
+├── pyproject.toml
+└── README.md
+```
+
