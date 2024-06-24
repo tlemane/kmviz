@@ -1,6 +1,6 @@
 # Provider
 
-## `kmindex server`
+## `kmindex server (kmindex >= v0.5.3)`
 
 |Parameter|Description|Default|Required|
 |---|---|---|---|
