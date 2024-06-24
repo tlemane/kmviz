@@ -4,7 +4,6 @@ from dash_extensions.enrich import DashProxy, LogTransform, NoOutputTransform, S
 import dash_bootstrap_components as dbc
 from kmviz.core.log import kmv_info, instance_id, setup_logger, kmv_ex
 from kmviz.core.provider import make_provider_from_dict
-from kmviz.core.cache import callback_manager
 from kmviz.core import KmVizError
 
 import dash_auth
@@ -25,7 +24,7 @@ def make_auth_function(usernames):
     def auth_function(username, password):
         if username not in usernames:
             return False
-        
+
         p = keyring.get_password("kmviz", username)
         if p == password:
             return True

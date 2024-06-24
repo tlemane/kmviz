@@ -15,7 +15,7 @@ python = "^3.9"
 loguru = "^0.7.2"
 numpy = "^1.26.4"
 pandas = "^2.2.1"
-dash = {extras = ["diskcache"], version = "^2.16.1"}
+dash = {extras = ["diskcache", "celery"], version = "^2.16.1"}
 dash-bio = "^1.0.2"
 uplink = {extras = ["aiohttp"], version = "^0.9.7"}
 click = "^8.1.7"

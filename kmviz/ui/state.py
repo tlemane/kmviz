@@ -1,12 +1,14 @@
 from dash_extensions.enrich import FileSystemBackend
 from kmviz.core.provider import Providers, make_provider_from_dict
-from kmviz.core.cache import result_cache_manager, callback_manager
 from kmviz.core import KmVizError
 from kmviz.core.plugin import installed_plugins, search_for_plugins
 from kmviz.core.log import kmv_info
 from kmviz.core.provider import PROVIDERS
 from kmviz.core.metadata import METADBS
 from importlib_resources import files
+
+from kmviz.core.cache import make_server_cache_manager, make_callback_cache_manager, make_result_cache_manager
+
 import shutil
 
 class kState:
@@ -19,15 +21,15 @@ class kState:
         self._external_css = []
         self._external_js = []
         self.plot_only = False
-        self.backend = None
+        self._backend = None
 
     def store_result(self, uid: str, results: tuple):
-        self._cache[uid] = results
-        self._cache.close()
+        self._cache.set(uid, results)
 
     def get_result(self, uid: str) -> tuple:
-        res = self._cache[uid]
-        self._cache.close()
+        res = self._cache.get(uid)
+        if res is None:
+            raise KmVizError("Not in cache.")
         return res
 
     def configure(self, config: dict):
@@ -48,6 +50,10 @@ class kState:
         return self._manager
 
     @property
+    def backend(self):
+        return self._backend
+
+    @property
     def css(self):
         return self._external_css
 
@@ -63,24 +69,35 @@ class kState:
 
     def _configure_caches(self, config: dict):
         if "cache" not in config:
-            raise KmVizError("'cache' section is missing in the configuration file.")
+            config["cache"] = {}
 
         if "manager" not in config["cache"]:
-            raise KmVizError("'cache.manager' section is missing in the configuration file.")
-        self._manager = callback_manager(config["cache"]["manager"])
+            manager_default = { "type": "disk", "params": {"directory": "./kmviz_manager_cache"} }
+            self._manager = make_callback_cache_manager(manager_default)
+        else:
+            self._manager = make_callback_cache_manager(config["cache"]["manager"])
 
         if "result" not in config["cache"]:
-            raise KmVizError("'cache.result' section is missing in the configuration file.")
-
-        if "backend" not in config["cache"]:
-            self.backend = FileSystemBackend("file_system_backend")
+            result_params = {
+                "cache_dir": "./kmviz_result_cache",
+                "default_timeout": 60 * 60 * 24 * 14,
+                "threshold": 0
+            }
+            result_default = { "type": "disk", "params": result_params }
+            self._cache = make_result_cache_manager(result_default)
         else:
-            self.backend = FileSystemBackend(config["cache"]["backend"])
+            self._cache = make_result_cache_manager(config["cache"]["result"])
 
-        self._init_cache(config["cache"]["result"])
-
-    def _init_cache(self, params: dict):
-        self._cache = result_cache_manager(params["params"])
+        if "serverside" not in config["cache"]:
+            server_params = {
+                "cache_dir": "./kmviz_serverside_cache",
+                "default_timeout": 60 * 60 * 24,
+                "threshold": 0
+            }
+            server_default = { "type": "disk", "params": server_params }
+            self._backend = make_server_cache_manager(server_default)
+        else:
+            self._backend = make_server_cache_manager(config["cache"]["serverside"])
 
     def _configure_plugins(self, config: dict):
         installed = installed_plugins()

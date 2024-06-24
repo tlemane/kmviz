@@ -1,22 +1,24 @@
-from dash import DiskcacheManager, CeleryManager
-
-def callback_manager(params: dict):
+def make_server_cache_manager(params: dict):
     if params["type"] == "disk":
-        return disk_callback_manager(params["params"])
-    else:
-        return celery_callback_manager(params["params"])
+        from dash_extensions.enrich import FileSystemBackend
+        return FileSystemBackend(**params["params"])
+    elif params["type"] == "redis":
+        from dash_extensions.enrich import RedisBackend
+        return RedisBackend(**params["params"])
 
-def disk_callback_manager(params) -> DiskcacheManager:
-    import diskcache
-    cache = diskcache.Cache(**params)
-    return DiskcacheManager(cache)
+def make_result_cache_manager(params: dict):
+    if params["type"] == "disk":
+        from cachelib.file import FileSystemCache
+        return FileSystemCache(**params["params"])
+    elif params["type"] == "redis":
+        from cachelib.redis import RedisCache
+        return RedisCache(**params["params"])
 
-def celery_callback_manager(params) -> CeleryManager:
-    from celery import Celery
-    app = Celery("kmviz", **params)
-    return CeleryManager(app)
-
-def result_cache_manager(params: dict):
-    import diskcache
-    cache = diskcache.Cache(**params)
-    return cache
+def make_callback_cache_manager(params: dict):
+    from dash import DiskcacheManager, CeleryManager
+    if params["type"] == "disk":
+        import diskcache
+        return DiskcacheManager(diskcache.Cache(**params["params"]))
+    elif params["type"] == "celery":
+        from celery import Celery
+        return CeleryManager(Celery(**params["params"]))

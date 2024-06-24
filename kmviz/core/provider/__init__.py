@@ -13,6 +13,7 @@ def make_provider_from_dict(name, d):
 
     p = PROVIDERS[d["type"]](name=name, **d["params"])
     metadb = make_metadb_from_dict(d["metadata"])
+    metadb.connect()
     p.attach_metadata(metadb)
 
     presets = { "map": {}, "plot": {}}
