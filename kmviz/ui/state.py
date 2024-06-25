@@ -33,9 +33,14 @@ class kState:
         return res
 
     def configure(self, config: dict):
+        self._config = config
         self._configure_plugins(config)
         self._configure_providers(config)
         self._configure_caches(config)
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def plugins(self):
