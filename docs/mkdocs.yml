@@ -1,4 +1,4 @@
-site_name: kmviz documentation
+site_name: kmviz v0.3.1
 site_url: https://tlemane.github.io/kmviz
 
 repo_url:  https://github.com/tlemane/kmviz
@@ -38,15 +38,19 @@ theme:
     name: material
     highlightjs: true
     palette:
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      primary: blue
+      accent: blue
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
         name: Switch to dark mode
 
-    - scheme: slate
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
     icon:
       repo: fontawesome/brands/github
 
@@ -57,6 +61,7 @@ theme:
       - navigation.section
       - navigation.path
       - navigation.expand
+      - navigation.footer
       - navigation.indexes
       - content.code.copy
       - content.code.select
@@ -96,5 +101,6 @@ extra_css:
   - stylesheets/extra.css
 
 extra:
+  generator: false
   version:
     provider: mike
