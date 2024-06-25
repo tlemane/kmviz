@@ -344,4 +344,12 @@ services:
 
 ## Self-contained example
 
-:construction: WIP :construction:
+A self-contained example is available here: [self.tar.bz2](https://raw.githubusercontent.com/tlemane/kmviz/main/tests/deploy_example/self.tar.bz2).
+
+```bash
+wget https://raw.githubusercontent.com/tlemane/kmviz/main/tests/deploy_example/self.tar.bz2
+tar jxvf self.tar.bz2
+cd self
+docker compose up
+```
+
