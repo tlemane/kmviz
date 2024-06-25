@@ -17,7 +17,7 @@ By default, `KMVIZ_CONF` is set to `/home/config.toml`. To use another filename,
 
 ## About cache
 
-3 caching system are used in **kmviz**:
+3 caching systems are used in **kmviz**:
 
 * `manager`: For [Background callback](https://dash.plotly.com/background-callbacks) support
 * `serverside`: For [Serverside output](https://www.dash-extensions.com/transforms/serverside_output_transform) support
@@ -51,17 +51,19 @@ params.default_timeout = 86400
 </div>
 
 !!! Note
-    `redis` is recommended for both `serverside` and `result` when deploying multi-user instance.
+    `redis` is recommended for both `serverside` and `result` when deploying multi-user instances.
 
 !!! Warning "About timeout"
     * `result`: The `default_timeout` field corresponds the time during which a user can access a result without recomputing the query.
     * `serverside`: The cache should always return and value, *i.e.* keys should not expire during a user session. Use a significant value, *e.g.* 24 hours.
 
-#### `manager` configuration
+### `manager` configuration
 
 **Available backends**
-* `disk`, based on [DiskCache](https://grantjenks.com/docs/diskcache/api.html#diskcache.Cache)
-* `celery` (coming soon)
+
+* `disk`, based on [DiskCache.Cache](https://grantjenks.com/docs/diskcache/api.html#diskcache.Cache)
+* `fanout`, based on [DiskCache.FanoutCache](https://grantjenks.com/docs/diskcache/api.html#diskcache.FanoutCache) (:construction: coming soon)
+* `celery`, based on [Celery](https://docs.celeryq.dev/en/stable/reference/celery.html#celery.Celery) (:construction: coming soon)
 
 ```toml title="Disk"
 [cache.manager]
@@ -69,4 +71,27 @@ type = "disk"
 params.directory = ".results/kmviz_manager_cache"
 ```
 
+### Complete example
 
+```toml title="config.toml"
+[cache]
+
+[cache.serverside]
+type = "redis"
+[cache.serverside.params]
+host = "localhost"
+port = 6379
+db = 0
+default_timeout = 86400
+
+[cache.manager]
+type = "disk"
+params.directory = "./kmviz_manager_cache"
+
+[cache.result]
+type = "disk"
+[cache.result.params]
+cache_dir = "./kmviz_result_cache"
+threshold = 0
+default_timeout = 1209600
+```

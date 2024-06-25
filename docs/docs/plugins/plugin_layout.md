@@ -4,7 +4,7 @@ If a plugin provides one or more layouts, they will appear as new tabs in the in
 
 ## Implementation
 
-Here is an example of a plugin providing a new layout. A complete example is available at [:fontawesome-brands-github: kmviz_instance_plugin](https://github.com/tlemane/kmviz/plugins/kmviz_instance_plugin).
+Here is an example of a plugin providing a new layout. See [:fontawesome-brands-github: kmviz_instance_plugin](https://github.com/tlemane/kmviz/plugins/kmviz_instance_plugin) for a complete example.
 
 ```py title="kmviz_layout_plugin/__init__.py"
 from kmviz.core.plugin import KmVizPlugin

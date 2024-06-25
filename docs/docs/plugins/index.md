@@ -27,7 +27,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 numpy = "^1.26.4"
-kmviz = "^0.1.0"
+kmviz = "^0.3.1"
 
 [build-system]
 requires = ["poetry-core"]

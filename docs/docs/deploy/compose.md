@@ -225,8 +225,9 @@ docker compose up -d
 
 The **kmviz** instance is now available at `localhost:5000`.
 
+## Appendix
 
-## Appendix: Load a kmindex plugin
+### Appendix: Load a kmindex plugin
 
 The default docker image does not contain any plugins. To install and use plugins, we create a new docker image based on `tlemane/kmviz` as described below.
 
@@ -261,7 +262,7 @@ RUN pip install -e "git+https://github.com/tlemane/kmviz.git#subdirectory=plugin
 [plugins.kmviz_instance_plugin]
 ```
 
-## Appendix: Use [Redis](https://redis.io/fr/) caching
+### Appendix: Use [Redis](https://redis.io/fr/) caching
 
 ```yaml title="compose.yml"
 services:
@@ -320,6 +321,25 @@ params.directory = ".results/kmviz_manager_cache"
 type = "redis"
 params.host = "redis-service"
 params.db = 1
+```
+
+### Appendix: Load balancing
+
+See [Compose Deploy Specification](https://docs.docker.com/compose/compose-file/deploy/)
+
+```yaml title="compose.yml"
+services:
+  kmindex-service:
+    image: tlemane/kmindex:latest
+    volumes:
+      - ./kmindex_directory:/home/
+    entrypoint: kmindex-server
+    command: "--index /home/index -a 0.0.0.0 --port 8080 -d /home/kmindex_logs"
+    expose:
+      - 8080
+    deploy:
+      replicas: 3
+      endpoint_mode: dnsrr
 ```
 
 ## Self-contained example

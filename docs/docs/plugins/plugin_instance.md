@@ -1,8 +1,10 @@
 # Instance plugin
 
+An `instance plugin` is a plugin dedicated to a specific instance, *e.g.* an instance devoted to a sequencing project. It provides a homepage and additional assets to make a customized interface.
+
 ## Implementation
 
-Here is an example of `instance plugin` implementation. A complete example is available at [:fontawesome-brands-github: kmviz_instance_plugin](https://github.com/tlemane/kmviz/plugins/kmviz_instance_plugin).
+Here is an example of an `instance plugin` implementation. See [:fontawesome-brands-github: kmviz_instance_plugin](https://github.com/tlemane/kmviz/plugins/kmviz_instance_plugin) for a complete example.
 
 ```py
 from typing import Any
