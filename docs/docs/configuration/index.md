@@ -30,7 +30,7 @@ databases:
 
 For local instances, cache configuration is not a critical point. The example below will work in many cases.
 
-:warning: For multi-user instances, a particular attention is recommended, see [Advanced/Deployment](deploy.md).
+:warning: For multi-user instances, a particular attention is recommended, see [Deployment](../deploy/docker.md#about-cache).
 
 ```yaml
 cache:

@@ -87,7 +87,7 @@ bash patch_index.sh kmindex_directory/global_index
 
 ## 2. The `metadata-service`
 
-The `metadata-service` is a docker container that runs a `mysql` server. In this example, we assume that a database `mydb` containing a `mytable` table is already hosted by the server.
+The `metadata-service` is a docker container that runs a `mysql` server. In this example, the we assume a database `mydb` containing a `mytable` table. The db is created by `init.sql` instructions on the first container run.
 
 ```yaml title="metadata-service"
 services:
@@ -96,14 +96,15 @@ services:
     image: mysql/mysql-server
     environment:
       MYSQL_ROOT_PASSWORD: kmviz_password
+      MYSQL_ROOT_HOST: '%'
     volumes:
       - mysql-storage:/var/lib/mysql
-      - init.sql:/home/init.sql
+      - init.sql:/home/init.sql            # Instructions to create the db and the table
     command: "--init-file /home/init.sql"
     ports:
       - "3036:3036"
 
-# This will create /var/lib/docker/volumes/mysql-storage on the host to
+# Create a /var/lib/docker/volumes/mysql-storage on the host to
 # store the db data in a persistent way.
 # 'docker compose down' will not remove the volume
 # Use 'docker compose down -v' to delete the volume (and data)
@@ -195,8 +196,11 @@ services:
     image: mysql/mysql-server
     environment:
       MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_HOST: '%'
     volumes:
       - mysql-storage:/var/lib/mysql
+      - init.sql:/home/init.sql
+    command: "--init-file /home/init.sql"
     ports:
       - "3036:3036"
 
@@ -224,30 +228,43 @@ The **kmviz** instance is now available at `localhost:5000`.
 
 ## Appendix: Load a kmindex plugin
 
-:construction: WIP :construction:
-
-## Appendix: Use [Redis] caching
+The default docker image does not contain any plugins. To install and use plugins, we create a new docker image based on `tlemane/kmviz` as described below.
 
 ```yaml title="compose.yml"
 services:
-  kmindex-service:
-    image: tlemane/kmindex:latest
+  kmviz-service:
+    build:
+      context: ./kmviz_docker
+      dockerfile: Dockerfile
     volumes:
-      - ./kmindex_directory:/home/
-    entrypoint: kmindex-server
-    command: "--index /home/index -a 0.0.0.0 --port 8080 -d /home/kmindex_logs"
+      - ./kmviz_directory:/home/
+    depends_on:
+      - kmindex-service
+      - metadata-service
+    command: "-w 1 -b 0.0.0.0:5000"
     ports:
-      - "8080:8080"
+      - "5000:5000"
 
-  metadata-service:
-    image: mysql/mysql-server
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-    volumes:
-      - mysql-storage:/var/lib/mysql
-    ports:
-      - "3036:3036"
+volumes:
+  mysql-storage:
+```
 
+```docker title="kmviz_docker/Dockerfile"
+FROM tlemane/kmviz:latest
+
+RUN apt-get install -y git
+ENV PIP_SRC=/opt/
+RUN pip install -e "git+https://github.com/tlemane/kmviz.git#subdirectory=plugins/kmviz_instance_plugin&egg=kmviz_instance_plugin"
+```
+
+```toml title="kmviz_directory/config.toml"
+[plugins.kmviz_instance_plugin]
+```
+
+## Appendix: Use [Redis](https://redis.io/fr/) caching
+
+```yaml title="compose.yml"
+services:
   redis-service:
     image: redis:alpine
     ports:

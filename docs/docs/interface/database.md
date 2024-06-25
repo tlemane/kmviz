@@ -53,7 +53,7 @@ The blue switch allows to enable *auto update* on maps and plots. For details se
 - **Sequence**: Display query coverage for a pair sample/query
 - **Help**: Help page
 
-When a plugin provides a new layout, it appears as a new tab. See [plugin](plugin.md).
+When a plugin provides a new layout, it appears as a new tab. See [layout plugin](../plugins/plugin_layout.md).
 
 ## 4. Main
 
