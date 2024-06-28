@@ -68,7 +68,7 @@ def make_app():
 def init(**kwargs):
     if "plot_only" in kwargs and kwargs["plot_only"]:
         state.kmstate.plot_only = True
-        state.kmstate.backend = FileSystemBackend(".kmviz_backend")
+        state.kmstate._backend = FileSystemBackend(".kmviz_backend")
         return []
 
     if not kwargs:
