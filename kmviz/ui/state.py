@@ -22,6 +22,8 @@ class kState:
         self._external_js = []
         self.plot_only = False
         self._backend = None
+        self._template = ""
+        self._metatags = []
 
     def store_result(self, uid: str, results: tuple):
         self._cache.set(uid, results)
@@ -34,6 +36,7 @@ class kState:
 
     def configure(self, config: dict):
         self._config = config
+        self._configure_template(config)
         self._configure_plugins(config)
         self._configure_providers(config)
         self._configure_caches(config)
@@ -66,11 +69,32 @@ class kState:
     def js(self):
         return self._external_js
 
+    @property
+    def template(self):
+        return self._template
+
+    @property
+    def metatags(self):
+        return self._metatags
+
     def instance_plugin(self):
         for name, p in self._plugins.items():
             if p.is_instance_plugin():
                 return p
         return None
+
+    def _configure_template(self, config: dict):
+        if "html" not in config:
+            return
+
+        if "template" in config["html"]:
+            with open(config["html"]["template"], "r") as fin:
+                self._template = fin.read()
+
+        if "metatags" in config ["html"]:
+            self._metatags = config["html"]["metatags"]
+            if isinstance(self._metatags, dict):
+                self._metatags = [self._metatags]
 
     def _configure_caches(self, config: dict):
         if "cache" not in config:
@@ -113,7 +137,11 @@ class kState:
         else:
             self.dashboard_path = "/dashboard"
             self._plugins = search_for_plugins(config["plugins"])
+
             for name, plugin in self._plugins.items():
+                if name in config["plugins"]:
+                    plugin.configure(config["plugins"][name])
+
                 self._external_css.extend(plugin.external_styles())
                 self._external_js.extend(plugin.external_scripts())
                 self._copy_plugin_assets(name)

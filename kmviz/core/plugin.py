@@ -1,13 +1,15 @@
 from kmviz.core.provider import Provider
 from kmviz.core.metadata.db import MetaDB
 from kmviz.core import KmVizError
-from typing import List, Tuple, Any, Union
+from typing import List, Tuple, Any, Union, Dict
 import importlib
 import pkgutil
 
 plugin_prefix = "kmviz_"
 
 class KmVizPlugin:
+    def __init__(self):
+        self._config: Dict[str, Any] = {}
 
     def providers(self) -> List[Tuple[str, Provider]]:
         """
@@ -62,6 +64,14 @@ class KmVizPlugin:
         :returns: The plugin name
         """
         return None
+
+    def configure(self, config: Dict[str, Any]) -> None:
+        self._config = config
+
+    @property
+    def config(self) -> Dict[str, Any]:
+        return self._config
+
 
 def installed_plugins() -> List[str]:
     res = []

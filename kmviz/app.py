@@ -53,7 +53,11 @@ def make_app():
         background_callback_manager=state.kmstate.manager,
         external_stylesheets=state.kmstate.css,
         external_scripts=state.kmstate.js,
+        meta_tags=state.kmstate.metatags
     )
+
+    if state.kmstate.template:
+        app.index_string = state.kmstate.template
 
     app.layout = html.Div([
         dash.page_container
