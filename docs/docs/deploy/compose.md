@@ -342,6 +342,87 @@ services:
       endpoint_mode: dnsrr
 ```
 
+### Appendix: Analytics with [Matomo]()
+
+:warning: Requires `kmviz`>=`v0.3.2`
+
+#### Create the `matomo` service
+
+```yaml title="compose.yml"
+services:
+  matomo:
+    image: matomo
+    volumes:
+      - matomo:/var/www/html:z
+    environment:
+      - MATOMO_DATABASE_HOST=matomo
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=matomo
+      - MYSQL_USER=root
+      - MATOMO_DATABASE_ADAPTER=mysql
+      - MATOMO_DATABASE_TABLES_PREFIX=matomo_
+      - MATOMO_DATABASE_USERNAME=root
+      - MATOMO_DATABASE_PASSWORD=password
+      - MATOMO_DATABASE_DBNAME=matomo
+    depends_on:
+      - metadata-service
+    expose:
+      - 80
+    ports:
+      - 8040:80
+
+volumes:
+  mysql-storage:
+  matomo:
+```
+
+Note that we use the database hosted by `metadata-service` to store the `matomo` tables.
+
+Because `matomo` does not support headless setup, you have to run the instance to follow the setup wizard.
+
+1. `docker compose up metadata-service matomo`
+2. Go to `localhost:8040` and follow the setup. For the `kmviz` url, use `http/localhost:8090`.
+3. Copy the js tag provided by `matomo` and put in `kmviz_directory/template.html`, as described below.
+
+```html title="kmviz_directory/template.html"
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+        <script>
+          var _paq = window._paq = window._paq || [];
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function() {
+            var u="//localhost:8040/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+          })();
+        </script>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+```
+4. Update the `kmviz_directory/config.toml` to pass the html template, as described below.
+```toml title="kmviz_directory/config.toml"
+[html]
+template = "/home/template.html"
+```
+5. Start all the services and finalize the tracking configuration in `matomo`.
+
+
 ## Self-contained example
 
 A self-contained example is available here: [self.tar.bz2](https://raw.githubusercontent.com/tlemane/kmviz/main/tests/deploy_example/self.tar.bz2).
