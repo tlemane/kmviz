@@ -234,7 +234,28 @@ def make_map_layout():
         style={"width": "170px"}
     )
 
+    down_select = make_select_input(
+        kmap.sid("down-select"),
+        None,
+        data=make_select_data(["png", "jpg", "svg", "pdf", "webp", "html", "json"]),
+        placeholder="format",
+        clearable=False,
+        icon=DashIconify(icon="material-symbols:download", width=20),
+        value="png",
+        searchable=True,
+    )
+
     res =  html.Div([
+        dmc.Group([
+            down_select,
+            dmc.ActionIcon(
+                DashIconify(icon="material-symbols:download", width=20),
+                id=kmap.sid("down-button"),
+                variant="filled",
+                color = "#1C7ED6",
+            ),
+        ], style = {"margin-left":"auto", "margin-right": 0, "width": "fit-content"}, spacing=5),
+        dcc.Download(id=kmap.sid("download")),
         dcc.Graph(figure=blank_map(),
                   id=kmap.sid("figure"),
                   responsive=True,
@@ -294,6 +315,24 @@ def make_map_layout_callbacks():
         if n_clicks:
             return {}
         prevent_update_on_none(None)
+
+    @callback(
+        Input(kmap.sid("down-button"), "n_clicks"),
+        State(kmap.sid("down-select"), "value"),
+        State(kmap.sid("figure"), "figure"),
+        Output(kmap.sid("download"), "data")
+    )
+    def download_map(n_clicks, fmt, data):
+        if n_clicks:
+            if fmt == "html":
+                content = pio.to_html(data, validate=False)
+                return dict(content=content, filename="kmviz-map.html")
+            elif fmt == "json":
+                content = pio.to_json(data, validate=False)
+                return dict(content=content, filename="kmviz-map.json")
+            else:
+                content = pio.to_image(data, fmt, validate=False)
+                return dcc.send_bytes(content, f"kmviz-map.{fmt}")
 
     @callback(
         Output(kmap.sid("figure"), "figure"),

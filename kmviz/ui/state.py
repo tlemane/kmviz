@@ -80,6 +80,10 @@ class kState:
     def instance_plugin(self):
         for name, p in self._plugins.items():
             if p.is_instance_plugin():
+                if "dashboard" in p.config and p.config["dashboard"] != "/":
+                    self.dashboard_path = p.config["dashboard"]
+                else:
+                    self.dashboard_path = "/dashboard"
                 return p
         return None
 
@@ -135,7 +139,6 @@ class kState:
         if not "plugins" in config:
             self.dashboard_path = "/"
         else:
-            self.dashboard_path = "/dashboard"
             self._plugins = search_for_plugins(config["plugins"])
 
             for name, plugin in self._plugins.items():

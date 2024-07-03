@@ -2257,7 +2257,28 @@ def make_plot(factory):
         style={"width": "170px"},
     )
 
+    down_select = make_select_input(
+        pid.sid("down-select"),
+        None,
+        data=make_select_data(["png", "jpg", "svg", "pdf", "webp", "html", "json"]),
+        placeholder="format",
+        clearable=False,
+        icon=DashIconify(icon="material-symbols:download", width=20),
+        value="png",
+        searchable=True,
+    )
+
     res =  html.Div([
+        dmc.Group([
+            down_select,
+            dmc.ActionIcon(
+                DashIconify(icon="material-symbols:download", width=20),
+                id=pid.sid("down-button"),
+                variant="filled",
+                color = "#1C7ED6",
+            ),
+        ], style = {"margin-left":"auto", "margin-right": 0, "width": "fit-content"}, spacing=5),
+        dcc.Download(id=pid.sid("download")),
         dcc.Graph(
             figure=blank_figure(),
             id=pid.sid("figure"),
@@ -2315,6 +2336,24 @@ def make_plot_callbacks(factory):
     make_color_legend_callbacks(pid.child("colorbar"), figure_id)
     make_axes_callbacks(pid.child("axes"), figure_id)
     make_plot_shape_callbacks(pid.child("shape"), figure_id)
+
+    @callback(
+        Input(pid.sid("down-button"), "n_clicks"),
+        State(pid.sid("down-select"), "value"),
+        State(pid.sid("figure"), "figure"),
+        Output(pid.sid("download"), "data")
+    )
+    def download_plot(n_clicks, fmt, data):
+        if n_clicks:
+            if fmt == "html":
+                content = pio.to_html(data, validate=False)
+                return dict(content=content, filename="kmviz-plot.html")
+            elif fmt == "json":
+                content = pio.to_json(data, validate=False)
+                return dict(content=content, filename="kmviz-plot.json")
+            else:
+                content = pio.to_image(data, fmt, validate=False)
+                return dcc.send_bytes(content, f"kmviz-plot.{fmt}")
 
 
 
