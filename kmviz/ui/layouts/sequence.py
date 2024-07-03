@@ -83,7 +83,8 @@ def make_sequence_layout_callbacks():
         Input(kseq.sid("down-button"), "n_clicks"),
         State(kseq.sid("down-select"), "value"),
         State(kseq.sid("figure"), "figure"),
-        Output(kseq.sid("download"), "data")
+        Output(kseq.sid("download"), "data"),
+        prevent_initial_call=True,
     )
     def download_cov(n_clicks, fmt, data):
         if n_clicks:
@@ -102,7 +103,8 @@ def make_sequence_layout_callbacks():
         State(kgsf("provider"), "value"),
         State(kgsf("query"), "value"),
         State(ksf("query-results"), "data"),
-        Output(kseq.sid("download-data"), "data")
+        Output(kseq.sid("download-data"), "data"),
+        prevent_initial_call=True,
     )
     def download_json(n_clicks, provider, query, query_result):
         if n_clicks:
@@ -131,7 +133,7 @@ def make_sequence_layout_callbacks():
         Output(kseq.sid("select"), "data"),
         Output(kseq.sid("select"), "value"),
         Output(kseq.sid("panel"), "disabled"),
-        prevent_initial_callbacks=True,
+        prevent_initial_call=True,
     )
     def update_sample_select(provider, query, query_result):
         prevent_update_on_none(provider, query)
@@ -149,7 +151,7 @@ def make_sequence_layout_callbacks():
         Input(ktable.sid("grid"), "selectedRows"),
         Output(kseq.sid("select"), "value"),
         Output("tab-select", "value"),
-        prevent_initial_callbacks=True
+        prevent_initial_call=True
     )
     def on_selected(data):
         if not len(data):
@@ -163,7 +165,7 @@ def make_sequence_layout_callbacks():
         Input(kgsf("query"), "value"),
         State(ksf("query-results"), "data"),
         Output(kseq.sid("figure"), "figure"),
-        prevent_initial_callbacks=True,
+        prevent_initial_call=True,
     )
     def update_sequence_graph(sample, provider, query, query_result):
         if provider.startswith("__kmviz_df"):

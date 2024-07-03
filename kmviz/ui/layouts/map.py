@@ -360,8 +360,7 @@ def make_map_layout_callbacks():
         State(kgsf("provider"), "value"),
         State(kf.sid("session-id"), "data"),
         State(kf.sid("plot-only"), "data"),
-        prevent_initial_callbacks=True,
-        prevent_initial_call=True
+        prevent_initial_call=True,
     )
     def update_map(data, template, color, size, text, symbol, aframe, agroup,
                    projection, cscs, cdcs, cccs, ccm, smap, sseq, cdm, cds, opacity,
@@ -427,7 +426,6 @@ def make_map_layout_callbacks():
         Output(kmap("symbol"), "data"),
         Output(kmap("animation_frame"), "data"),
         Output(kmap("animation_group"), "data"),
-        prevent_initial_callbacks=True,
         prevent_initial_call=True
     )
     def init_map_selectors(data):
@@ -449,7 +447,7 @@ def make_map_layout_callbacks():
         Input(kmap.sid("figure"), "selectedData"),
         State(ksf("query-results"), "data"),
         Output(ktable.sid("grid"), "filterModel"),
-        prevent_initial_callbacks=True
+        prevent_initial_call=True
     )
     def on_selected(sdata, query):
         trigger = ctx.triggered_id
@@ -477,7 +475,7 @@ def make_map_layout_callbacks():
             Output(kseq.sid("select"), "value"),
             Output(ktable.sid("grid"), "filterModel"),
             Output("tab-select", "value"),
-            prevent_initial_callbacks=True,
+            prevent_initial_call=True,
         )
         def on_click_data_map(value):
             sample = value["points"][0]["hovertext"]

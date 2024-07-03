@@ -61,7 +61,7 @@ def make_plot_layout_callbacks():
         Output(ktrace("values"), "data"),
         Output(ktrace("names"), "data"),
         Output(kplot.sid("panel"), "disabled"),
-        prevent_initial_callbacks=True
+        prevent_initial_call=True
     )
     def updateXY(data):
         if not data:
@@ -160,7 +160,7 @@ def make_plot_layout_callbacks():
         Input(kplot.sid("select-preset"), "value"),
         State(kgsf("provider"), "value"),
         State(kf.sid("session-id"), "data"),
-        prevent_initial_callbacks=True
+        prevent_initial_call=True
     )
     def update_plot(data, ptype, X, Y, Z,
                     size, color, text, symbol, animation_frame, animation_group,
@@ -292,7 +292,7 @@ def make_plot_layout_callbacks():
         State(kgsf("provider"), "value"),
         State(ksf("query-results"), "data"),
         Output(ktable.sid("grid"), "filterModel"),
-        prevent_initial_callbacks=True
+        prevent_initial_call=True
     )
     def on_selected(sdata, query, provider, query_result):
 
@@ -321,7 +321,7 @@ def make_plot_layout_callbacks():
             Output(kseq.sid("select"), "value"),
             Output(ktable.sid("grid"), "filterModel"),
             Output("tab-select", "value"),
-            prevent_initial_callbacks=True
+            prevent_initial_call=True
         )
         def on_click(data, query, provider, query_result):
 
