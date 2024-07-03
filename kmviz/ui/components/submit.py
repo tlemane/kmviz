@@ -11,7 +11,7 @@ from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.utils import prevent_update_on_none, make_select_data
 from kmviz.ui.components.store import ksf, ksfr
 from kmviz.ui.components.select import kgsf
-from kmviz.core.log import kmv_info
+from kmviz.core.log import kmv_info, kmv_warn
 import time
 
 import uuid
@@ -61,6 +61,16 @@ def make_session_notification(action, uuid_str):
     )
     return notif
 
+def make_error_notification(action):
+    return dmc.Notification(
+        id="submit-notif-error",
+        title="Error",
+        loading=False,
+        message="Error",
+        action=action,
+        autoClose=False
+    )
+
 def make_submit_callbacks():
 
     @callback(
@@ -82,6 +92,7 @@ def make_submit_callbacks():
         Output(kgsf("query"), "data"),
         Output(kgsf("query"), "value"),
         Output(kf.sid("session-id"), "data"),
+        Output(kf.sid("notification"), "children"),
         inputs=[
             Input(ksub.sid("button"), "n_clicks"),
             State(ksfr("query-sequences"), "data"),
@@ -114,16 +125,19 @@ def make_submit_callbacks():
 
         query_results = {}
 
-        for i, query in enumerate(queries):
-            result = state.kmstate.providers.query(query, actives, options, uuid_str)
-
-            keys = list(result.keys())
-            for key in keys:
-                if isinstance(result[key], str):
-                    del r[k]
-            query_results[query.name] = result
-
-            set_progress(((i / nb_queries) * 100, progress_pattern.format(n=i, total=nb_queries), nshow))
+        try:
+            for i, query in enumerate(queries):
+                result = state.kmstate.providers.query(query, actives, options, uuid_str)
+                keys = list(result.keys())
+                for key in keys:
+                    if isinstance(result[key], str):
+                        del result[key]
+                query_results[query.name] = result
+                set_progress(((i / nb_queries) * 100, progress_pattern.format(n=i, total=nb_queries), nshow))
+        except Exception as e:
+            kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
+            set_progress((100, "Error", no_update))
+            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_notification("show")
 
         default_query = queries[0].name
         default_provider = actives[0]
@@ -146,6 +160,7 @@ def make_submit_callbacks():
             default_provider,
             make_select_data([query.name for query in queries]),
             default_query,
-            uuid_str
+            uuid_str,
+            no_update,
         )
 
