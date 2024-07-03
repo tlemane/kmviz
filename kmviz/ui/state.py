@@ -181,7 +181,7 @@ class kState:
                 kmv_info(f"Init provider '{name}'")
                 p.connect()
             except:
-                raise KmVizError("Init fails for '{name}'")
+                raise KmVizError(f"Init fails for '{name}'")
             self._providers.add(p)
 
 def init_state():
