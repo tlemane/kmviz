@@ -55,7 +55,7 @@ class KmindexServerProvider(KmindexProvider):
         for k, v in rj.items():
             for qid, results in v.items():
                 for sample, d in results.items():
-                    responses[sample] = self._response_from_dict(d, len(query.seq))
+                    responses[sample] = self._response_from_dict(d, len(query.seq), options["z"].value)
 
         metadata = self.db.query(responses.keys())
 
@@ -88,20 +88,20 @@ class KmindexServerProvider(KmindexProvider):
         )
 
 
-    def _response_from_dict(self, response: dict, size: int) -> Response:
+    def _response_from_dict(self, response: dict, size: int, z: int) -> Response:
         if self.has_abs():
-            return self._response_from_dict_abs(response, size)
+            return self._response_from_dict_abs(response, size, z)
         else:
-            return self._response_from_dict_pa(response, size)
+            return self._response_from_dict_pa(response, size, z)
 
-    def _response_from_dict_pa(self, response: dict, size: int) -> Response:
+    def _response_from_dict_pa(self, response: dict, size: int, z) -> Response:
         xk = response["R"]
         covxk = response["P"]
 
-        xb, covxb = covxb_from_covxk(covxk, self.kmer_size(), size)
+        xb, covxb = covxb_from_covxk(covxk, self.kmer_size() + z, size)
 
         return Response(
-            self.kmer_size(),
+            self.kmer_size() + z,
             xk,
             None,
             covxk,
@@ -112,14 +112,14 @@ class KmindexServerProvider(KmindexProvider):
             None
         )
 
-    def _response_from_dict_abs(self, response: dict, size: int) -> Response:
+    def _response_from_dict_abs(self, response: dict, size: int, z: int) -> Response:
         covyk = response["P"]
         xk = response["R"]
 
-        yk, xb, yb, covyb = covyb_from_covyk(covyk, self.kmer_size(), size)
+        yk, xb, yb, covyb = covyb_from_covyk(covyk, self.kmer_size() + z, size)
 
         return Response(
-            self.kmer_size(),
+            self.kmer_size() + z,
             xk,
             yk,
             None,
@@ -135,7 +135,8 @@ class KmindexServerProvider(KmindexProvider):
 
     def kmer_size(self) -> int:
         smer_size = self.index_infos[list(self.index_infos.keys())[0]]["smer_size"]
-        return self.options["z"].value + smer_size
+        return smer_size
+        #return self.options["z"].value + smer_size
 
     def samples(self, index=None):
         if index:
