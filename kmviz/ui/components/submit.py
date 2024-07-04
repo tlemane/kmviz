@@ -39,9 +39,6 @@ def make_submit():
             ])
         ]),
         dmc.Space(h=10),
-        html.Div([
-            dmc.Progress(id=ksub.sid("progress"), value=0, size="xl", striped=True, animate=True)
-        ], id=ksub.sid("progress-div"), style={"display": "none"}),
         dmc.NotificationsProvider([
             html.Div(id=kf.sid("notification")),
         ], limit=1),
@@ -49,27 +46,38 @@ def make_submit():
 
     return res
 
-def make_session_notification(action, uuid_str):
-    msg="Here is your session id, use it to access your results later"
-    notif = dmc.Notification(
-        id="submit-notif",
-        title=uuid_str,
-        loading=False,
-        message=msg,
-        action=action,
-        autoClose=False,
-    )
-    return notif
-
-def make_error_notification(action):
+def make_submit_notification(title, message):
     return dmc.Notification(
-        id="submit-notif-error",
-        title="Error",
-        loading=False,
-        message="Error",
-        action=action,
-        autoClose=False
+        id="kmviz-submit-notif",
+        title=title,
+        message=message,
+        loading=True,
+        action="show",
+        autoClose=False,
+        color="orange",
     )
+
+def update_ok_submit_notification(title, message):
+    return dmc.Notification(
+        id="kmviz-submit-notif",
+        title=title,
+        message=message,
+        action="update",
+        autoClose=False,
+        color="green",
+    )
+
+def make_error_submit_notification(title):
+    return dmc.Notification(
+        id="kmviz-submit-notif",
+        title=f"❌ {title}",
+        message="An error occurred while processing your request(s)",
+        loading=None,
+        action="update",
+        autoClose=False,
+        color="red",
+    )
+
 
 def make_submit_callbacks():
 
@@ -102,28 +110,22 @@ def make_submit_callbacks():
         background=True,
         running=[
             (Output(ksub.sid("button"), "disabled"), True, True),
-            (Output(ksub.sid("progress"), "animate"), True, False),
-            (Output(ksub.sid("progress-div"), "style"), style_inline_patch(), style_inline_patch())
         ],
-        progress=[Output(ksub.sid("progress"), "value"),
-                  Output(ksub.sid("progress"), "label"),
-                  Output(kf.sid("notification"), "children")],
+        progress=[Output(kf.sid("notification"), "children")],
         prevent_initial_call=True,
     )
     def submit(set_progress, n_clicks, queries, options, actives):
         prevent_update_on_none(n_clicks)
 
         nb_queries = len(queries)
-        progress_pattern = "{n} / {total}"
 
         uuid_str = f"kmviz-{str(uuid.uuid4())}"
 
         kmv_info(f"⌛ {uuid_str}")
-        nshow = make_session_notification("show", uuid_str)
-
-        set_progress((0, progress_pattern.format(n=0, total=nb_queries), nshow))
 
         query_results = {}
+
+        set_progress((make_submit_notification("Processing...", None)))
 
         try:
             for i, query in enumerate(queries):
@@ -133,11 +135,9 @@ def make_submit_callbacks():
                     if isinstance(result[key], str):
                         del result[key]
                 query_results[query.name] = result
-                set_progress(((i / nb_queries) * 100, progress_pattern.format(n=i, total=nb_queries), nshow))
         except Exception as e:
             kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
-            set_progress((100, "Error", no_update))
-            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_notification("show")
+            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str)
 
         default_query = queries[0].name
         default_provider = actives[0]
@@ -151,8 +151,6 @@ def make_submit_callbacks():
             default_query)
         )
 
-        set_progress((100, "Done", nshow))
-
         kmv_info(f"✅ {uuid_str}")
         return (
             Serverside(query_results),
@@ -161,6 +159,5 @@ def make_submit_callbacks():
             make_select_data([query.name for query in queries]),
             default_query,
             uuid_str,
-            no_update,
+            update_ok_submit_notification(f"✅ {uuid_str}", "Here is your session id, use it to access your results later")
         )
-
