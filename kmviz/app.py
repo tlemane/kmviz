@@ -63,6 +63,10 @@ def make_app():
         dash.page_container
     ])
 
+    for page in dash.page_registry.values():
+        kmv_info(f"📄 {page['name']} (path: '{page['path']}', relative_path: '{page['relative_path']}')")
+
+
     return app
 
 def init(**kwargs):
