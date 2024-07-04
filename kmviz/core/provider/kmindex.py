@@ -44,6 +44,8 @@ class KmindexServerProvider(KmindexProvider):
 
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
 
+
+
         if len(query.seq) < self.kmer_size():
             return f"min sequence size is {self.kmer_size()}"
 
@@ -61,23 +63,21 @@ class KmindexServerProvider(KmindexProvider):
 
         covxks = []
         covxbs = []
+        covyks = []
+        covybs = []
 
-        for r in responses.values():
-            covxks.append(round(r.xk, 3))
-            covxbs.append(round(r.xb, 3))
+        for r in metadata["ID"]:
+            covxks.append(round(responses[r].xk, 3))
+            covxbs.append(round(responses[r].xb, 3))
+
+            if self.has_abs():
+                covyks.append(round(responses[r].yk, 3))
+                covybs.append(round(responses[r].yb, 3))
 
         metadata.insert(1, "CovXK", covxks, True)
         metadata.insert(2, "CovXB", covxbs, True)
 
         if self.has_abs():
-            covyks = []
-            covybs = []
-
-            for r in responses.values():
-                covyks.append(round(r.yk, 3))
-                covybs.append(round(r.yb, 3))
-
-
             metadata.insert(3, "CovYK", covyks , True)
             metadata.insert(4, "CovYB", covybs, True)
 

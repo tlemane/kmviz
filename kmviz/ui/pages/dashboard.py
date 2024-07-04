@@ -35,7 +35,6 @@ def make_dashboard():
     make_sidebar_layout_callbacks()
 
     return layout
-    #return dashboard
 
 dash.register_page(__name__, path=state.kmstate.dashboard_path, name="dashboard", title="dashboard")
 

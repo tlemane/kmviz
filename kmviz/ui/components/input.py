@@ -182,6 +182,7 @@ def make_input_text_callbacks():
                 return Serverside(queries), style_hide_patch(), None, message, style_hide_patch(), style_hide_patch()
             except KmVizIOError as e:
                 return Serverside([]), Patch(), str(e), None, no_update, style_inline_patch()
+        return no_update, no_update, no_update, no_update, no_update, no_update
 
     @callback(
         Input(kif("text"), "value"),

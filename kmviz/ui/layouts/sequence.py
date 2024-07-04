@@ -209,6 +209,7 @@ def make_sequence_layout_callbacks():
 
         fig.update_layout(legend_title_text="")
         fig.update_xaxes(title_text="Sequence")
+        fig.update_yaxes(rangemode="tozero")
 
         return fig
 
