@@ -12,6 +12,7 @@ from kmviz.ui.utils import prevent_update_on_none, make_select_data
 from kmviz.ui.components.store import ksf, ksfr
 from kmviz.ui.components.select import kgsf
 from kmviz.core.log import kmv_info, kmv_warn
+from kmviz.core import KmVizQueryError
 import time
 
 import uuid
@@ -67,11 +68,16 @@ def update_ok_submit_notification(title, message):
         color="green",
     )
 
-def make_error_submit_notification(title):
+def make_error_submit_notification(title, msg = None):
+    message = "An error occurred while processing your request(s)"
+
+    if msg:
+        message = msg
+
     return dmc.Notification(
         id="kmviz-submit-notif",
         title=f"❌ {title}",
-        message="An error occurred while processing your request(s)",
+        message=message,
         loading=None,
         action="update",
         autoClose=False,
@@ -133,8 +139,12 @@ def make_submit_callbacks():
                 keys = list(result.keys())
                 for key in keys:
                     if isinstance(result[key], str):
+                        raise KmVizQueryError(result[key])
                         del result[key]
                 query_results[query.name] = result
+        except KmVizQueryError as e:
+            kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
+            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str, str(e))
         except Exception as e:
             kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
             return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str)

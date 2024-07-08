@@ -9,9 +9,13 @@ PROVIDERS = {
 
 def make_provider_from_dict(name, d):
     if d["type"] not in PROVIDERS:
-        raise RuntimeError("")
+        raise RuntimeError(f"Unknown provider type: {d['type']}")
 
     p = PROVIDERS[d["type"]](name=name, **d["params"])
+
+    if "default" in d:
+        p.set_opt_defs(d["default"])
+
     metadb = make_metadb_from_dict(d["metadata"])
     metadb.connect()
     p.attach_metadata(metadb)

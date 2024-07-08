@@ -16,8 +16,10 @@ kof = kf.child("option")
 kcf = kf.child("config")
 
 def make_range_option(opt: RangeOption, id):
+    v = opt.value if opt.value else opt.default
+    text_id = id["type"] + "-" + id["index"] + "-" + opt.name
     return html.Div([
-        dmc.Text(opt.name, size="sm", weight=450, align="center"),
+        dmc.Text(f"{opt.name} = {v}", size="sm", weight=450, align="center", id=text_id),
         dmc.Slider(
             id=id,
             min=opt.min,
@@ -93,21 +95,34 @@ def create_option_callback(provider_name, opt_name):
         return patch
     return update
 
+def create_range_text_callback(opt_name):
+    def update(value):
+        return [f"{opt_name} = {value}"]
+    return update
+
 def make_callback(name, opt_name, input_id, output_id):
     return callback(
         Input(input_id, "value"),
         Output(output_id, "data"),
-        prevent_initial_callbacks=True
+        prevent_initial_call=True
     )(create_option_callback(name, opt_name))
 
 def make_options_callbacks():
     for provider_name, provider in state.kmstate.providers.all().items():
         for opt_name in provider.options:
+            if hasattr(provider.options[opt_name], "is_hidden"):
+                continue
             callback(
                 Input(kof(f"{provider_name}-{opt_name}"), "value"),
                 Output(ksfr("provider-options"), "data"),
-                prevent_initial_callbacks=True
+                prevent_initial_call=True
             )(create_option_callback(provider_name, opt_name))
+            if isinstance(provider.options[opt_name], RangeOption):
+                iid = kof(f"{provider_name}-{opt_name}")
+                callback(
+                    Input(iid, "value"),
+                    Output(f"{iid['type']}-{iid['index']}-{opt_name}", "children")
+                )(create_range_text_callback(opt_name))
 
 def make_provider_config(provider_name):
     options = state.kmstate.providers.get(provider_name).options
@@ -115,6 +130,8 @@ def make_provider_config(provider_name):
     children = []
 
     for opt in options.values():
+        if hasattr(opt, "is_hidden"):
+            continue
         children.append(make_user_option(opt, id=kof(f"{provider_name}-{opt.name}")))
 
     return html.Div(

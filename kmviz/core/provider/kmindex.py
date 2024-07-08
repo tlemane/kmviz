@@ -36,15 +36,13 @@ class KmindexServerProvider(KmindexProvider):
 
         self.options = {
             "z": RangeOption("z", 0, min=0, max=5, step=1),
-            "coverage": RangeOption("coverage", 0.7, min=0.0, max=1.0, step=0.05)
+            "coverage": RangeOption("coverage", 0.7, min=0.0, max=1.0, step=0.05),
         }
 
     def connect(self):
         self.index_infos = dict(self._api.infos().json())["index"]
 
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
-
-
 
         if len(query.seq) < self.kmer_size():
             return f"min sequence size is {self.kmer_size()}"

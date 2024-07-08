@@ -49,7 +49,7 @@ def validate_alphabet(seq, alpha):
 
 def validate_input(idx, seq, seq_size, max_size, nb, limits):
     if nb > limits["max_query"]:
-        raise KmVizError(f"The max number of queries is {limits['max_query']}")
+        raise KmVizIOError(f"The max number of queries is {limits['max_query']}")
     if seq_size > limits["max_query_size"]:
         raise KmVizIOError(f"Query max size is {limits['max_query_size']} ({idx}:{seq_size})")
     if max_size > limits["max_size"]:

@@ -6,6 +6,8 @@ import pandas as pd
 from dataclasses import dataclass
 from kmviz.core.query import QueryResponse, Query
 from kmviz.core.metadata.db import MetaDB
+from kmviz.core import KmVizError
+from kmviz.core.provider.options import update_option
 
 from .options import ProviderOption
 
@@ -35,7 +37,7 @@ class Provider(ABC):
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
         """
         :param query: The query
-        :param options: The user-defined options 
+        :param options: The user-defined options
         :param idx: A unique id representing the query
         :returns: T
         """
@@ -66,6 +68,15 @@ class Provider(ABC):
 
     def options(self) -> Dict[str, ProviderOption]:
         return self.options
+
+    def set_opt_defs(self, def_opts: Dict[str, any]):
+        for k, v in def_opts.items():
+            if k not in self.options:
+                raise KmVizError(f"'{k}' not in options ({','.join(self.options.keys())})")
+            if isinstance(v, dict):
+                update_option(self.options[k], v)
+            else:
+                self.options[k].value = v
 
     def set_presets(self, presets: dict):
         self._presets = presets

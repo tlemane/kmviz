@@ -99,6 +99,9 @@ class kState:
         return None
 
     def _configure_limits(self, config: dict):
+        if not "input" in config:
+            return
+
         if "max_query" in config["input"]:
             self._limits["max_query"] = int(config["input"]["max_query"])
         if "max_query_size" in config["input"]:
@@ -106,7 +109,7 @@ class kState:
         if "max_size" in config["input"]:
             self._limits["max_size"] = int(config["input"]["max_size"])
         if "alphabet" in config["input"]:
-            self._limits["alphabet"] = int(config["input"]["alphabet"])
+            self._limits["alphabet"] = config["input"]["alphabet"]
 
     def _configure_template(self, config: dict):
         if "html" not in config:
@@ -203,6 +206,7 @@ class kState:
                 p.connect()
             except:
                 raise KmVizError(f"Init fails for '{name}'")
+
             self._providers.add(p)
 
 def init_state():

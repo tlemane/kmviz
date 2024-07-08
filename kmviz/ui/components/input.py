@@ -176,12 +176,12 @@ def make_input_text_callbacks():
     def load_input_from_text(n_clicks, content):
         if n_clicks:
             try:
-                queries = [Query(name, seq) for name, seq, _ in parse_fastx(content)]
+                queries = [Query(name, seq) for name, seq, _ in parse_fastx(content, state.kmstate.limits)]
                 query = "queries" if len(queries) > 1 else "query"
                 message = dmc.Text(f"🗎 raw ({len(queries)} {query})", weight=500)
                 return Serverside(queries), style_hide_patch(), None, message, style_hide_patch(), style_hide_patch()
             except KmVizIOError as e:
-                return Serverside([]), Patch(), str(e), None, no_update, style_inline_patch()
+                return Serverside([]), Patch(), str(e), None, no_update, no_update
         return no_update, no_update, no_update, no_update, no_update, no_update
 
     @callback(
@@ -240,7 +240,7 @@ def make_input_file_callbacks():
         content = base64.b64decode(data).decode("utf-8")
 
         try:
-            queries = [Query(name, seq) for name, seq, _ in parse_fastx(content)]
+            queries = [Query(name, seq) for name, seq, _ in parse_fastx(content, state.kmstate.limits)]
             query = "queries" if len(queries) > 1 else "query"
             message = dmc.Text(f"🗎 {filename} ({len(queries)} {query})", weight=500)
             return (
@@ -251,8 +251,8 @@ def make_input_file_callbacks():
                 style_hide_patch()
             )
         except KmVizIOError as e:
-            message = dmc.Text(f"🗎 {filename} -> Invalid format", color="red", weight=500)
-            return Serverside([]), message, Patch(), None, style_inline_patch()
+            message = dmc.Text(f"🗎 {filename}: '{str(e)}'", color="red", weight=500)
+            return Serverside([]), message, no_update, None, no_update
 
 def make_input():
     hidden = { "display": "none" }

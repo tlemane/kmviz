@@ -37,11 +37,16 @@ class RangeOption(ProviderOption):
     min: Union[int, float]
     max: Union[int, float]
     step: Union[int, float]
-    value: [int, float] = None
+    value: Union[int, float] = None
 
 @dataclass
 class TextOption(ProviderOption):
     placeholder: str = None
     value: str = None
 
-
+def update_option(opt, d):
+    for k, v in d.items():
+        if hasattr(opt, k):
+            setattr(opt, k, v)
+        elif (k == "hide"):
+            opt.is_hidden = True
