@@ -24,6 +24,12 @@ class kState:
         self._backend = None
         self._template = ""
         self._metatags = []
+        self._limits = {
+            "max_query": 2**32,
+            "max_query_size": 2**23,
+            "max_size": 2**64,
+            "alphabet": "all"
+        }
 
     def store_result(self, uid: str, results: tuple):
         self._cache.set(uid, results)
@@ -36,6 +42,7 @@ class kState:
 
     def configure(self, config: dict):
         self._config = config
+        self._configure_limits(config)
         self._configure_template(config)
         self._configure_plugins(config)
         self._configure_providers(config)
@@ -77,6 +84,10 @@ class kState:
     def metatags(self):
         return self._metatags
 
+    @property
+    def limits(self):
+        return self._limits
+
     def instance_plugin(self):
         for name, p in self._plugins.items():
             if p.is_instance_plugin():
@@ -86,6 +97,16 @@ class kState:
                     self.dashboard_path = "/dashboard"
                 return p
         return None
+
+    def _configure_limits(self, config: dict):
+        if "max_query" in config["input"]:
+            self._limits["max_query"] = int(config["input"]["max_query"])
+        if "max_query_size" in config["input"]:
+            self._limits["max_query_size"] = int(config["input"]["max_query_size"])
+        if "max_size" in config["input"]:
+            self._limits["max_size"] = int(config["input"]["max_size"])
+        if "alphabet" in config["input"]:
+            self._limits["alphabet"] = int(config["input"]["alphabet"])
 
     def _configure_template(self, config: dict):
         if "html" not in config:
