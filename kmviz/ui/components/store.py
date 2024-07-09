@@ -17,7 +17,7 @@ def make_stores():
     return html.Div([
         dcc.Store(id=ksfr("query-sequences"), data=[]),
         dcc.Store(id=ksfr("provider-options"), data=default_options),
-        dcc.Store(id=ksfr("provider-active"), data=[]),
+        dcc.Store(id=ksfr("provider-active"), data=state.kmstate.defaults["databases"]),
         dcc.Store(id=ksf("ready-state"), data={}),
         dcc.Store(id=ksf("query-results"), data={})
     ])

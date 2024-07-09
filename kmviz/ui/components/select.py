@@ -21,8 +21,9 @@ def make_select_provider():
             clearable=True,
             withAsterisk=True,
             icon=DashIconify(icon="fluent:library-16-regular"),
+            value=state.kmstate.defaults["databases"],
         )
-    ])
+    ], style = {"display": "none" if state.kmstate.defaults["hide_db"] else "inline"})
     return res
 
 def make_select_provider_callbacks():
@@ -56,12 +57,14 @@ def make_select():
         dmc.Select(
             id=kgsf("provider"),
             placeholder="Select database",
+            icon=DashIconify(icon="fluent:library-16-regular"),
             className="kmviz-gselect",
             size="xs"
         ),
         dmc.Select(
             id=kgsf("query"),
             placeholder="Select query",
+            icon=DashIconify(icon="mdi:dna"),
             className="kmviz-gselect",
             size="xs"
         ),

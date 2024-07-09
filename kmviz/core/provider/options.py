@@ -15,6 +15,12 @@ class ProviderOption:
         if self.value is None:
             self.value = self.default
 
+    @property
+    def hidden(self):
+        if hasattr(self, "is_hidden"):
+            return self.is_hidden
+        return False
+
 @dataclass
 class NumericOption(ProviderOption):
     min: Optional[Union[int, float]]
@@ -49,4 +55,4 @@ def update_option(opt, d):
         if hasattr(opt, k):
             setattr(opt, k, v)
         elif (k == "hide"):
-            opt.is_hidden = True
+            opt.is_hidden = bool(v)

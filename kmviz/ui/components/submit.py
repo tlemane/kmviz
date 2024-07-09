@@ -107,6 +107,7 @@ def make_submit_callbacks():
         Output(kgsf("query"), "value"),
         Output(kf.sid("session-id"), "data"),
         Output(kf.sid("notification"), "children"),
+        Output(ksub.sid("button"), "disabled"),
         inputs=[
             Input(ksub.sid("button"), "n_clicks"),
             State(ksfr("query-sequences"), "data"),
@@ -144,10 +145,10 @@ def make_submit_callbacks():
                 query_results[query.name] = result
         except KmVizQueryError as e:
             kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
-            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str, str(e))
+            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str, str(e)), False
         except Exception as e:
             kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
-            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str)
+            return no_update, no_update, no_update, no_update, no_update, no_update, make_error_submit_notification(uuid_str), False
 
         default_query = queries[0].name
         default_provider = actives[0]
@@ -169,5 +170,6 @@ def make_submit_callbacks():
             make_select_data([query.name for query in queries]),
             default_query,
             uuid_str,
-            update_ok_submit_notification(f"✅ {uuid_str}", "Here is your session id, use it to access your results later")
+            update_ok_submit_notification(f"✅ {uuid_str}", "Here is your session id, use it to access your results later"),
+            True
         )

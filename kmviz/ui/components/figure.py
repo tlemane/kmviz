@@ -47,10 +47,13 @@ def make_hover_color_picker(id: str,
                 label=label,
                 value=color,
                 size=200,
-                className="daq-fixed-cp"
+                className="daq-fixed-cp",
+                style = { "zIndex": 10000 }
             ),
             trigger="hover",
             target=target,
+            style = { "zIndex": 10000 },
+            placement="bottom"
         )
     ])
 
@@ -1848,7 +1851,8 @@ def make_axis(factory, ax):
                 id=pid("axis-index"),
                 min=0, step=1, max=20, value=0,
                 size="xs",
-                style = {"width": "55px", "height": "20px", "margin-top": "1px"}
+                style = {"width": "75px", "height": "20px", "margin-top": "1px"},
+                icon=DashIconify(icon="tabler:number")
             ),
         ]),
         title_panel,
@@ -2230,7 +2234,7 @@ def make_plot(factory):
         placeholder="Select preset",
         clearable=True,
         icon=icons("preset"),
-        style={"width": "170px"}
+        size="xs"
     )
 
     trace_type = make_select_input(
@@ -2257,27 +2261,15 @@ def make_plot(factory):
         style={"width": "170px"},
     )
 
-    down_select = make_select_input(
-        pid.sid("down-select"),
-        None,
-        data=make_select_data(["png", "jpg", "svg", "pdf", "webp", "html", "json"]),
-        placeholder="format",
-        clearable=False,
-        icon=DashIconify(icon="material-symbols:download", width=20),
+    down_select = dmc.SegmentedControl(
+        id=pid.sid("down-select"),
+        data=make_select_data(["png", "jpg", "svg", "pdf", "html", "json"]),
         value="png",
-        searchable=True,
+        size="xs",
+        color=dmc.theme.DEFAULT_COLORS["dark"][0]
     )
 
     res =  html.Div([
-        dmc.Group([
-            down_select,
-            dmc.ActionIcon(
-                DashIconify(icon="material-symbols:download", width=20),
-                id=pid.sid("down-button"),
-                variant="filled",
-                color = "#1C7ED6",
-            ),
-        ], style = {"margin-left":"auto", "margin-right": 0, "width": "fit-content"}, spacing=5),
         dcc.Download(id=pid.sid("download")),
         dcc.Graph(
             figure=blank_figure(),
@@ -2302,6 +2294,15 @@ def make_plot(factory):
                 dmc.Tab("Colorbar", value="colorbar", disabled=False, id=pid.sid("colobar-tab")),
                 dmc.Tab("Shape", value="shape", disabled=False, id=pid.sid("shape-tab")),
                 preset_select,
+                dmc.Group([
+                    down_select,
+                    dmc.ActionIcon(
+                        DashIconify(icon="material-symbols:download", width=20),
+                        id=pid.sid("down-button"),
+                        variant="filled",
+                        color = "#1C7ED6",
+                    ),
+                ], style = {"margin-left":"10px", "width": "fit-content"}, spacing=5),
                 dmc.ActionIcon(
                     DashIconify(icon="lucide:filter-x", width=20),
                     id=pid.sid("rmf"),

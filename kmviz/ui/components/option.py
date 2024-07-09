@@ -129,29 +129,50 @@ def make_provider_config(provider_name):
 
     children = []
 
-    for opt in options.values():
-        if hasattr(opt, "is_hidden"):
-            continue
-        children.append(make_user_option(opt, id=kof(f"{provider_name}-{opt.name}")))
+    if state.kmstate.providers.get(provider_name).has_visible_options:
+        for opt in options.values():
+            if opt.hidden:
+                continue
+            children.append(make_user_option(opt, id=kof(f"{provider_name}-{opt.name}")))
 
     return html.Div(
         id=kcf(f"{provider_name}-div"),
         children=children,
-        style={ "display": "none" }
+        style={"display": "inline" if provider_name == state.kmstate.defaults["configuration"] else "none"}
     )
 
 def make_config():
     provider_names = state.kmstate.providers.list()
+
+    if state.kmstate.defaults["configuration"]:
+        data = make_select_data(state.kmstate.defaults["databases"])
+        value = state.kmstate.defaults["configuration"]
+    else:
+        data = None
+        value = None
+
+    show_conf = True
+
+    if state.kmstate.defaults["hide_db"]:
+        provider_name = state.kmstate.defaults["databases"][0]
+        show_conf = state.kmstate.providers.get(provider_name).has_visible_options
+    else:
+        show_conf = any(state.kmstate.providers.get(p).has_visible_options for p in provider_names)
+
+    show_select = show_conf and not state.kmstate.defaults["hide_db"]
 
     res = html.Div([
         dmc.Divider(size="sm", color="gray", label="CONFIGURATION", labelPosition="center"),
         dmc.Select(
             id=kf("select-provider-config"),
             clearable=True,
-            icon=DashIconify(icon="mynaui:config")
+            icon=DashIconify(icon="mynaui:config"),
+            data=data,
+            value=value,
+            style = {"display": "inline" if show_select else "none" }
         ),
         *[make_provider_config(name) for name in provider_names]
-    ])
+    ], style = {"display": "inline" if show_conf else "none" })
 
     return res
 
@@ -160,7 +181,7 @@ def make_config_callbacks():
         Input(kf("select-provider-config"), "value"),
         State(kcf.all, "id"),
         Output(kcf.all, "style"),
-        prevent_initial_callbacks=True,
+        prevent_initial_call=True,
     )
     def show_provider_config(provider_name, idx):
         styles = [{"display": "none"} for _ in range(len(idx))]

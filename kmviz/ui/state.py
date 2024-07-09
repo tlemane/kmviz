@@ -31,6 +31,13 @@ class kState:
             "alphabet": "all"
         }
 
+        self._defaults = {
+            "databases": [],
+            "configuration": None,
+            "hide_db": False,
+            "hide_config": False
+        }
+
     def store_result(self, uid: str, results: tuple):
         self._cache.set(uid, results)
 
@@ -46,6 +53,7 @@ class kState:
         self._configure_template(config)
         self._configure_plugins(config)
         self._configure_providers(config)
+        self._configure_defaults(config)
         self._configure_caches(config)
 
     @property
@@ -88,6 +96,10 @@ class kState:
     def limits(self):
         return self._limits
 
+    @property
+    def defaults(self):
+        return self._defaults
+
     def instance_plugin(self):
         for name, p in self._plugins.items():
             if p.is_instance_plugin():
@@ -97,6 +109,35 @@ class kState:
                     self.dashboard_path = "/dashboard"
                 return p
         return None
+
+    def _configure_defaults(self, config: dict):
+        if not "defaults" in config:
+            return
+
+        if "databases" in config["defaults"]:
+            if isinstance(config["defaults"]["databases"], list):
+                self._defaults["databases"] = config["defaults"]["databases"]
+            else:
+                self._defaults["databases"] = [config["defaults"]["databases"]]
+
+            if "configuration" in config["defaults"]:
+                self._defaults["configuration"] = config["defaults"]["configuration"]
+            else:
+                self._defaults["configuration"] = self._defaults["databases"][0]
+
+            for d in self._defaults["databases"]:
+                if d not in self.providers.list():
+                    raise KmVizError(f"'{d}' database does not exist")
+
+            dc = self._defaults["configuration"]
+            if dc and dc not in self.providers.list():
+                raise KmVizError(f"'{dc}' database does not exist")
+
+            if "hide_db" in config["defaults"]:
+                if config["defaults"]["hide_db"]:
+                    if len(self._defaults["databases"]) != 1:
+                        raise KmVizError("'hide_db=True' with multiple default databases")
+                    self._defaults["hide_db"] = True
 
     def _configure_limits(self, config: dict):
         if not "input" in config:

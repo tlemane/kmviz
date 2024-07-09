@@ -8,7 +8,7 @@
 }
 
 .kmviz-tabs {
-  margin-top: 50px;
+  margin-top: 35px;
 }
 
 .kmviz-gselect {
@@ -16,7 +16,7 @@
 }
 
 .kmviz-gselect-group {
-  position: absolute;
+  position: fixed;
   top: 2px;
   right: 1px;
   z-index: 11;

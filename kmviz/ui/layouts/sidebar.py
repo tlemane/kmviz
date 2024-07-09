@@ -77,7 +77,7 @@ def make_sidebar_layout():
             ]),
             dmc.Space(h=5),
             make_select_provider(),
-            dmc.Space(h=20),
+            dmc.Space(h=0 if state.kmstate.defaults["hide_db"] else 20),
             make_input(),
             dmc.Space(h=20),
             make_config(),

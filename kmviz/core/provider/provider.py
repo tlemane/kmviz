@@ -66,6 +66,14 @@ class Provider(ABC):
     def ready(self) -> bool:
         return True
 
+    @property
+    def has_options(self) -> bool:
+        return len(self.options) > 0
+
+    @property
+    def has_visible_options(self) -> bool:
+        return any(not x.hidden for x in self.options.values())
+
     def options(self) -> Dict[str, ProviderOption]:
         return self.options
 

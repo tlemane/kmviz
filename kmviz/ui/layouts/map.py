@@ -231,30 +231,18 @@ def make_map_layout():
         placeholder="Select preset",
         clearable=True,
         icon=icons("preset"),
-        style={"width": "170px"}
+        size="xs",
     )
 
-    down_select = make_select_input(
-        kmap.sid("down-select"),
-        None,
-        data=make_select_data(["png", "jpg", "svg", "pdf", "webp", "html", "json"]),
-        placeholder="format",
-        clearable=False,
-        icon=DashIconify(icon="material-symbols:download", width=20),
+    down_select = dmc.SegmentedControl(
+        id=kmap.sid("down-select"),
+        data=make_select_data(["png", "jpg", "svg", "pdf", "html", "json"]),
         value="png",
-        searchable=True,
+        size="xs",
+        color=dmc.theme.DEFAULT_COLORS["dark"][0]
     )
 
     res =  html.Div([
-        dmc.Group([
-            down_select,
-            dmc.ActionIcon(
-                DashIconify(icon="material-symbols:download", width=20),
-                id=kmap.sid("down-button"),
-                variant="filled",
-                color = "#1C7ED6",
-            ),
-        ], style = {"margin-left":"auto", "margin-right": 0, "width": "fit-content"}, spacing=5),
         dcc.Download(id=kmap.sid("download")),
         dcc.Graph(figure=blank_map(),
                   id=kmap.sid("figure"),
@@ -279,6 +267,15 @@ def make_map_layout():
                 dmc.Tab("Legend", value="map-LEGEND"),
                 dmc.Tab("Colorbar", value="map-COLORBAR"),
                 preset_select,
+                dmc.Group([
+                    down_select,
+                    dmc.ActionIcon(
+                        DashIconify(icon="material-symbols:download", width=20),
+                        id=kmap.sid("down-button"),
+                        variant="filled",
+                        color = "#1C7ED6",
+                    ),
+                ], style = {"margin-left":"10px", "width": "fit-content"}, spacing=5),
                 dmc.ActionIcon(
                     DashIconify(icon="lucide:filter-x", width=20),
                     id=kmap.sid("rmf"),
