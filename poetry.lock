@@ -1439,6 +1439,24 @@ python-dateutil = ">=2.8.1"
 dev = ["flake8", "markdown", "twine", "wheel"]
 
 [[package]]
+name = "gradpyent"
+version = "0.2.1"
+description = "Create color gradients based on list-like input data"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "gradpyent-0.2.1-py3-none-any.whl", hash = "sha256:c460cfd2dbb84371f453182527e08ed2243ffed215b8eccf94916e16da2b48f2"},
+    {file = "gradpyent-0.2.1.tar.gz", hash = "sha256:e81603cff1084c3d440ef2f416a9bfeb588970a7ab2f0ec3cc8b50092b2b7ed3"},
+]
+
+[package.dependencies]
+pandas = "*"
+
+[package.extras]
+dev = ["Flake8-pyproject", "isort", "pydocstyle[toml]", "pytest", "pytest-cov", "pytest-mock"]
+docs = ["recommonmark", "sphinx", "sphinx-rtd-theme"]
+
+[[package]]
 name = "greenlet"
 version = "3.0.3"
 description = "Lightweight in-process concurrent programming"
@@ -4793,4 +4811,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3ca15492e68ccffb7fbcbec786230df0eaf3648f16612690e6de55df8d7f15c9"
+content-hash = "c744f103b2d5aaaf23d9287a7ff9a1bd3aee0b68c4cb80369a517d6c860ed360"

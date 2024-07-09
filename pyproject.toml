@@ -36,6 +36,7 @@ keyring = "^25.2.1"
 mysql-connector-python = "^8.4.0"
 sqlalchemy = "^2.0.31"
 kaleido = "0.2.1"
+gradpyent = "^0.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
