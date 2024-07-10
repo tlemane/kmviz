@@ -30,8 +30,8 @@ def input_type(content: str) -> str:
 
     raise KmVizIOError("Unsupported format, should be fasta/q.")
 
-AMINO_ALPHABET = set("ABCDEFGHIKLMNPQRSTVWXYZ")
-DNA_ALPHABET = set("ACGT")
+AMINO_ALPHABET = set("ABCDEFGHIKLMNPQRSTVWXYZabcdefghiklmnpqrstvwxyz")
+DNA_ALPHABET = set("ACGTacgt")
 
 def is_amino(content: str) -> bool:
     return all(c in AMINO_ALPHABET for c in content)

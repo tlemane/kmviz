@@ -37,7 +37,6 @@ class KmindexServerProvider(KmindexProvider):
         self.options = {
             "z": RangeOption("z", 0, min=0, max=5, step=1),
             "coverage": RangeOption("coverage", 0.7, min=0.0, max=1.0, step=0.05),
-            "choice": ChoiceOption("choice", "ok", ["ok", "ok2"])
         }
 
     def connect(self):
