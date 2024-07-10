@@ -27,9 +27,9 @@ class kState:
         self._metatags = []
         self._limits = {
             "max_query": 2**32,
-            "max_query_size": 2**23,
+            "max_query_size": 2**32,
             "max_size": 2**64,
-            "alphabet": "all"
+            "alphabet": "dna"
         }
 
         self._defaults = {

@@ -150,8 +150,8 @@ if __name__ == "__main__":
 config = init()
 app = make_app()
 
-#if "auth" in config:
-#    auth = make_auth(app, config["auth"])
+if "auth" in config:
+    auth = make_auth(app, config["auth"])
 
 app = app.server
 

@@ -11,11 +11,11 @@ import base64
 import dataclasses
 
 def api_root():
-    res = {}
+    res = dict(database={})
 
     for name, provider in state.kmstate.providers.all().items():
         options = list(provider.options.keys())
-        res[name] = {}
+        res["database"][name] = {}
 
         options = {}
         for opt_name, opt in provider.options.items():
@@ -23,7 +23,9 @@ def api_root():
                 "type": type(opt.default).__name__,
                 "state": dataclasses.asdict(opt)
             }
-        res[name]["options"] = options
+        res["database"][name]["options"] = options
+
+    res["input"] = state.kmstate.api_config["limits"]
 
     return jsonify(res)
 
@@ -88,5 +90,5 @@ def api_query():
 def register_api_routes(server):
     if state.kmstate.api:
         root = state.kmstate.api_config["route"]
-        server.route(root, methods=["POST", "GET"])(api_root)
+        server.route(root, methods=["GET"])(api_root)
         server.route(root + state.kmstate.api_config["query_route"], methods=["POST"])(api_query)
