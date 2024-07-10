@@ -9,19 +9,34 @@ from kmviz.ui.patch import style_hide_patch, style_inline_patch
 from kmviz.ui.components.store import ksfr
 from kmviz.ui.utils import prevent_update_on_none
 
-from kmviz.core.query import Query
+from kmviz.core.query import Query, QueryResponse, Response
 from kmviz.core.io import parse_fastx, KmVizIOError
 from kmviz.ui import state
 from kmviz.ui.utils import make_select_data
 from kmviz.ui.components.store import ksf
 from kmviz.ui.components.select import kgsf
 from dataclasses import dataclass
+from dash_iconify import DashIconify
 
 from io import StringIO
 import pandas as pd
+import orjson
 
 kif = kf.child("input")
 kidf = kif.child("div")
+
+KMVIZ_UPLOAD_STYLE = {
+    'width': '80%%',
+    'height': '40px',
+    'lineHeight': '40px',
+    'borderWidth': '1px',
+    'borderStyle': 'dashed',
+    'borderRadius': '5px',
+    'textAlign': 'center',
+    'margin': '10px',
+    'align': 'center',
+    'display': 'inherit'
+}
 
 def make_input_session():
     return [
@@ -62,24 +77,11 @@ def make_input_session_callbacks():
         return no_update, no_update, no_update, no_update, no_update, no_update, no_update, None
 
 def make_input_dataframe():
-    upload_style = {
-        'width': '80%%',
-        'height': '40px',
-        'lineHeight': '40px',
-        'borderWidth': '1px',
-        'borderStyle': 'dashed',
-        'borderRadius': '5px',
-        'textAlign': 'center',
-        'margin': '10px',
-        'align': 'center',
-        'display': 'inherit'
-    }
-
     return [
         dcc.Upload(
             id=kif("dataframe"),
             children=["Drop or ", html.A("Select a file")],
-            style = upload_style
+            style = KMVIZ_UPLOAD_STYLE
         ),
         html.Div(id=kif("dataframe-error"))
     ]
@@ -103,9 +105,6 @@ def make_input_dataframe_callbacks():
         Output(kgsf("provider"), "style"),
         Output(kgsf("query"), "style"),
         Output("tab-select", "value"),
-
-
-        prevent_initial_callbacks=True,
         prevent_initial_call=True,
     )
     def load_input_from_file(filename, contents):
@@ -170,7 +169,6 @@ def make_input_text_callbacks():
         Output(kif("text-msg"), "children"),
         Output(kif("select"), "style"),
         Output(kif("text"), "style"),
-        prevent_initial_callbacks=True,
         prevent_initial_call=True,
     )
     def load_input_from_text(n_clicks, content):
@@ -187,27 +185,12 @@ def make_input_text_callbacks():
     @callback(
         Input(kif("text"), "value"),
         Output(kif("text-load"), "disabled"),
-        prevent_initial_callbacks=True,
         prevent_initial_call=True,
     )
     def enable_load_button(value):
         if not value:
             return True
         return False
-
-KMVIZ_UPLOAD_STYLE = {
-    'width': '80%%',
-    'height': '40px',
-    'lineHeight': '40px',
-    'borderWidth': '1px',
-    'borderStyle': 'dashed',
-    'borderRadius': '5px',
-    'textAlign': 'center',
-    'margin': '10px',
-    'align': 'center',
-    'display': 'inherit'
-}
-
 
 def make_input_file():
 
@@ -230,7 +213,6 @@ def make_input_file_callbacks():
         Output(kif("file"), "style"),
         Output(kif("file"), "filename"),
         Output(kif("select"), "style"),
-        prevent_initial_callbacks=True,
         prevent_initial_call=True,
     )
     def load_input_from_file(filename, contents):
@@ -253,6 +235,68 @@ def make_input_file_callbacks():
         except KmVizIOError as e:
             message = dmc.Text(f"🗎 {filename}: '{str(e)}'", color="red", weight=500)
             return Serverside([]), message, no_update, None, no_update
+
+def make_input_session_file():
+    return [
+        dcc.Upload(
+            dmc.Button(
+                "Upload session",
+                size="xs",
+                color = "#1C7ED6",
+                style = {"margin-top": "2px"},
+                leftIcon=DashIconify(icon="bi:filetype-json", width=20)
+            ),
+            id=kif("session-file"),
+        ),
+        html.Div(id=kif("session-file-error"))
+    ]
+
+def make_input_session_file_callbacks():
+    @callback(
+        Input(kif("session-file"), "filename"),
+        Input(kif("session-file"), "contents"),
+        Output(ksf("query-results"), "data"),
+        Output(kf.sid("plot-only"), "data"),
+        Output(kgsf("provider"), "data"),
+        Output(kgsf("provider"), "value"),
+        Output(kgsf("query"), "data"),
+        Output(kgsf("query"), "value"),
+        Output("tab-select", "value"),
+        Output(kif("session-file"), "filename"),
+        Output(kf.sid("sidebar-layout"), "style"),
+        Output(kif("session-file-error"), "children"),
+        prevent_initial_call=True,
+    )
+    def input_session_file(filename, contents):
+        try:
+            content_type, data = contents.split(",")
+            content = base64.b64decode(data).decode()
+            session = orjson.loads(content)
+
+            result = {}
+            providers = []
+            queries = []
+            geo = {}
+            for query, pres in session.items():
+                queries.append(query)
+                for provider, res in pres.items():
+                    providers.append(provider)
+                    q = Query(res["_query"]["_name"], res["_query"]["_seq"])
+                    m = pd.DataFrame.from_dict(res["_metadata"])
+                    m.insert(0, "ID", m.pop("ID"))
+                    geo[provider] = res["_geodata"]
+                    responses = {}
+                    for sample, rep in res["_response"].items():
+                        responses[sample] = Response(**rep)
+                    result[query] = {provider: QueryResponse(q, responses, m)}
+            pdata = make_select_data(providers)
+            qdata = make_select_data(queries)
+
+            return Serverside(result), {"session": geo}, pdata, providers[0], qdata, queries[0], "table", None, {"display":"none"}, []
+        except Exception as e:
+            message = dmc.Text("An error occured while loading your session file", color="red", weight=500)
+            ret = html.Div([message], style={"margin-left":"10px", "margin-top": "3px"})
+            return no_update, no_update, no_update, no_update, no_update, no_update, no_update, None, no_update, ret
 
 def make_input():
     hidden = { "display": "none" }
@@ -278,7 +322,6 @@ def make_input():
         html.Div(make_input_text(), id=kidf("text"), style=show),
         html.Div(make_input_file(), id=kidf("file"), style=hidden),
         html.Div(make_input_session(), id=kidf("session"), style=hidden),
-        #html.Div(make_input_dataframe(), id=kidf("df"), style=hidden),
     ])
 
     return res
@@ -289,7 +332,6 @@ def make_input_callbacks():
         Input(kif("select"), "value"),
         State(kidf.all, "id"),
         Output(kidf.all, "style"),
-        prevent_initial_callbacks=True,
         prevent_initial_call=True,
     )
     def show_input(input_type, idx):

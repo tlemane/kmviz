@@ -14,6 +14,9 @@ from kmviz.ui.components.select import kgsf
 kindex = kf.child("index")
 
 def make_index_layout():
+    if state.kmstate.session_only:
+        return html.Div()
+
     res = html.Div([
         dmc.Center([
             html.H2("Index informations")

@@ -28,8 +28,13 @@ def make_range_option(opt: RangeOption, id):
             value=opt.value if opt.value else opt.default,
             updatemode="mouseup",
             precision=2,
-            className="kmviz-dmc-slider"
-        )
+            className="kmviz-dmc-user-slider",
+            marks=[
+                {"value": opt.min, "label": str(round(opt.min, 2))},
+                {"value": opt.max, "label": str(round(opt.max, 2))},
+            ]
+        ),
+        dmc.Space(h=13)
     ])
 
 def make_numeric_option(opt: NumericOption, id):
@@ -41,7 +46,8 @@ def make_numeric_option(opt: NumericOption, id):
         max=opt.max,
         value=opt.value if opt.value else opt.default,
         precision=2,
-        className="kmviz-dmc-number-input",
+        className="kmviz-dmc-user-number-input",
+        classNames={"root": "kmviz-dmc-numeric-input-root"}
     )
 
 def make_choice_option(opt: ChoiceOption, id):
@@ -50,9 +56,10 @@ def make_choice_option(opt: ChoiceOption, id):
         label=opt.name,
         data=make_select_data(opt.choices),
         value=opt.value if opt.value else opt.default,
-        className="kmviz-dmc-select",
+        className="kmviz-dmc-user-select",
         clearable=True,
-        searchable=True
+        searchable=True,
+        classNames={"root": "kmviz-dmc-select-input-root"}
     )
 
 def make_multichoice_option(opt: MultiChoiceOption, id):
@@ -61,18 +68,20 @@ def make_multichoice_option(opt: MultiChoiceOption, id):
         label=opt.name,
         data=make_select_data(opt.choices),
         value=opt.value if opt.value else opt.default,
-        className="kmviz-dmc-multi-select",
+        className="kmviz-dmc-user-multi-select",
         clearable=True,
-        searchable=True
+        searchable=True,
+        classNames={"root": "kmviz-dmc-select-input-root"}
     )
 
 def make_text_option(opt: TextOption, id):
     return dmc.TextInput(
         id=id,
         label=opt.name,
-        value=opt.value if opt.value else opt.dsefault,
+        value=opt.value if opt.value else opt.default,
         placeholder=opt.placeholder,
-        className="kmviz-dmc-text-input"
+        className="kmviz-dmc-user-text-input",
+        classNames={"root": "kmviz-dmc-text-input-root"}
     )
 
 def make_user_option(opt: ProviderOption, id):
@@ -110,7 +119,7 @@ def make_callback(name, opt_name, input_id, output_id):
 def make_options_callbacks():
     for provider_name, provider in state.kmstate.providers.all().items():
         for opt_name in provider.options:
-            if hasattr(provider.options[opt_name], "is_hidden"):
+            if provider.options[opt_name].hidden:
                 continue
             callback(
                 Input(kof(f"{provider_name}-{opt_name}"), "value"),

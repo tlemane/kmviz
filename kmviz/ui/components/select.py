@@ -1,10 +1,15 @@
 import dash_mantine_components as dmc
-from dash_extensions.enrich import Input, Output, html, callback
+from dash_extensions.enrich import Input, Output, State, html, callback, dcc
 from dash import no_update
 from kmviz.ui.utils import prevent_update_on_empty, make_select_data, prevent_update_on_none, icons
 from kmviz.ui.id_factory import kmviz_factory as kf
-from kmviz.ui.components.store import ksfr
+from kmviz.ui.components.store import ksfr, ksf
 from kmviz.ui import state
+import orjson
+from flask import jsonify
+from dataclasses import dataclass
+from kmviz.core.query import QueryResponseGeo
+from typing import Dict
 
 kpsf = kf.child("select")
 kgsf = kf.child("global-select")
@@ -48,12 +53,21 @@ def make_select_provider_callbacks():
 
 def make_select():
     return dmc.Group([
+        dmc.ActionIcon(
+            DashIconify(icon="bi:filetype-json", width=20),
+            id=kf.sid("download-all-results-btn"),
+            variant="filled",
+            color = "#1C7ED6",
+        ),
+        dmc.Space(w=10),
+        dcc.Download(id=kf.sid("download-all-results")),
         dmc.Switch(
             id=kf.sid("auto-apply"),
             offLabel=icons("autoff", width=20),
             onLabel=icons("auton", width=20),
             checked=True,
         ),
+        dmc.Space(w=10),
         dmc.Select(
             id=kgsf("provider"),
             placeholder="Select database",
@@ -86,6 +100,8 @@ def make_select_callbacks():
         if value.startswith("__kmviz_df"):
             prevent_update_on_none(None)
 
+        prevent_update_on_empty(state.kmstate.providers.list())
+
         p = state.kmstate.providers.get(value).presets
 
         map_data, map_style = None, {"display": "none"}
@@ -99,3 +115,23 @@ def make_select_callbacks():
 
         return map_data, plot_data, map_style, plot_style
 
+    @callback(
+        Input(kf.sid("download-all-results-btn"), "n_clicks"),
+        State(ksf("query-results"), "data"),
+        Output(kf.sid("download-all-results"), "data")
+    )
+    def download_all(n_clicks, data):
+        if n_clicks and len(data) and state.kmstate.providers.list():
+            for qname, res in data.items():
+                for name in res:
+                    R = QueryResponseGeo(
+                        res[name]._query,
+                        res[name]._response,
+                        orjson.loads(res[name].df.to_json()),
+                        state.kmstate.providers.get(name).db.geodata
+                    )
+                    res[name] = R
+
+            return dict(content=orjson.dumps(jsonify(data).json).decode(), filename=f"session.json")
+
+        prevent_update_on_none(None)

@@ -20,6 +20,8 @@ import tomli
 
 import keyring
 
+from kmviz.api import register_api_routes
+
 def make_auth_function(usernames):
     def auth_function(username, password):
         if username not in usernames:
@@ -75,6 +77,11 @@ def init(**kwargs):
         state.kmstate._backend = FileSystemBackend(".kmviz_backend")
         return []
 
+    if "session" in kwargs and kwargs["session"]:
+        state.kmstate.session_only = True
+        state.kmstate._backend = FileSystemBackend(".kmviz_backend")
+        return []
+
     if not kwargs:
         kwargs["config"] = os.environ["KMVIZ_CONF"]
 
@@ -105,6 +112,9 @@ def init(**kwargs):
 @click.option("--plot-only",
               help="Plot only mode",
               is_flag=True)
+@click.option("--session",
+              help="Session only mode",
+              is_flag=True)
 @click.option("--host",
               help="host",
               default="127.0.0.1")
@@ -130,6 +140,8 @@ def main(**kwargs):
     if "auth" in config:
         auth = make_auth(app, config["auth"])
 
+    register_api_routes(app.server)
+
     app.run_server(debug=kwargs["debug"], host=kwargs["host"], port=kwargs["port"])
 
 if __name__ == "__main__":
@@ -138,9 +150,14 @@ if __name__ == "__main__":
 config = init()
 app = make_app()
 
-if "auth" in config:
-    auth = make_auth(app, config["auth"])
+#if "auth" in config:
+#    auth = make_auth(app, config["auth"])
+
 app = app.server
+
+register_api_routes(app)
+
+
 
 
 

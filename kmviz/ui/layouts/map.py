@@ -368,7 +368,7 @@ def make_map_layout_callbacks():
 
         kmv_debug(f"{session}: 'update_map' triggered by '{trigger}'")
 
-        if plot_only and "geodata" not in plot_only:
+        if plot_only and "geodata" not in plot_only and not "session" in plot_only:
             return None, True
 
         if not data:
@@ -383,8 +383,13 @@ def make_map_layout_callbacks():
 
         if "geodata" in plot_only:
             geo = plot_only["geodata"]
+        elif "session" in plot_only:
+            geo = plot_only["session"][provider]
         else:
             geo = state.kmstate.providers.get(provider).db.geodata
+
+        if not geo:
+            return None, True
 
         params = {
             "lat": geo["latitude"],

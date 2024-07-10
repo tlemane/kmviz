@@ -6,6 +6,7 @@ from kmviz import __version__ as kmviz_version
 from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.components.select import make_select_provider, make_select_provider_callbacks
 from kmviz.ui.components.input import make_input, make_input_callbacks, KMVIZ_UPLOAD_STYLE
+from kmviz.ui.components.input import make_input_session_file, make_input_session_file_callbacks
 from kmviz.ui.components.option import make_config, make_config_callbacks
 from kmviz.ui.components.submit import make_submit, make_submit_callbacks
 from kmviz.core.io import KmVizIOError
@@ -69,6 +70,11 @@ def make_sidebar_layout():
             ),
 
         ], className="sidebar", id=ksb.sid("div"))
+    elif state.kmstate.session_only:
+        res = html.Div([
+            dcc.Store(id=kf.sid("plot-only"), data={}),
+        #    make_input_session_file()
+        ]) #, className="sidebar", id=ksb.sid("div"))
     else:
         res = html.Div([
             dcc.Store(id=kf.sid("plot-only"), data={}),
@@ -154,7 +160,8 @@ def make_sidebar_layout_callbacks():
                 return Serverside(res), dmc.Text(f"🗎 {filename}", weight=500)
             except KmVizIOError as e:
                 return Serverside(res), dmc.Text(str(e), color="red", weight=500)
-
+    elif state.kmstate.session_only:
+        make_input_session_file_callbacks()
     else:
         make_select_provider_callbacks()
         make_input_callbacks()

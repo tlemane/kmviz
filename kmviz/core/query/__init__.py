@@ -1,1 +1,1 @@
-from .query import Query, QueryResponse, Response
+from .query import Query, QueryResponse, Response, QueryResponseGeo

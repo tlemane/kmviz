@@ -1,4 +1,5 @@
 from typing import Tuple, List, Iterable
+import orjson
 
 def covxb_from_covxk(cov: Iterable[int], k: int, size: int) -> Tuple[float, List[int]]:
     covxb = [0 for _ in range(size)]
@@ -29,4 +30,9 @@ def covyb_from_covyk(cov: Iterable[int], k: int, size: int) -> Tuple[float, List
     nk = size - k + 1
     return (m / nk), (n / size), sum(covyb) / size, covyb
 
-
+#def make_result_from_json_file(path: str):
+#    with open(path, "r") as fin:
+#        data = orjson.loads(fin.read())
+#
+#    for qname, res in data.items():
+#    return data

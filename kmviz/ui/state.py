@@ -21,6 +21,7 @@ class kState:
         self._external_css = []
         self._external_js = []
         self.plot_only = False
+        self.session_only = False
         self._backend = None
         self._template = ""
         self._metatags = []
@@ -38,6 +39,13 @@ class kState:
             "hide_config": False
         }
 
+        self._api = {
+            "enabled": False,
+            "route": "/api",
+            "query_route": "/query",
+            "limits": self._limits.copy()
+        }
+
     def store_result(self, uid: str, results: tuple):
         self._cache.set(uid, results)
 
@@ -50,6 +58,7 @@ class kState:
     def configure(self, config: dict):
         self._config = config
         self._configure_limits(config)
+        self._configure_api(config)
         self._configure_template(config)
         self._configure_plugins(config)
         self._configure_providers(config)
@@ -100,6 +109,14 @@ class kState:
     def defaults(self):
         return self._defaults
 
+    @property
+    def api(self):
+        return self._api["enabled"]
+
+    @property
+    def api_config(self):
+        return self._api
+
     def instance_plugin(self):
         for name, p in self._plugins.items():
             if p.is_instance_plugin():
@@ -109,6 +126,19 @@ class kState:
                     self.dashboard_path = "/dashboard"
                 return p
         return None
+
+    def _set_from_config(self, config, store):
+        for k in store.keys():
+            if k in config:
+                if isinstance(store[k], dict):
+                    self._set_from_config(config[k], store[k])
+                else:
+                    store[k] = config[k]
+
+    def _configure_api(self, config: dict):
+        if not "api" in config:
+            return
+        self._set_from_config(config["api"], self._api)
 
     def _configure_defaults(self, config: dict):
         if not "defaults" in config:
@@ -142,15 +172,15 @@ class kState:
     def _configure_limits(self, config: dict):
         if not "input" in config:
             return
-
-        if "max_query" in config["input"]:
-            self._limits["max_query"] = int(config["input"]["max_query"])
-        if "max_query_size" in config["input"]:
-            self._limits["max_query_size"] = int(config["input"]["max_query_size"])
-        if "max_size" in config["input"]:
-            self._limits["max_size"] = int(config["input"]["max_size"])
-        if "alphabet" in config["input"]:
-            self._limits["alphabet"] = config["input"]["alphabet"]
+        self._set_from_config(config["input"], self._limits)
+        #if "max_query" in config["input"]:
+        #    self._limits["max_query"] = int(config["input"]["max_query"])
+        #if "max_query_size" in config["input"]:
+        #    self._limits["max_query_size"] = int(config["input"]["max_query_size"])
+        #if "max_size" in config["input"]:
+        #    self._limits["max_size"] = int(config["input"]["max_size"])
+        #if "alphabet" in config["input"]:
+        #    self._limits["alphabet"] = config["input"]["alphabet"]
 
     def _configure_template(self, config: dict):
         if "html" not in config:

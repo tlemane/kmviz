@@ -26,8 +26,30 @@
   width: 100px;
 }
 
+.kmviz-dmc-user-number-input {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .kmviz-dmc-text-input {
-  width: 315px;
+  width: 100%;
+}
+
+.kmviz-dmc-text-input-root {
+  text-align: center;
+}
+
+.kmviz-dmc-select-input-root {
+  text-align: center;
+}
+
+.kmviz-dmc-numeric-input-root {
+  text-align: center;
+}
+
+.kmviz-dmc-select {
+  width: 100%;
 }
 
 .kmviz-dmc-figure-select {

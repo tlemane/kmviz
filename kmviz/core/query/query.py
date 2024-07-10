@@ -101,3 +101,6 @@ class QueryResponse:
     def df(self) -> str:
         return self._metadata
 
+@dataclass
+class QueryResponseGeo(QueryResponse):
+    _geodata: Dict[str, str]

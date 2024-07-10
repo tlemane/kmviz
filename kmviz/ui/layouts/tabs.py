@@ -7,6 +7,7 @@ from kmviz.ui.layouts.map import make_map_layout, make_map_layout_callbacks, kma
 from kmviz.ui.layouts.sequence import make_sequence_layout, make_sequence_layout_callbacks, kseq
 from kmviz.ui.layouts.plot import make_plot_layout, make_plot_layout_callbacks, kplot
 from kmviz.ui.layouts.help import make_help_layout
+from kmviz.ui.components.input import make_input_session_file, make_input_session_file_callbacks
 from dash_iconify import DashIconify
 from kmviz.ui import state
 from kmviz.core.log import kmv_info
@@ -28,7 +29,9 @@ def _make_plugin_panel(plugin, name, panel):
     )
 
 def make_tabs():
-    hide = {"display":"none"} if state.kmstate.plot_only else {}
+    hide = {"display":"none"} if state.kmstate.plot_only or state.kmstate.session_only else {}
+    hide_seq = {"display":"none"} if state.kmstate.plot_only else {}
+    hide_help = {"display":"none"} if state.kmstate.session_only else {}
 
     pTabs = []
     pPanels = []
@@ -40,6 +43,9 @@ def make_tabs():
                 kmv_info(f"Load layout '{tab_name}' from plugin '{name}'")
                 pTabs.append(_make_plugin_tab(name, tab_name, icon))
                 pPanels.append(_make_plugin_panel(name, tab_name, panel))
+
+    if state.kmstate.session_only:
+        pTabs.extend(make_input_session_file())
 
     tabs = html.Div([
         dmc.Tabs([
@@ -74,12 +80,13 @@ def make_tabs():
                     disabled=True,
                     id=kseq.sid("panel"),
                     icon=DashIconify(icon="mdi:dna"),
-                    style = hide),
+                    style = hide_seq),
                 *pTabs,
                 dmc.Tab(
                     "Help",
                     value="help",
-                    icon=DashIconify(icon="material-symbols:help-outline")),
+                    icon=DashIconify(icon="material-symbols:help-outline"),
+                    style = hide_help),
             ], className="kmviz-tab-header"),
 
             html.Div([
@@ -102,7 +109,10 @@ def make_tabs():
     ])
 
     make_table_layout_callbacks()
-    make_index_layout_callbacks()
+
+    if not state.kmstate.session_only:
+        make_index_layout_callbacks()
+
     make_map_layout_callbacks()
     make_sequence_layout_callbacks()
     make_plot_layout_callbacks()

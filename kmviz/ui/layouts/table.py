@@ -67,7 +67,7 @@ def make_table_layout_callbacks():
                 return "agDateColumnFilter"
             return "agTextColumnFilter"
 
-        if not plot_only:
+        if "df" not in plot_only:
             df = query_result[query][provider].df
         else:
             df = plot_only["df"]
@@ -77,14 +77,11 @@ def make_table_layout_callbacks():
                 "field": x,
                 "filterParams": {"maxNumConditions": 10000},
                 "suppressMenu": True,
-                #"filter": column_filter(query_result[query][provider].df[x])
                 "filter": column_filter(df[x])
             }
-            #for x in list(query_result[query][provider].df)
             for x in list(df)
         ]
 
-        #return query_result[query][provider].df.to_dict("records"), fields, False
         return df.to_dict("records"), fields, False
 
     @callback(
