@@ -55,7 +55,7 @@ class Provider(ABC):
         ...
 ```
 
-```py title="MetaDB Plugin"
+```py title="Provider Plugin"
 from kmviz.core.plugin import KmVizPlugin, Provider
 
 class MyProvider(Provider):
@@ -65,7 +65,7 @@ class ProviderPlugin(KmVizPlugin):
     def name(self):
         return "ProviderPlugin"
 
-    def databases(self) -> List[Tuple[str, Provider]]:
+    def providers(self) -> List[Tuple[str, Provider]]:
         return [("myprovider", MyProvider)]
 
 kmviz_plugin = ProviderPlugin()

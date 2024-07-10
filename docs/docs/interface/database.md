@@ -19,8 +19,9 @@ The **kmviz** interface is divided into 4 major areas:
 
 For each selected databases, you can change the configuration. In this example, `DB` uses `kmindex-server` which allows two query options: `z` and `coverage`. For details see [kmindex documentation](https://tlemane.github.io/kmindex/server-query/#accessing-index-information).
 
-<img src="../assets/db_config.png", class="ImageHelp">
+Providers can provide various types of options, see [User options](../configuration/user_options.md)
 
+<img src="../assets/db_config.png", class="ImageHelp">
 
 ### Import query
 
@@ -54,6 +55,9 @@ The `Reset` button simply reloads the page to perform a new query.
 <img src="../assets/query.png", class="ImageHelp">
 
 **kmviz** can display results for **only one pair of database/query** at a time. Database and query are selectable using these two dropdown selectors located at the top right corner.
+
+!!! tip "Important"
+    The `json` button allows to download all the results in a `json`. Use this file to explore your results later using a local [**kmviz instance**](session.md). This allows to reduce the server workload for multi-user instances.
 
 The blue switch allows to enable *auto update* on maps and plots. For details see [this section](#figures).
 

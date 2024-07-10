@@ -1,4 +1,4 @@
-site_name: kmviz v0.3.1
+site_name: kmviz v0.5.0
 site_url: https://tlemane.github.io/kmviz
 
 repo_url:  https://github.com/tlemane/kmviz
@@ -17,7 +17,10 @@ nav:
     - Interface:
       - interface/index.md
       - Database mode: 'interface/database.md'
+      - Session mode: 'interface/session.md'
       - Plot-Only mode: 'interface/plot_only.md'
+      - REST API: 'interface/rest.md'
+      - User options: 'configuration/user_options.md'
   - Advanced:
     - Plugin:
       - plugins/index.md
@@ -29,6 +32,7 @@ nav:
       - deploy/index.md
       - Docker: 'deploy/docker.md'
       - Docker compose: 'deploy/compose.md'
+      - API: 'deploy/api.md'
 
 plugins:
   - mike

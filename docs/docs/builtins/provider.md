@@ -26,3 +26,8 @@ port = 8080
 ```
 
 </div>
+
+### User options
+
+- `z`: See [kmindex documentation](https://tlemane.github.io/kmindex).
+- `coverage`: The min ratio of shared *k*-mer to consider a match between a query and a sample.
