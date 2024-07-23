@@ -61,7 +61,8 @@ def version():
     """
     Show version and exit
     """
-    print(f"kmviz v{kmviz_version} {kmviz.__version_str__}")
+    import kmviz
+    print(f"kmviz v{kmviz.__version__}")
 
 @click.group(help="Query kmviz REST API", epilog=epilog())
 @click.option("--url", "-u", default="http://localhost", help="Host", show_default=True, metavar="<str>")
