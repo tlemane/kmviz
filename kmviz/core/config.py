@@ -116,8 +116,8 @@ class ccachelib_redis(BaseModel):
     host: str
     port: int=6379
     db: int=0
-    threshold: NonNegativeInt=0
     default_timeout: PositiveInt=86400
+
     model_config = ConfigDict(extra="allow")
 
 class cchachelib(BaseModel):
