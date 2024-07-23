@@ -1,38 +1,67 @@
-databases:
-  MIO:
-    type: "kmindex-server"
-    params:
-      url: "127.0.0.1"
-      port: 8080
-    metadata:
-      type: "tsv"
-      params:
-        path: "./tests/metadata.tsv"
-        sep: "\t"
-        idx: "Sample"
-        geodata:
-          latitude: "Lat"
-          longitude: "Long"
+api:
+  enabled: false
+
+auth:
+  ex_user: ex_password
 
 cache:
   manager:
-    type: "disk"
     params:
-      directory: ".results/kmviz_manager_cache"
-
+      directory: .kmviz/manager
+    type: disk
   result:
-    type: "disk"
     params:
-      cache_dir: ".results/kmviz_result_cache"
-      threshold: 0
-      default_timeout: 1209600
-
-  serverside:
-    type: "disk"
-    params:
-      cache_dir: ".results/kmviz_serverside_cache"
-      threshold: 0
+      cache_dir: .kmviz/result
       default_timeout: 86400
+      threshold: 0
+    type: disk
+  server:
+    params:
+      cache_dir: .kmviz/server
+      default_timeout: 86400
+      threshold: 0
+    type: disk
 
-auth:
-  small: "small-password"
+databases:
+  ExampleDB:
+    defaults:
+      coverage:
+        hide: false
+        value: 0.1
+      z:
+        hide: true
+        value: 2
+    metadata:
+      params:
+        geodata:
+          latitude: Lat
+          longitude: Long
+        idx: Sample
+        path: ./metadata.tsv
+        sep: "\t"
+      type: tsv
+    params:
+      port: 8080
+      url: 127.0.0.1
+    presets: ./presets.toml
+    type: kmindex-server
+
+default:
+  database:
+  - ExampleDB
+  configuration: ExampleDB
+  hide: false
+
+html:
+  template: template.html
+
+input:
+  alphabet: all
+  max_query: 100
+  max_query_size: 2000
+  max_size: 20000
+
+plugins:
+  kmviz_instance_plugin: {}
+
+

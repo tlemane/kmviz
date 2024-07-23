@@ -1,0 +1,17 @@
+priority = true
+
+[map.name_1]
+color = "CovXK"
+template = "ggplot2"
+[map.name_1.title]
+title_text = "TEST"
+title_x = 0.5
+
+[plot.name_1]
+type = "Scatter"
+X = ["CovXK"]
+Y = ["CovXB"]
+
+[defaults]
+map = "name_1"
+plot = "name_1"

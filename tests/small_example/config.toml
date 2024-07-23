@@ -1,13 +1,36 @@
-[databases]
+[api]
+enabled = true
 
-[databases.TARA]
+[input]
+max_query_size = 2000
+max_size = 20000
+max_query = 100
+alphabet = "dna"
+
+[defaults]
+database = "ExampleDB"
+configuration = "ExampleDB"
+hide = false
+
+[plugins.kmviz_instance_plugin]
+
+[html]
+template = "./template.html"
+
+[databases]
+[databases.ExampleDB]
 type = "kmindex-server"
-[databases.TARA.params]
+presets = "./presets.toml"
+[databases.ExampleDB.defaults]
+z = { value = 3, hide = true }
+coverage = { value = 0.1, hide = false }
+
+[databases.ExampleDB.params]
 url = "127.0.0.1"
 port = 8080
-[databases.TARA.metadata]
+[databases.ExampleDB.metadata]
 type = "tsv"
-[databases.TARA.metadata.params]
+[databases.ExampleDB.metadata.params]
 path = "./metadata.tsv"
 sep = "\t"
 idx = "Sample"
@@ -15,20 +38,20 @@ geodata = { latitude = "Lat", longitude = "Long"}
 
 [cache.serverside]
 type = "disk"
-params.cache_dir = ".results/kmviz_serverside_cache"
+params.cache_dir = ".kmviz/server"
 params.threshold = 0
 params.default_timeout = 86400
 
 [cache.manager]
 type = "disk"
-params.directory = ".results/kmviz_manager_cache"
+params.directory = ".kmviz/manager"
 
 [cache.result]
 type = "disk"
-params.cache_dir = ".results/kmviz_result_cache"
+params.cache_dir = ".kmviz/result"
 params.threshold = 0
-params.default_timeout = 1209600
+params.default_timeout = 86400
 
 [auth]
-small = "small_password"
+ex_user = "ex_password"
 

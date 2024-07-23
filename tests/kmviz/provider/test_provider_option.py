@@ -1,7 +1,22 @@
 import pytest
-from kmviz.ui.components.option import make_user_option, make_callback, make_select_data
+from kmviz.ui.components.option import make_user_option, make_select_data
 from kmviz.core.provider.options import NumericOption, TextOption, RangeOption, ChoiceOption, MultiChoiceOption
-from dash import dcc, Patch
+from dash_extensions.enrich import dcc, callback, Input, Output
+from dash import Patch
+
+def make_callback_f(name, opt_name):
+    def update(value):
+        patch = Patch()
+        patch[name][opt_name] = value
+        return patch
+    return update
+
+def make_callback(name, opt_name, input_id, output_id):
+    return callback(
+        Input(input_id, "value"),
+        Output(output_id, "data"),
+        prevent_initial_call=True
+    )(make_callback_f(name, opt_name))
 
 class TestProviderOptions:
 
@@ -40,7 +55,8 @@ class TestProviderOptions:
             "marks": [
                 {"value": opt.min, "label": str(round(opt.min, 2))},
                 {"value": opt.max, "label": str(round(opt.max, 2))},
-            ]
+            ],
+            "size": "sm"
         }
         assert dmc_opt.to_plotly_json()["props"] == dmc_props
 
@@ -55,7 +71,8 @@ class TestProviderOptions:
             "id": "text_option_test_id",
             "value": "def", "label": "text", "placeholder": "placeholder",
             "className": "kmviz-dmc-user-text-input",
-            "classNames": { 'root': "kmviz-dmc-text-input-root" }
+            "classNames": { 'root': "kmviz-dmc-text-input-root" },
+            "size":"xs"
         }
         assert dmc_opt.to_plotly_json()["props"] == dmc_props
 
@@ -72,7 +89,7 @@ class TestProviderOptions:
             "className": "kmviz-dmc-user-select",
             "clearable": True, "searchable": True,
             "data": make_select_data([1, 2, 3]),
-            "classNames": { 'root': "kmviz-dmc-select-input-root" }
+            "classNames": { 'root': "kmviz-dmc-select-input-root" },
         }
         assert dmc_opt.to_plotly_json()["props"] == dmc_props
 
@@ -89,7 +106,8 @@ class TestProviderOptions:
             "className": "kmviz-dmc-user-multi-select",
             "clearable": True, "searchable": True,
             "data": make_select_data([1, 2, 3]),
-            "classNames": { 'root': "kmviz-dmc-select-input-root" }
+            "classNames": { 'root': "kmviz-dmc-select-input-root" },
+            "size":"xs"
         }
         assert dmc_opt.to_plotly_json()["props"] == dmc_props
 

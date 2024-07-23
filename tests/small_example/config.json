@@ -1,0 +1,83 @@
+{
+    "databases": {
+        "ExampleDB": {
+            "type": "kmindex-server",
+            "params": {
+                "url": "127.0.0.1",
+                "port": 8080
+            },
+            "defaults": {
+                "z": {
+                    "value": 2,
+                    "hide": true
+                },
+                "coverage": {
+                    "value": 0.1,
+                    "hide": false
+                }
+            },
+            "metadata": {
+                "type": "tsv",
+                "params": {
+                    "path": "./metadata.tsv",
+                    "sep": "\t",
+                    "idx": "Sample",
+                    "geodata": {
+                        "latitude": "Lat",
+                        "longitude": "Long"
+                    }
+                }
+            },
+            "presets": "./presets.toml"
+        }
+    },
+    "input": {
+        "max_query_size": 2000,
+        "max_size": 20000,
+        "max_query": 100,
+        "alphabet": "all"
+    },
+    "default": {
+        "database": [
+            "ExampleDB"
+        ],
+        "configuration": "ExampleDB",
+        "hide": false
+    },
+    "cache": {
+        "result": {
+            "type": "disk",
+            "params": {
+                "cache_dir": ".kmviz/result",
+                "threshold": 0,
+                "default_timeout": 86400
+            }
+        },
+        "server": {
+            "type": "disk",
+            "params": {
+                "cache_dir": ".kmviz/server",
+                "threshold": 0,
+                "default_timeout": 86400
+            }
+        },
+        "manager": {
+            "type": "disk",
+            "params": {
+                "directory": ".kmviz/manager"
+            }
+        }
+    },
+    "auth": {
+        "ex_user": "ex_password"
+    },
+    "html": {
+        "template": "template.html"
+    },
+    "api": {
+        "enabled": false
+    },
+    "plugins": {
+        "kmviz_instance_plugin": {}
+    }
+}
