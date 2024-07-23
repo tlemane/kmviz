@@ -1,121 +1,280 @@
-import dash_mantine_components as dmc
-from dash_extensions.enrich import html
-
-from kmviz.ui.layouts.index import make_index_layout, make_index_layout_callbacks, kindex
-from kmviz.ui.layouts.table import make_table_layout, make_table_layout_callbacks, ktable
-from kmviz.ui.layouts.map import make_map_layout, make_map_layout_callbacks, kmap
-from kmviz.ui.layouts.sequence import make_sequence_layout, make_sequence_layout_callbacks, kseq
-from kmviz.ui.layouts.plot import make_plot_layout, make_plot_layout_callbacks, kplot
-from kmviz.ui.layouts.help import make_help_layout
-from kmviz.ui.components.input import make_input_session_file, make_input_session_file_callbacks
+from kmviz.ui.components.factory import ComponentFactory as cf
+from kmviz.ui.utils import icons
+from kmviz.ui.components.factory import khide, kshow, km_color
+from kmviz.ui.id_factory import kid
+from kmviz.core.config import state
+from kmviz.core.query import QueryResponseGeo
 from dash_iconify import DashIconify
-from kmviz.ui import state
-from kmviz.core.log import kmv_info
+from dash_extensions.enrich import dcc, callback, Input, Output, State
+from kmviz.ui.layouts.index import Index
+from kmviz.ui.layouts.table import TableLayout
+from kmviz.ui.layouts.sequence import SequenceLayout
+from kmviz.ui.layouts.figure.plot import PlotLayout
+from kmviz.ui.layouts.figure.map import MapLayout
+from kmviz.ui.layouts.help import HelpLayout
+from kmviz.ui.layouts.session import SessionLayout
+from dash.exceptions import PreventUpdate
+from flask import jsonify
+import dash_mantine_components as dmc
+import orjson
 
-def _make_plugin_tab(plugin, name, icon):
-    hide = {"display":"none"} if state.kmstate.plot_only else {}
+class Tabs:
+    def __init__(self, st: state):
+        self._tabs = []
+        self._panels = []
+        self.st = st
 
-    return dmc.Tab(
-        name,
-        value=f"{plugin}-{name}-value",
-        id=f"kmviz-plugin-{plugin}-{name}-id",
-        style=hide,
-        icon=DashIconify(icon=icon) if icon else None
-    )
+        self.dtab = None
 
-def _make_plugin_panel(plugin, name, panel):
-    return dmc.TabsPanel(
-        panel, value=f"{plugin}-{name}-value"
-    )
+        if self.st.mode == "session" or self.st.mode == "plot":
+            self.dtab = "table"
 
-def make_tabs():
-    hide = {"display":"none"} if state.kmstate.plot_only or state.kmstate.session_only else {}
-    hide_seq = {"display":"none"} if state.kmstate.plot_only else {}
-    hide_help = {"display":"none"} if state.kmstate.session_only else {}
+        self.plugin_show = khide if self.st.mode in ("plot", "session") else {}
 
-    pTabs = []
-    pPanels = []
+        self._index = Index(self.st)
+        self._table = TableLayout(self.st)
+        self._sequence = SequenceLayout(self.st)
+        self._plot = PlotLayout(self.st, kid.plot, kid.plot["figure"], kid.table("grid"))
+        self._map = MapLayout(self.st, kid.map, kid.map["figure"], kid.table("grid"))
+        self._session = SessionLayout(self.st, kid.session)
+        self._help = HelpLayout(self.st, kid.help)
 
-    for name, plugin in state.kmstate.plugins.items():
-        layouts = plugin.layouts()
-        if layouts:
-            for tab_name, panel, icon in layouts:
-                kmv_info(f"Load layout '{tab_name}' from plugin '{name}'")
-                pTabs.append(_make_plugin_tab(name, tab_name, icon))
-                pPanels.append(_make_plugin_panel(name, tab_name, panel))
+        self._disabled = False if self.st.mode in ("plot", "session") else True
 
-    if state.kmstate.session_only:
-        pTabs.extend(make_input_session_file())
+    def _plugin_layout(self):
+        for name, plugin in self.st.conf.plugins.items():
+            layouts = plugin.layouts()
+            if layouts:
+                for tab_name, panel, icon in layouts:
+                    self._tabs.append(
+                        cf.tabs_tab(
+                            kid.plugin[f"{name}-{tab_name}-tab"],
+                            tab_name,
+                            value=f"{name}-{tab_name}-tab",
+                            leftSection=DashIconify(icon=icon) if icon else None,
+                            style=self.plugin_show
+                        )
+                    )
+                    self._panels.append(
+                        cf.tabs_panel(
+                            kid.plugin[f"{name}-{tab_name}-panel"],
+                            panel,
+                            value=f"{name}-{tab_name}-tab",
+                        )
+                    )
 
-    tabs = html.Div([
-        dmc.Tabs([
-            dmc.TabsList([
-                dmc.Tab(
-                    "Index",
-                    value="index",
-                    id=kindex.sid("panel"),
-                    icon=DashIconify(icon="iconoir:db"),
-                    style = hide),
-                dmc.Tab(
-                    "Table",
-                    value="table",
-                    disabled=True,
-                    id=ktable.sid("panel"),
-                    icon=DashIconify(icon="material-symbols:table")),
-                dmc.Tab(
-                    "Map",
-                    value="map",
-                    disabled=True,
-                    id=kmap.sid("panel"),
-                    icon=DashIconify(icon="fluent-mdl2:world"),),
-                dmc.Tab(
-                    "Plot",
-                    value="plot",
-                    disabled=True,
-                    id=kplot.sid("panel"),
-                    icon=DashIconify(icon="carbon:qq-plot"),),
-                dmc.Tab(
-                    "Sequence",
-                    value="sequence",
-                    disabled=True,
-                    id=kseq.sid("panel"),
-                    icon=DashIconify(icon="mdi:dna"),
-                    style = hide_seq),
-                *pTabs,
-                dmc.Tab(
-                    "Help",
-                    value="help",
-                    icon=DashIconify(icon="material-symbols:help-outline"),
-                    style = hide_help),
-            ], className="kmviz-tab-header"),
+    def _index_layout(self):
 
-            html.Div([
+        self._tabs.append(
+            cf.tabs_tab(
+                kid.tabs["index"],
+                "Index",
+                value="index",
+                leftSection=DashIconify(icon="iconoir:db"),
+                disabled=self._disabled
+            )
+        )
+        self._panels.append(
+            cf.tabs_panel(
+                kid.tabs["index-panel"],
+                self._index.layout(),
+                value="index",
+            )
+        )
 
-            dmc.TabsPanel(
-                make_table_layout(), value="table"),
-            dmc.TabsPanel(
-                make_map_layout(), value="map"),
-            dmc.TabsPanel(
-                make_index_layout(), value="index"),
-            dmc.TabsPanel(
-                make_sequence_layout(), value="sequence"),
-            dmc.TabsPanel(
-                make_plot_layout(), value="plot"),
-            *pPanels,
-            dmc.TabsPanel(
-                make_help_layout(), value="help"),
-            ], className="kmviz-tabs")
-        ], value="index" if not state.kmstate.plot_only else None, id="tab-select"),
-    ])
+    def _index_callbacks(self) -> None:
+        self._index.callbacks()
 
-    make_table_layout_callbacks()
+    def _table_layout(self):
+        self._tabs.append(
+            cf.tabs_tab(
+                kid.tabs["table"],
+                "Table",
+                value="table",
+                leftSection=DashIconify(icon="material-symbols:table"),
+                disabled=self._disabled
+            )
+        )
+        self._panels.append(
+            cf.tabs_panel(
+                kid.tabs["table-panel"],
+                self._table.layout(),
+                value="table"
+            )
+        )
 
-    if not state.kmstate.session_only:
-        make_index_layout_callbacks()
+    def _table_callbacks(self) -> None:
+        self._table.callbacks()
 
-    make_map_layout_callbacks()
-    make_sequence_layout_callbacks()
-    make_plot_layout_callbacks()
+    def _map_layout(self):
+        self._tabs.append(
+            cf.tabs_tab(
+                kid.tabs["map"],
+                "Map",
+                value="map",
+                leftSection=DashIconify(icon="fluent-mdl2:world"),
+                disabled=self._disabled
+            )
+        )
+        self._panels.append(
+            cf.tabs_panel(
+                kid.tabs["map-panel"],
+                self._map.layout(),
+                value="map"
+            )
+        )
 
-    return tabs
+    def _map_callbacks(self) -> None:
+        self._map.callbacks()
 
+    def _plot_layout(self):
+        self._tabs.append(
+            cf.tabs_tab(
+                kid.tabs["plot"],
+                "Plot",
+                value="plot",
+                leftSection=DashIconify(icon="carbon:qq-plot"),
+                disabled=self._disabled
+            )
+        )
+        self._panels.append(
+            cf.tabs_panel(
+                kid.tabs["plot-panel"],
+                self._plot.layout(),
+                value="plot"
+            )
+        )
+
+    def _plot_callbacks(self) -> None:
+        self._plot.callbacks()
+
+    def _sequence_layout(self):
+        self._tabs.append(
+            cf.tabs_tab(
+                kid.tabs["sequence"],
+                "Sequence",
+                value="sequence",
+                leftSection=DashIconify(icon="mdi:dna"),
+                disabled=self._disabled
+            )
+        )
+        self._panels.append(
+            cf.tabs_panel(
+                kid.tabs["sequence-panel"],
+                self._sequence.layout(),
+                value="sequence"
+            )
+        )
+
+    def _sequence_callbacks(self) -> None:
+        self._sequence.callbacks()
+
+    def _help_layout(self):
+        self._tabs.append(
+            cf.tabs_tab(
+                kid.tabs["help"],
+                "Help",
+                value="help",
+                leftSection=DashIconify(icon="material-symbols:help-outline"),
+            )
+        )
+        self._panels.append(
+            cf.tabs_panel(
+                kid.tabs["help-panel"],
+                self._help.layout(),
+                value="help"
+            )
+        )
+
+    def _help_callbacks(self) -> None:
+        self._help.callbacks()
+
+    def _corner_layout(self):
+        style = kshow if self.st.mode != "plot" else khide
+
+        group_content = [
+            dcc.Download(id=kid.kmviz["download"]),
+            cf.switch( kid.kmviz("auto"), onLabel=icons("autoff", width=20), offLabel=icons("auton", width=20), checked=True),
+            dmc.Space(w=3, style=style),
+            cf.action( kid.kmviz["download-button"], DashIconify(icon="bi:filetype-json", width=25), variant="filled", color = km_color, style=style),
+            dmc.Space(w=5, style=style),
+            cf.select( kid.kmviz("database"), data=[], placeholder="Database", size="xs", style=style),
+            cf.select( kid.kmviz("query"), data=[], placeholder="Query", size="xs", style=style),
+        ]
+        self._tabs.append(cf.group(
+            kid.kmviz["corner-grp"],
+            *group_content,
+            gap=4
+        ))
+
+
+    def _corner_callbacks(self) -> None:
+        @callback(
+            Input(kid.kmviz["download-button"], "n_clicks"),
+            State(kid.store["results"], "data"),
+            Output(kid.kmviz["download"], "data")
+        )
+        def download_all(n_clicks, data):
+            if n_clicks and len(data) and self.st.engine.list():
+                for qname, res in data.items():
+                    for name in res:
+                        R = QueryResponseGeo(
+                            res[name]._query,
+                            res[name]._response,
+                            orjson.loads(res[name].df.to_json()),
+                            self.st.engine.get(name).db.geodata
+                        )
+                        res[name] = R
+
+                return dict(content=orjson.dumps(jsonify(data).json).decode(), filename=f"session.json")
+            raise PreventUpdate
+
+    def _session_layout(self):
+        self._tabs.append(
+            self._session.layout()
+        )
+
+    def _session_callbacks(self):
+        self._session.callbacks()
+
+    def layout(self):
+        if self.st.mode == "db":
+            self._index_layout()
+
+        self._table_layout()
+        self._map_layout()
+        self._plot_layout()
+
+        if self.st.mode != "plot":
+            self._sequence_layout()
+
+        self._help_layout()
+        self._plugin_layout()
+
+
+        if self.st.mode == "session":
+            self._session_layout()
+
+        self._corner_layout()
+
+        return cf.tabs(
+            kid.tabs["tabs"],
+            cf.tabs_list(
+                kid.tabs["header"],
+                *self._tabs
+            ),
+            *self._panels,
+            value=self.dtab,
+            allowTabDeactivation=True,
+        )
+
+    def callbacks(self):
+        self._index_callbacks()
+        self._table_callbacks()
+        self._map_callbacks()
+        self._plot_callbacks()
+        self._sequence_callbacks()
+        self._corner_callbacks()
+
+        if self.st.mode == "session":
+            self._session_callbacks()

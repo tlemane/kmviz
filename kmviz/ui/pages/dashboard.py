@@ -1,41 +1,55 @@
-from dash_extensions.enrich import (
-    dcc,
-    html,
-    DashBlueprint,
-    LogTransform,
-    NoOutputTransform,
-    ServersideOutputTransform
-)
-
+from dash_extensions.enrich import html
 import dash
 import dash_mantine_components as dmc
+from kmviz.ui.layouts.sidebar import Sidebar
+from kmviz.ui.layouts.tabs import Tabs
+from kmviz.ui.layouts import Global
 
-from kmviz.ui import state
-from kmviz.ui.id_factory import kmviz_factory as kf
-from kmviz.ui.components.store import make_stores, make_stores_callbacks
-from kmviz.ui.components.select import make_select, make_select_callbacks
-from kmviz.ui.layouts.sidebar import make_sidebar_layout, make_sidebar_layout_callbacks
-from kmviz.ui.layouts.tabs import make_tabs
-import uuid
+from kmviz.ui.id_factory import kid
+from kmviz.ui.components.factory import dmc_new
+import kmviz.core.config as kconf
 
 def make_dashboard():
 
-    layout = html.Div([
-        dcc.Store(kf.sid("session-id")),
-        make_stores(),
-        make_select(),
-        dmc.Grid([
-            dmc.Col(make_sidebar_layout(), id=kf.sid("sidebar-layout"), span="content"),
-            dmc.Col(make_tabs(), id=kf.sid("tabs-layout"), span="auto")
-        ])
-    ])
+    glob = Global(kconf.st)
+    sidebar = Sidebar(kconf.st)
+    tabs = Tabs(kconf.st)
 
-    make_stores_callbacks()
-    make_select_callbacks()
-    make_sidebar_layout_callbacks()
+    if dmc_new:
+        layout = dmc.AppShell(
+            id="kmviz-shell",
+            children=[
+                glob.layout(),
+                dmc.AppShellNavbar(sidebar.layout(), className="kmviz-sidebar"),
+                dmc.AppShellMain(tabs.layout())
+            ],
+            navbar={
+                "width": 250,
+                "breakpoint": "lg",
+                "collapsed": {"mobile": True},
+            },
+            transitionDuration="50",
+            className="kmviz-main"
+        )
+    else:
+        style={}
+        if kconf.st.mode == "session":
+            style = {"padding-left": "10px"}
+
+        layout = html.Div([
+            glob.layout(),
+            dmc.Grid([
+                dmc.Col(sidebar.layout(), id=kid.kmviz["side-layout"], span="content", className="kmviz-sidebar-layout"),
+                dmc.Col(tabs.layout(), id=kid.kmviz["main-layout"], span="auto", className="kmviz-main-layout", style = style),
+            ])
+        ])
+
+    glob.callbacks()
+    sidebar.callbacks()
+    tabs.callbacks()
 
     return layout
 
-dash.register_page(__name__, path=state.kmstate.dashboard_path, name="dashboard", title="dashboard")
+dash.register_page(__name__, path=kconf.st.instance_plugin[0], name="dashboard", title="dashboard")
 
 layout = make_dashboard()

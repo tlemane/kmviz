@@ -1,396 +1,363 @@
-from dash_extensions.enrich import html, dash_table, Input, Output, dcc, State, callback
+from kmviz.ui.id_factory import kid
+from kmviz.core.config import state
+from kmviz.ui.components.factory import ComponentFactory as cf
+from kmviz.ui.components.factory import km_color
+from dash_extensions.enrich import html, dcc
+from dash_iconify import DashIconify
 import dash_mantine_components as dmc
-from dash import no_update
+import dash_bio as dashbio
+from dash.exceptions import PreventUpdate
+from dash_extensions.enrich import html, Input, State, Output, callback, no_update
+from kmviz.ui.utils import prevent_update_on_none, make_select_data
+from kmviz.ui.layouts.figure.title import TitleLayout
+from kmviz.ui.layouts.figure.axe import AxesLayout
+from kmviz.ui.layouts.figure.legend import LegendLayout
+from kmviz.ui.layouts.figure.shape import ShapeLayout
+from kmviz.ui.layouts.figure.slider import SliderLayout
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import pandas as pd
 import plotly.io as pio
-
-from dash_iconify import DashIconify
-
-from kmviz.ui.utils import make_select_data, prevent_update_on_none, KMVIZ_ICONS
-from kmviz.ui.components.figure import make_plot_title, make_plot_title_callbacks, make_select_input, make_hover_color_picker
-from kmviz.ui.components.figure import make_axes, make_plot_legend, make_plot_shape
-from kmviz.ui.components.figure import make_axes_callbacks, make_plot_legend_callbacks, make_plot_shape_callbacks
-from kmviz.ui.components.select import kgsf
-from kmviz.ui.components.store import ksf
-from kmviz.ui.layouts.table import ktable
-
-from kmviz.ui.id_factory import kmviz_factory as kf
-import dash_bio as dashbio
-
-import itertools
-import operator
-import random
-import statistics
 
 import warnings
 warnings.filterwarnings('ignore', module='gradpyent')
+
+import itertools
+import operator
 from gradpyent import gradient
-from gradpyent.library.formats import get_verified_color
 
-kseq = kf.child("seq")
+class SequenceGraphViewLayout:
+    def __init__(self, st: state):
+        self.st = state
+        self.figure = kid.sequence.new("figure")
 
-def blank_figure():
-    fig = go.Figure(go.Scatter(x=[], y = []))
-    fig.update_layout(template = "seaborn")
-    fig.update_xaxes(showgrid = False, showticklabels = False, zeroline=False)
-    fig.update_yaxes(showgrid = False, showticklabels = False, zeroline=False)
+        self._title = TitleLayout(self.figure.new("title"), kid.sequence["figure"])
+        self._axes = AxesLayout(self.figure.new("axes"), kid.sequence["figure"])
+        self._legend = LegendLayout(self.figure.new("legend"), kid.sequence["figure"])
+        self._shapes = ShapeLayout(self.figure.new("shape"), kid.sequence["figure"])
+        self._slider = SliderLayout(self.figure.new("slider"), kid.sequence["figure"], self._axes.x.f("axis-index"))
 
-    return fig
+    def _blank(self):
+        fig = go.Figure(go.Scatter(x=[], y=[]))
+        fig.update_layout(template="seaborn")
+        fig.update_xaxes(showgrid=False, showticklabels=False, zeroline=False)
+        fig.update_yaxes(showgrid=False, showticklabels=False, zeroline=False)
+        return fig
 
-def make_coverage(cov: list, abs, start, end):
-    grad = gradient.Gradient(gradient_start=start, gradient_end=end)
-
-    ranges = []
-    series = []
-
-    coverage = []
-    legend = []
-
-    for r in itertools.groupby(enumerate(cov), key=operator.itemgetter(1)):
-        series.append(r[0])
-        L = list(r[1])
-        ranges.append((L[0][0], L[-1][0] + 1))
-
-    colors = grad.get_gradient_series(series, fmt="html")
-
-    for i, c in enumerate(colors):
-        coverage.append({
-            "bgcolor": c,
-            "start": ranges[i][0],
-            "end": ranges[i][1],
-            "tooltip": round(series[i], 2),
-            "onclick": round(series[i], 2),
-        })
-
-    if all(isinstance(a, int) for a in series):
-        sorted_series = sorted(zip(series, colors))
-
-        s = set()
-        for value, color in sorted_series:
-            if value not in s:
-                legend.append({
-                    "color": color,
-                    "name": value
-                })
-                s.add(value)
-
-    else:
-        legend.append({
-            "color": colors[min((val, idx) for (idx, val) in enumerate(series))[1]],
-            "name": round(min(series), 2)
-        })
-        legend.append({
-            "color": colors[max((val, idx) for (idx, val) in enumerate(series))[1]],
-            "name": round(max(series), 2)
-        })
-
-
-    return coverage, legend
-
-def make_sequence_layout():
-
-    down_select = dmc.SegmentedControl(
-        id=kseq.sid("down-select"),
-        data=make_select_data(["png", "jpg", "svg", "pdf", "html", "json"]),
-        value="png",
-        size="xs",
-        color=dmc.theme.DEFAULT_COLORS["dark"][0]
-    )
-
-    graph_view = html.Div([
-        dmc.Space(h=5),
-        dcc.Graph(
-            figure=blank_figure(),
-            id=kseq.sid("figure"),
-            responsive=True,
-            style = { "margin-left": "auto", "margin-right": "auto", "height": "50vh", "width": "95%" }
-        ),
-
-        dmc.Tabs([
-            dmc.TabsList([
-                dmc.Tab("Title", value="title"),
-                dmc.Tab("Axes", value="axes"),
-                dmc.Tab("Legend", value="legend"),
-                dmc.Tab("Shape", value="shape"),
-                dmc.Group([
-                    down_select,
-                    dmc.ActionIcon(
-                        DashIconify(icon="material-symbols:download", width=20),
-                        id=kseq.sid("down-button"),
-                        variant="filled",
-                        color = "#1C7ED6",
-                    ),
-                ], style = {"margin-left":"10px", "width": "fit-content"}, spacing=5),
-            ]),
-            dmc.TabsPanel(make_plot_title(kseq.child("title")), value="title"),
-            dmc.TabsPanel(make_axes(kseq.child("axes")), value="axes"),
-            dmc.TabsPanel(make_plot_legend(kseq.child("legend")), value="legend"),
-            dmc.TabsPanel(make_plot_shape(kseq.child("shape")), value="shape"),
-        ]),
-
-        dcc.Download(id=kseq.sid("download")),
-    ])
-
-    seq_view = html.Div([
-        dmc.Space(h=10),
-        dmc.Group([
-            dmc.SegmentedControl(
-                id=kseq.sid("mode-select"),
-                data=make_select_data(["base", "kmer"]),
-                value="base",
-                color=dmc.theme.DEFAULT_COLORS["dark"][0],
-                size="xs"
+    def layout(self) -> html.Div:
+        return cf.div(
+            kid.sequence["graph"],
+            dcc.Graph(
+                figure=self._blank(),
+                id=kid.sequence["figure"],
+                responsive=True,
+                className="kmviz-dcc-sequence-graph",
             ),
-            make_hover_color_picker(
-                kseq("start-color"),
-                "Min",
-                icon=KMVIZ_ICONS["cback"],
-                color=dict(hex="#E0DFDF")
-            ),
-            make_hover_color_picker(
-                kseq("end-color"),
-                "Max",
-                icon=KMVIZ_ICONS["cback"],
-                color=dict(hex="#FF0000")
+            cf.tabs(
+                kid.sequence["graph-tabs"],
+                cf.tabs_list(
+                    kid.sequence["graph-tabslist"],
+                    cf.tabs_tab(kid.sequence["graph-title-tab"], "Title", "title"),
+                    cf.tabs_tab(kid.sequence["graph-axes-tab"], "Axes", "axes"),
+                    cf.tabs_tab(kid.sequence["graph-slider-tab"], "Slider", "slider"),
+                    cf.tabs_tab(kid.sequence["graph-legend-tab"], "Legend", "legend"),
+                    cf.tabs_tab(kid.sequence["graph-shape-tab"], "Shape", "shape"),
+                ),
+                cf.tabs_panel(kid.sequence["graph-title-panel"], self._title.layout(), "title"),
+                cf.tabs_panel(kid.sequence["graph-axes-panel"], self._axes.layout(), "axes"),
+                cf.tabs_panel(kid.sequence["graph-slider-panel"], self._slider.layout(), "slider"),
+                cf.tabs_panel(kid.sequence["graph-legend-panel"], self._legend.layout(), "legend"),
+                cf.tabs_panel(kid.sequence["graph-shape-panel"], self._shapes.layout(), "shape"),
+                value="title"
             )
-        ]),
+        )
 
-        dmc.Space(h=10),
+    def callbacks(self) -> None:
 
-        html.Div([
-            dashbio.SequenceViewer(
-                id=kseq.sid("seq-view"),
-                wrapAminoAcids=True,
-                toolbar=False,
-                search=False,
-                badge=False,
-                charsPerLine=130,
-                sequenceMaxHeight="55vh",
-            ),
-        ], style = { "margin-left": "auto", "margin-right": "auto", "position":"relative" })
+        @callback(
+            Input(kid.sequence["sample"], "value"),
+            Input(kid.kmviz("database"), "value"),
+            Input(kid.kmviz("query"), "value"),
+            State(kid.store["results"], "data"),
+            Output(kid.sequence["figure"], "figure"),
+            Output(kid.sequence["sample"], "value"),
+            prevent_initial_call=True
+        )
+        def update_graph_view(sample, db, query, results):
+            if not db or not query or db.startswith("__kmviz_df"):
+                raise PreventUpdate
 
-    ], style={"margin-left": "20px"})
+            qr = results[query][db]
 
-    tabs = dmc.Tabs([
-        dmc.TabsList([
-            dmc.Tab("Graph view", value="graph", icon=DashIconify(icon="mdi:graph-line")),
-            dmc.Tab("Sequence view", value="sequence", icon=DashIconify(icon="mdi:dna")),
-            dmc.Group([
-                dmc.Select(
-                    id=kseq.sid("select"),
-                    size="xs",
-                    icon=DashIconify(icon="mingcute:document-fill"),
-                    className="kmviz-gselect"
-                ),
-                dmc.ActionIcon(
-                    DashIconify(icon="bi:filetype-json", width=20),
-                    id=kseq.sid("down-data-button"),
-                    variant="filled",
-                    color = "#1C7ED6"
-                ),
-                dcc.Download(id=kseq.sid("download-data")),
-            ]),
-        ]),
+            if qr.df.empty:
+                raise PreventUpdate
 
-        dmc.TabsPanel(graph_view, value="graph"),
-        dmc.TabsPanel(seq_view, value="sequence"),
-    ], value = "graph")
+            if sample not in qr.response:
+                sample = list(qr.df["ID"])[0]
 
-    return tabs
+            f = {"ID": {"filterType": "text", "type": "contains", "filter": sample}}
 
-def to_bio_color(c):
-    if not c:
-        return c
-    if "rgb" in c:
-        m = c["rgb"]
-        return [m["r"], m["g"], m["b"]]
-    elif "hex" in c:
-        return c["hex"]
-    return c
+            index = list(range(len(qr.query.seq)))
 
-def make_sequence_layout_callbacks():
+            m = []
+            cols = ["base"]
 
-    @callback(
-        Input(kseq.sid("down-button"), "n_clicks"),
-        State(kseq.sid("down-select"), "value"),
-        State(kseq.sid("figure"), "figure"),
-        Output(kseq.sid("download"), "data"),
-        prevent_initial_call=True,
-    )
-    def download_cov(n_clicks, fmt, data):
-        if n_clicks:
-            if fmt == "html":
-                content = pio.to_html(data, validate=False)
-                return dict(content=content, filename="kmviz-cov.html")
-            elif fmt == "json":
-                content = pio.to_json(data, validate=False)
-                return dict(content=content, filename="kmviz-cov.json")
+            if qr.response[sample].k:
+                m = [None] * (qr.response[sample].k - 1)
+                cols = ["kmer", "base"]
+
+            if qr.response[sample].has_abs():
+                df = pd.DataFrame({"Sequence": index, "kmer": qr.response[sample].covyk + m, "base": qr.response[sample].covyb})
+                fig = px.line(df, x="Sequence", y=cols, line_shape="linear", markers=True)
             else:
-                content = pio.to_image(data, fmt, validate=False)
-                return dcc.send_bytes(content, f"kmviz-cov.{fmt}")
+                df = pd.DataFrame({"Sequence": index, "kmer": qr.response[sample].covxk + m, "base": qr.response[sample].covxb})
+                fig = px.line(df, x="Sequence", y=cols, line_shape="linear", markers=True)
 
-    @callback(
-        Input(kseq.sid("down-data-button"), "n_clicks"),
-        State(kgsf("provider"), "value"),
-        State(kgsf("query"), "value"),
-        State(ksf("query-results"), "data"),
-        Output(kseq.sid("download-data"), "data"),
-        prevent_initial_call=True,
-    )
-    def download_json(n_clicks, provider, query, query_result):
-        if n_clicks:
-            if provider.startswith("__kmviz_df"):
+            fig.update_layout(
+                xaxis = dict(
+                    tickmode = "array",
+                    tickvals = index,
+                    ticktext = [x for x in qr.query.seq]
+                )
+            )
+
+            fig.update_layout(
+                xaxis = dict(rangeslider=dict(visible=True, range=[0, len(qr.query.seq)]),
+                             range=[0, 50],
+                             type="category")
+            )
+
+            fig.update_layout(legend_title_text="")
+            fig.update_xaxes(title_text="Sequence")
+            fig.update_yaxes(rangemode="tozero")
+
+            return fig, sample
+
+        self._title.callbacks()
+        self._axes.callbacks()
+        self._legend.callbacks()
+        self._shapes.callbacks()
+        self._slider.callbacks()
+
+class SequenceTextViewLayout:
+    def __init__(self, st: state):
+        self.st = st
+
+    def _make_coverage(self, cov: list, abs, start, end):
+        grad = gradient.Gradient(gradient_start=start, gradient_end=end)
+
+        ranges = []
+        series = []
+
+        coverage = []
+        legend = []
+
+        for r in itertools.groupby(enumerate(cov), key=operator.itemgetter(1)):
+            series.append(r[0])
+            L = list(r[1])
+            ranges.append((L[0][0], L[-1][0] + 1))
+
+        colors = grad.get_gradient_series(series, fmt="html")
+
+        for i, c in enumerate(colors):
+            coverage.append({
+                "bgcolor": c,
+                "start": ranges[i][0],
+                "end": ranges[i][1],
+                "tooltip": round(series[i], 2),
+                "onclick": round(series[i], 2),
+            })
+
+        if all(isinstance(a, int) for a in series):
+            sorted_series = sorted(zip(series, colors))
+
+            s = set()
+            for value, color in sorted_series:
+                if value not in s:
+                    legend.append({
+                        "color": color,
+                        "name": value
+                    })
+                    s.add(value)
+
+        else:
+            legend.append({
+                "color": colors[min((val, idx) for (idx, val) in enumerate(series))[1]],
+                "name": round(min(series), 2)
+            })
+            legend.append({
+                "color": colors[max((val, idx) for (idx, val) in enumerate(series))[1]],
+                "name": round(max(series), 2)
+            })
+
+        return coverage, legend
+
+    def layout(self) -> html.Div:
+        return cf.div(
+            kid.sequence["text"],
+            dmc.Space(h=10),
+            cf.group(
+                kid.sequence["text-grp"],
+                cf.segmented(
+                    kid.sequence["text-mode"],
+                    data=["base", "kmer"],
+                    value="base",
+                    color=km_color,
+                    size="xs",
+                    className = "kmviz-figure-segmented"
+                ),
+                cf.color(
+                    kid.sequence["start"],
+                    label="Min color",
+                    size="xs",
+                    leftSection=DashIconify(icon="cil:paint"),
+                    withPreview=False,
+                    value="#E0DFDF",
+                    noTranspa=True,
+                ),
+                cf.color(
+                    kid.sequence["end"],
+                    label="Max color",
+                    size="xs",
+                    leftSection=DashIconify(icon="cil:paint"),
+                    withPreview=False,
+                    value=km_color,
+                    noTranspa=True,
+                )
+            ),
+
+            cf.div(
+                kid.sequence["view-div"],
+                dashbio.SequenceViewer(
+                    id=kid.sequence["view"],
+                    wrapAminoAcids=True,
+                    toolbar=False,
+                    search=False,
+                    badge=False,
+                    charsPerLine=130,
+                    sequenceMaxHeight="55vh"
+                ),
+                style = { "margin-left": "auto", "margin-right": "auto", "position": "relative"}
+            )
+        )
+
+    def callbacks(self) -> None:
+
+        @callback(
+            Input(kid.sequence["sample"], "value"),
+            Input(kid.kmviz("database"), "value"),
+            Input(kid.kmviz("query"), "value"),
+            Input(kid.sequence["text-mode"], "value"),
+            Input(kid.sequence["start"], "value"),
+            Input(kid.sequence["end"], "value"),
+            State(kid.store["results"], "data"),
+            Output(kid.sequence["view"], "sequence"),
+            Output(kid.sequence["view"], "coverage"),
+            Output(kid.sequence["view"], "legend"),
+            Output(kid.sequence["sample"], "value"),
+            prevent_initial_call=True
+        )
+        def update_text_view(sample, db, query, mode, start, end, results):
+            if not db or not query or db.startswith("__kmviz_df"):
+                raise PreventUpdate
+            prevent_update_on_none(sample, db, query)
+
+            qr = results[query][db]
+
+            if qr.df.empty:
+                raise PreventUpdate
+
+            if sample not in qr.response:
+                sample = list(qr.df["ID"])[0]
+
+            if mode == "kmer" and not qr.response[sample].k:
+                mode = "base"
+
+            if qr.response[sample].has_abs():
+                cov, leg = self._make_coverage(qr.response[sample].covyb if mode == "base" else qr.response[sample].covyk, True, start, end)
+            else:
+                cov, leg = self._make_coverage(qr.response[sample].covxb if mode == "base" else qr.response[sample].covxk, True, start, end)
+
+            return qr.query.seq, cov, leg, sample
+
+class SequenceLayout:
+    def __init__(self, st: state):
+        self.st = st
+        self._text = SequenceTextViewLayout(self.st)
+        self._graph = SequenceGraphViewLayout(self.st)
+
+    def layout(self):
+        return cf.tabs(
+                kid.sequence["tabs"],
+                cf.tabs_list(
+                    kid.sequence["tabslist"],
+                    cf.tabs_tab(kid.sequence["graph-view"], "Graph view", value="graph", leftSection=DashIconify(icon="mdi:graph-line")),
+                    cf.tabs_tab(kid.sequence["text-view"], "Text view", value="text", leftSection=DashIconify(icon="mdi:dna")),
+                    dmc.Space(w=10),
+                    cf.group(
+                        kid.sequence["tab-head-grp"],
+                        cf.select(
+                            kid.sequence["sample"],
+                            [],
+                            size="xs",
+                            leftSection=DashIconify(icon="mingcute:document-fill"),
+                            className="kmviz-sample-select"
+                        ),
+                        cf.action(kid.sequence["download-button"], DashIconify(icon="bi:filetype-json", width=20), variant="filled", color=km_color),
+                        dcc.Download(id=kid.sequence["download"])
+                    )
+                ),
+                cf.tabs_panel(kid.sequence["graph-view-panel"], self._graph.layout(), value="graph"),
+                cf.tabs_panel(kid.sequence["text-view-panel"], self._text.layout(), value="text"),
+                value = "graph"
+        )
+
+    def callbacks(self) -> None:
+        self._text.callbacks()
+        self._graph.callbacks()
+
+        @callback(
+            Input(kid.kmviz("database"), "value"),
+            Input(kid.kmviz("query"), "value"),
+            State(kid.store["results"], "data"),
+            Output(kid.sequence["sample"], "data"),
+            Output(kid.sequence["sample"], "value"),
+            prevent_initial_call=True
+        )
+        def update_sequence_data(db, query, results):
+            if not db or not query or db.startswith("__kmviz_df"):
                 prevent_update_on_none(None)
 
-            prevent_update_on_none(provider, query)
+            qr = results[query][db]
+            ids = list(qr.df["ID"])
+            if not ids:
+                return [], None
+            return make_select_data(ids), ids[0]
 
-            qr = query_result[query][provider]
-
-            res = {}
-            res[query] = {}
-
-            for sample, resp in qr.response.items():
-                if resp.has_abs():
-                    res[query][sample] = {"ykmer": resp.covyk, "ybase": resp.covyb}
-                else:
-                    res[query][sample] = {"xkmer": resp.covxk, "xbase": resp.covxb}
-
-            return dict(content=str(res), filename=f"{provider}-{query}.json")
-
-    @callback(
-        Input(kgsf("provider"), "value"),
-        Input(kgsf("query"), "value"),
-        State(ksf("query-results"), "data"),
-        Output(kseq.sid("select"), "data"),
-        Output(kseq.sid("select"), "value"),
-        Output(kseq.sid("panel"), "disabled"),
-        prevent_initial_call=True,
-    )
-    def update_sample_select(provider, query, query_result):
-        prevent_update_on_none(provider, query)
-
-        if provider.startswith("__kmviz_df"):
-            prevent_update_on_none(None)
-
-        qr = query_result[query][provider]
-        ids = list(qr.df["ID"])
-        if not ids:
-            return no_update, no_update, True
-        return make_select_data(ids), ids[0], False
-
-    @callback(
-        Input(ktable.sid("grid"), "selectedRows"),
-        Output(kseq.sid("select"), "value"),
-        Output("tab-select", "value"),
-        prevent_initial_call=True
-    )
-    def on_selected(data):
-        if not len(data):
-            prevent_update_on_none(None)
-
-        return data[0]["ID"], "sequence"
-
-    @callback(
-        Input(kseq.sid("select"), "value"),
-        Input(kgsf("provider"), "value"),
-        Input(kgsf("query"), "value"),
-        State(ksf("query-results"), "data"),
-        Output(kseq.sid("figure"), "figure"),
-        Output(kseq.sid("select"), "value"),
-        prevent_initial_call=True,
-    )
-    def update_sequence_graph(sample, provider, query, query_result):
-        if provider.startswith("__kmviz_df"):
-            prevent_update_on_none(None)
-
-        prevent_update_on_none(sample, provider, query)
-
-        qr = query_result[query][provider]
-
-        if sample not in qr.response:
-            sample = list(qr.df["ID"])[0]
-
-        f = {'ID': {'filterType': 'text', 'type': 'contains', 'filter': sample}}
-
-        index = list(range(len(qr.query.seq)))
-
-        m = []
-        cols = ["base"]
-
-        if qr.response[sample].k:
-            m = [None] * (qr.response[sample].k-1)
-            cols = ["kmer", "base"]
-
-        if qr.response[sample].has_abs():
-            df = pd.DataFrame({"Sequence": index, "kmer": qr.response[sample].covyk + m, "base": qr.response[sample].covyb})
-            fig = px.line(df, x="Sequence", y=cols, line_shape="linear", markers=True)
-        else:
-            df = pd.DataFrame({"Sequence": index, "kmer": qr.response[sample].covxk + m, "base": qr.response[sample].covxb})
-            fig = px.line(df, x="Sequence", y=cols, line_shape="linear", markers=True)
-
-        fig.update_layout(
-            xaxis = dict(
-                tickmode = 'array',
-                tickvals = index,
-                ticktext = [x for x in qr.query.seq]
-            )
+        @callback(
+            Input(kid.sequence["download-button"], "n_clicks"),
+            State(kid.kmviz("database"), "value"),
+            State(kid.kmviz("query"), "value"),
+            State(kid.store["results"], "data"),
+            Output(kid.sequence["download"], "data"),
+            prevent_initial_call=True
         )
+        def download_json(n_clicks, db, query, results):
+            if n_clicks:
+                if not db or not query or db.startswith("__kmviz_df"):
+                    raise PreventUpdate
 
-        fig.update_layout(
-            xaxis=dict(rangeslider=dict(visible=True,range=[0, len(qr.query.seq)]),
-                       range=[0, 50],
-                       type="category")
-        )
+                qr = results[query][db]
 
-        fig.update_layout(legend_title_text="")
-        fig.update_xaxes(title_text="Sequence")
-        fig.update_yaxes(rangemode="tozero")
+                res={query: {}}
 
-        return fig, sample
+                for sample, response in qr.response.items():
+                    if response.has_abs():
+                        res[query][sample] = {"ykmer": response.covyk, "ybase": response.covyb}
+                    else:
+                        res[query][sample] = {"xkmer": response.covxk, "xbase": response.covxb}
 
-    @callback(
-        Input(kseq.sid("select"), "value"),
-        Input(kgsf("provider"), "value"),
-        Input(kgsf("query"), "value"),
-        Input(kseq.sid("mode-select"), "value"),
-        Input(kseq("start-color"), "value"),
-        Input(kseq("end-color"), "value"),
-        State(ksf("query-results"), "data"),
-        Output(kseq.sid("seq-view"), "sequence"),
-        Output(kseq.sid("seq-view"), "coverage"),
-        Output(kseq.sid("seq-view"), "legend"),
-        Output(kseq.sid("select"), "value"),
-        prevent_initial_call=True,
-    )
-    def update_sequence_view(sample, provider, query, mode, start, end, query_result):
-        if provider.startswith("__kmviz_df"):
-            prevent_update_on_none(None)
-        prevent_update_on_none(sample, provider, query)
+                return dict(content=str(res), filename=f"{db}-{query}.json")
+            return no_update
 
-        qr = query_result[query][provider]
-
-        cov_type = "base"
-
-        if sample not in qr.response:
-            sample = list(qr.df["ID"])[0]
-
-        if mode == "kmer" and not qr.response[sample].k:
-            mode == "base"
-
-        start = to_bio_color(start)
-        end = to_bio_color(end)
-
-        if qr.response[sample].has_abs():
-            cov, leg = make_coverage(qr.response[sample].covyb if mode == "base" else qr.response[sample].covyk, True, start, end)
-        else:
-            cov, leg = make_coverage(qr.response[sample].covxb if mode == "base" else qr.response[sample].covxk, False, start, end)
-
-        return qr.query.seq, cov, leg, sample
-
-    make_plot_title_callbacks(kseq.child("title"), kseq.sid("figure"))
-    make_axes_callbacks(kseq.child("axes"), kseq.sid("figure"))
-    make_plot_legend_callbacks(kseq.child("legend"), kseq.sid("figure"))
-    make_plot_shape_callbacks(kseq.child("shape"), kseq.sid("figure"))
 

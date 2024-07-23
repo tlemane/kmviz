@@ -22,3 +22,18 @@ def make_callback_cache_manager(params: dict):
     elif params["type"] == "celery":
         from celery import Celery
         return CeleryManager(Celery(**params["params"]))
+
+from kmviz.core import KmVizError
+
+class KmvizResultCache:
+    def __init__(self, backend):
+        self._backend = backend
+
+    def get(self, uid: str):
+        res = self._backend.get(uid)
+        if res is None:
+            raise KmVizError(f"'{uid}' not in cache")
+        return res
+
+    def put(self, uid: str, value):
+        self._backend.set(uid, value)

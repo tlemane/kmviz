@@ -1,122 +1,135 @@
-from dash_extensions.enrich import html, callback, Input, Output, dcc, State
-import dash_mantine_components as dmc
-from dash_iconify import DashIconify
-from kmviz.ui import state
-import pandas as pd
-
-import dash_ag_grid as dag
-
-from kmviz.ui.components.grid import make_ag_grid
+from kmviz.core.config import state
+from kmviz.ui.id_factory import kid
+from kmviz.ui.components.factory import ComponentFactory as cf
+from dash_extensions.enrich import callback, Input, State, Output, no_update, clientside_callback
+from dash.exceptions import PreventUpdate
 from kmviz.ui.utils import prevent_update_on_none
-from kmviz.ui.id_factory import kmviz_factory as kf
-from kmviz.ui.components.select import kgsf
+import dash_mantine_components as dmc
+import kmviz.core.config as kconf
 
-kindex = kf.child("index")
+from dash_iconify import DashIconify
 
-def make_index_layout():
-    if state.kmstate.session_only:
-        return html.Div()
+class Index:
+    def __init__(self, st: state):
+        self.st = st
 
-    res = html.Div([
-        dmc.Center([
-            html.H2("Index informations")
-        ]),
-        make_ag_grid(
-            kindex.sid("infos-grid"),
-            style = {"height": None},
-            grid_opt = {"domLayout": "autoHeight"}
-        ),
-        dmc.Space(h=20),
-        dmc.Button(
-            "Export",
-            id=kindex.sid("infos-button"),
-            disabled=True,
-            leftIcon=DashIconify(icon="ph:export", width=20)
-        ),
-        dmc.Center([
-            html.H2("Index metadata")
-        ]),
-
-        make_ag_grid(kindex.sid("metadata-grid")),
-        dmc.Space(h=20),
-        dmc.Group([
-            dmc.Button(
+    def layout(self):
+        return cf.div(
+            kid.index["div"],
+            dmc.Center(cf.h2("Index information")),
+            cf.ag_grid(
+                kid.index("info-grid"),
+                grid_opt = {"domLayout": "autoHeight"}
+            ),
+            dmc.Space(h=20),
+            cf.button(
+                kid.index["info-export"],
                 "Export",
-                id=kindex.sid("metadata-button"),
                 disabled=True,
-                leftIcon=DashIconify(icon="ph:export", width=20)
+                leftSection=DashIconify(icon="ph:export", width=20)
             ),
-            dmc.Button(
-                "Remove filters",
-                id=kindex.sid("metadata-rmf"),
-                disabled=True,
-                leftIcon=DashIconify(icon="ph:trash", width=20)
+            dmc.Center(cf.h2("Index metadata")),
+            cf.ag_grid(
+                kid.index("meta-grid")
             ),
-        ])
-    ])
+            dmc.Space(h=20),
+            cf.group(
+                kid.index["grp-btn"],
+                cf.button(
+                    kid.index["meta-export"],
+                    "Export",
+                    disabled=True,
+                    leftSection=DashIconify(icon="ph:export", width=20)
+                ),
+                cf.button(
+                    kid.index["meta-rmf"],
+                    "Remove filters",
+                    disabled=True,
+                    leftSection=DashIconify(icon="ph:trash", width=20)
+                )
+            )
+        )
 
-    return res
+    def callbacks(self) -> None:
 
-def make_index_layout_callbacks():
+        clientside_callback(
+            """
+            function(n_clicks) {
+                if (n_clicks) {
+                    return {};
+                }
+                return window.dash_clientside.no_update;
+            }
+            """,
+            Input(kid.index["meta-rmf"], "n_clicks"),
+            Output(kid.index("meta-grid"), "filterModel"),
+            prevent_initial_call=True
+        )
 
-    @callback(
-        Input(kindex.sid("metadata-rmf"), "n_clicks"),
-        Output(kindex.sid("metadata-grid"), "filterModel"),
-        prevent_initial_callbacks=True
-    )
-    def remove_metadata_table_filters(n_clicks):
-        if n_clicks:
-            return {}
-        prevent_update_on_none(None)
+        clientside_callback(
+            """
+            function(n_clicks) {
+                if (n_clicks) {
+                    return true;
+                }
+                return window.dash_clientside.no_update;
+            }
+            """,
+            Input(kid.index["meta-export"], "n_clicks"),
+            Output(kid.index("meta-grid"), "exportDataAsCsv"),
+            prevent_initial_call=True
+        )
 
-    @callback(
-        Input(kindex.sid("metadata-button"), "n_clicks"),
-        Output(kindex.sid("metadata-grid"), "exportDataAsCsv")
-    )
-    def export_metadata(n_clicks):
-        if n_clicks:
-            return True
-        prevent_update_on_none(None)
+        clientside_callback(
+            """
+            function(n_clicks) {
+                if (n_clicks) {
+                    return true;
+                }
+                return window.dash_clientside.no_update;
+            }
+            """,
+            Input(kid.index["info-export"], "n_clicks"),
+            Output(kid.index("info-grid"), "exportDataAsCsv"),
+            prevent_initial_call=True
+        )
 
-    @callback(
-        Input(kindex.sid("infos-button"), "n_clicks"),
-        Output(kindex.sid("infos-grid"), "exportDataAsCsv")
-    )
-    def export_metadata(n_clicks):
-        if n_clicks:
-            return True
-        prevent_update_on_none(None)
+        clientside_callback(
+            """
+            function(database) {
+                if (!database) {
+                    return [window.dash_clientside.no_update, window.dash_clientside.no_update, window.dash_clientside.no_update];
+                }
+                return [false, false, false];
+            }
+            """,
+            Input(kid.kmviz("database"), "value"),
+            Output(kid.index["info-export"], "disabled"),
+            Output(kid.index["meta-export"], "disabled"),
+            Output(kid.index["meta-rmf"], "disabled"),
+            prevent_initial_call=True
+        )
 
-    @callback(
-        Input(kgsf("provider"), "value"),
-        Output(kindex.sid("infos-button"), "disabled"),
-        Output(kindex.sid("metadata-button"), "disabled"),
-        Output(kindex.sid("metadata-rmf"), "disabled"),
-        prevent_initial_callbacks=True
-    )
-    def enable_index_table_buttons(provider):
-        prevent_update_on_none(provider)
-        return False, False, False
+        @callback(
+            Input(kid.kmviz("database"), "value"),
+            Output(kid.index("info-grid"), "rowData"),
+            Output(kid.index("info-grid"), "columnDefs"),
+            Output(kid.index("meta-grid"), "rowData"),
+            Output(kid.index("meta-grid"), "columnDefs"),
+            prevent_initial_call=True
+        )
+        def update_index_table(db):
+            if db == "__kmviz_df":
+                raise PreventUpdate
 
-    @callback(
-        Input(kgsf("provider"), "value"),
-        Output(kindex.sid("infos-grid"), "rowData"),
-        Output(kindex.sid("infos-grid"), "columnDefs"),
-        Output(kindex.sid("metadata-grid"), "rowData"),
-        Output(kindex.sid("metadata-grid"), "columnDefs"),
-        prevent_initial_callbacks=True
-    )
-    def update_index_table(provider):
-        if provider == "__kmviz_df":
-            prevent_update_on_none(None)
+            p = kconf.st.engine.get(db)
 
-        p = state.kmstate.providers.get(provider)
+            idf = p.infos_df
+            infos_rd = idf.to_dict("records")
+            infos_f = [{"field": f} for f in list(idf)]
 
-        infos_rd = p.infos_df.to_dict("records")
-        infos_f = [{"field": f} for f in list(p.infos_df)]
+            df = p.db.df()
+            meta_rd = df.to_dict("records")
+            meta_f = [{"field": f} for f in list(df)]
 
-        meta_rd = p.db.df().to_dict("records")
-        meta_f = [{"field": f} for f in list(p.db.df())]
-
-        return infos_rd, infos_f, meta_rd, meta_f
-
+            return infos_rd, infos_f, meta_rd, meta_f

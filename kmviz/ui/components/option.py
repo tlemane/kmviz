@@ -5,21 +5,15 @@ from dash_extensions.enrich import Input, Output, State, html, callback
 from kmviz.core.log import kmv_info
 from kmviz.core.provider.options import ProviderOption, RangeOption, TextOption, NumericOption, ChoiceOption, MultiChoiceOption
 
-from kmviz.ui import state
-
 from kmviz.ui.utils import make_select_data
-from kmviz.ui.id_factory import kmviz_factory as kf
-from kmviz.ui.components.store import ksfr
 
 from dash_iconify import DashIconify
-kof = kf.child("option")
-kcf = kf.child("config")
 
 def make_range_option(opt: RangeOption, id):
     v = opt.value if opt.value else opt.default
     text_id = id["type"] + "-" + id["index"] + "-" + opt.name
     return html.Div([
-        dmc.Text(f"{opt.name} = {v}", size="sm", weight=450, align="center", id=text_id),
+        dmc.Text(f"{opt.name} = {v}", size="sm", fw=450, ta="center", id=text_id),
         dmc.Slider(
             id=id,
             min=opt.min,
@@ -32,7 +26,8 @@ def make_range_option(opt: RangeOption, id):
             marks=[
                 {"value": opt.min, "label": str(round(opt.min, 2))},
                 {"value": opt.max, "label": str(round(opt.max, 2))},
-            ]
+            ],
+            size="sm"
         ),
         dmc.Space(h=13)
     ])
@@ -47,7 +42,7 @@ def make_numeric_option(opt: NumericOption, id):
         value=opt.value if opt.value else opt.default,
         precision=2,
         className="kmviz-dmc-user-number-input",
-        classNames={"root": "kmviz-dmc-numeric-input-root"}
+        classNames={"root": "kmviz-dmc-numeric-input-root"},
     )
 
 def make_choice_option(opt: ChoiceOption, id):
@@ -59,7 +54,7 @@ def make_choice_option(opt: ChoiceOption, id):
         className="kmviz-dmc-user-select",
         clearable=True,
         searchable=True,
-        classNames={"root": "kmviz-dmc-select-input-root"}
+        classNames={"root": "kmviz-dmc-select-input-root"},
     )
 
 def make_multichoice_option(opt: MultiChoiceOption, id):
@@ -71,7 +66,8 @@ def make_multichoice_option(opt: MultiChoiceOption, id):
         className="kmviz-dmc-user-multi-select",
         clearable=True,
         searchable=True,
-        classNames={"root": "kmviz-dmc-select-input-root"}
+        classNames={"root": "kmviz-dmc-select-input-root"},
+        size="xs"
     )
 
 def make_text_option(opt: TextOption, id):
@@ -81,7 +77,8 @@ def make_text_option(opt: TextOption, id):
         value=opt.value if opt.value else opt.default,
         placeholder=opt.placeholder,
         className="kmviz-dmc-user-text-input",
-        classNames={"root": "kmviz-dmc-text-input-root"}
+        classNames={"root": "kmviz-dmc-text-input-root"},
+        size="xs"
     )
 
 def make_user_option(opt: ProviderOption, id):
@@ -96,114 +93,6 @@ def make_user_option(opt: ProviderOption, id):
     elif isinstance(opt, TextOption):
         return make_text_option(opt, id)
     return None
-
-def create_option_callback(provider_name, opt_name):
-    def update(value):
-        patch = Patch()
-        patch[provider_name][opt_name] = value
-        return patch
-    return update
-
-def create_range_text_callback(opt_name):
-    def update(value):
-        return [f"{opt_name} = {value}"]
-    return update
-
-def make_callback(name, opt_name, input_id, output_id):
-    return callback(
-        Input(input_id, "value"),
-        Output(output_id, "data"),
-        prevent_initial_call=True
-    )(create_option_callback(name, opt_name))
-
-def make_options_callbacks():
-    for provider_name, provider in state.kmstate.providers.all().items():
-        for opt_name in provider.options:
-            if provider.options[opt_name].hidden:
-                continue
-            callback(
-                Input(kof(f"{provider_name}-{opt_name}"), "value"),
-                Output(ksfr("provider-options"), "data"),
-                prevent_initial_call=True
-            )(create_option_callback(provider_name, opt_name))
-            if isinstance(provider.options[opt_name], RangeOption):
-                iid = kof(f"{provider_name}-{opt_name}")
-                callback(
-                    Input(iid, "value"),
-                    Output(f"{iid['type']}-{iid['index']}-{opt_name}", "children")
-                )(create_range_text_callback(opt_name))
-
-def make_provider_config(provider_name):
-    options = state.kmstate.providers.get(provider_name).options
-
-    children = []
-
-    if state.kmstate.providers.get(provider_name).has_visible_options:
-        for opt in options.values():
-            if opt.hidden:
-                continue
-            children.append(make_user_option(opt, id=kof(f"{provider_name}-{opt.name}")))
-
-    return html.Div(
-        id=kcf(f"{provider_name}-div"),
-        children=children,
-        style={"display": "inline" if provider_name == state.kmstate.defaults["configuration"] else "none"}
-    )
-
-def make_config():
-    provider_names = state.kmstate.providers.list()
-
-    if state.kmstate.defaults["configuration"]:
-        data = make_select_data(state.kmstate.defaults["databases"])
-        value = state.kmstate.defaults["configuration"]
-    else:
-        data = None
-        value = None
-
-    show_conf = True
-
-    if state.kmstate.defaults["hide_db"]:
-        provider_name = state.kmstate.defaults["databases"][0]
-        show_conf = state.kmstate.providers.get(provider_name).has_visible_options
-    else:
-        show_conf = any(state.kmstate.providers.get(p).has_visible_options for p in provider_names)
-
-    show_select = show_conf and not state.kmstate.defaults["hide_db"]
-
-    res = html.Div([
-        dmc.Divider(size="sm", color="gray", label="CONFIGURATION", labelPosition="center"),
-        dmc.Select(
-            id=kf("select-provider-config"),
-            clearable=True,
-            icon=DashIconify(icon="mynaui:config"),
-            data=data,
-            value=value,
-            style = {"display": "inline" if show_select else "none" }
-        ),
-        *[make_provider_config(name) for name in provider_names]
-    ], style = {"display": "inline" if show_conf else "none" })
-
-    return res
-
-def make_config_callbacks():
-    @callback(
-        Input(kf("select-provider-config"), "value"),
-        State(kcf.all, "id"),
-        Output(kcf.all, "style"),
-        prevent_initial_call=True,
-    )
-    def show_provider_config(provider_name, idx):
-        styles = [{"display": "none"} for _ in range(len(idx))]
-
-        if not provider_name:
-            return styles
-
-        for index, id in enumerate(idx):
-            if id["index"] == f"{provider_name}-div":
-                styles[index]["display"] = "inline"
-                return styles
-
-    make_options_callbacks()
 
 
 

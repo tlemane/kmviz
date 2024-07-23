@@ -1,27 +1,144 @@
-.kmviz-tab-header {
-  top:0;
-  position: fixed;
-  z-index: 10;
+.kmviz-main-layout {
+  position: sticky;
+  overflow: auto;
+  padding-left: 250px;
   width: 100%;
-  opacity: 1;
-  background-color: white;
 }
 
-.kmviz-tabs {
-  margin-top: 35px;
+.kmviz-sidebar-layout {
+  position: fixed;
+  width: 250px;
+  z-index: 1000;
+}
+
+@media only screen and (max-width: 1000px) {
+  .kmviz-sidebar-layout {
+    display: none;
+  }
+  .kmviz-main-layout {
+    padding-left: 10px;
+  }
+  .kmviz-layout-divider {
+    display: none;
+  }
+}
+
+.kmviz-filter-keyboard {
+  width: 70%;
+}
+
+#kmviz-tabs-map-filter-grp-filter {
+  width: 40%;
+}
+
+.kmviz-preset-select {
+  margin-left: auto;
+  margin-right: 0px;
+}
+
+#kmviz-tabs-plot-filter-grp-filter {
+  width: 40%;
+}
+
+.kmviz-main {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.kmviz-sidebar {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.kmviz-corner-grp {
+  right: 0px;
+  margin-left: auto;
+  width: fit-content;
+}
+
+.kmviz-database {
+  width: 150px;
+}
+
+.kmviz-query {
+  width: 150px;
+}
+
+.kmviz-sample-select {
+  width: 150px;
 }
 
 .kmviz-gselect {
   width: 150px;
 }
 
-.kmviz-gselect-group {
-  position: fixed;
-  top: 2px;
-  right: 1px;
-  z-index: 11;
+.kmviz-number {
+  width: 80px;
 }
 
+.kmviz-figure-select {
+  width: 120px;
+}
+
+.kmviz-figure-segmented {
+  margin-top: 22px;
+}
+
+.kmviz-figure-switch {
+  margin-top: 22px;
+}
+
+
+.kmviz-session-button {
+  margin-top: 2px;
+}
+
+.kmviz-dcc-plot-graph {
+  margin-left: auto;
+  margin-right: auto;
+  height: 70vh;
+  width: 90%;
+}
+
+.kmviz-dcc-sequence-graph {
+  margin-left: auto;
+  margin-right: auto;
+  height: 50vh;
+  width: 94%;
+}
+
+.kmviz-alert {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+}
+
+.kmviz-color {
+  margin-top: 20px;
+}
+
+.kmviz-side-pom-index {
+  width: 100px;
+}
+
+.kmviz-side-pom-sep {
+  width: 100px;
+}
+
+.kmviz-side-pom-latitude {
+  width: 100px;
+}
+
+.kmviz-side-pom-longitude {
+  width: 100px;
+}
+
+.kmviz-fix-axes {
+  padding-top: 10px;
+}
+
+
+/*
 .kmviz-dmc-number-input {
   width: 100px;
 }
@@ -36,6 +153,8 @@
   width: 100%;
 }
 
+*/
+
 .kmviz-dmc-text-input-root {
   text-align: center;
 }
@@ -48,11 +167,6 @@
   text-align: center;
 }
 
-.kmviz-dmc-select {
-  width: 100%;
-}
 
-.kmviz-dmc-figure-select {
-  width: 150px;
-}
+
 

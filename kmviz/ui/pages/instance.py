@@ -1,19 +1,12 @@
-from dash_extensions.enrich import (
-    html,
-    dcc,
-)
-
 import dash
-from dash_iconify import DashIconify
-import dash_mantine_components as dmc
 
-from kmviz.ui import state
+import kmviz.core.config as kconf
 
 def make_instance(plugin):
     if plugin:
         return plugin.instance()
 
-plugin = state.kmstate.instance_plugin()
+_, plugin = kconf.st.instance_plugin
 
 if plugin:
     dash.register_page(__name__, path="/", name=plugin.name(), title=plugin.name())

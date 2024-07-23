@@ -1,169 +1,125 @@
 import dash_mantine_components as dmc
-from dash_extensions.enrich import html, callback, dcc, Input, Output, State, Serverside
+from dash_extensions.enrich import html, callback, Input, Output, State, Serverside, no_update, clientside_callback
+from kmviz.ui.components.factory import ComponentFactory as cf
+from kmviz.ui.components.factory import khide
+from kmviz.ui.components.helpers import load_file_as_df
+from kmviz.ui.layouts.input import SideInputLayout, SideDBLayout
+from kmviz.ui.layouts.config import ConfigLayout
+from kmviz.ui.layouts.submit import SubmitLayout
 
-from kmviz import __version__ as kmviz_version
-
-from kmviz.ui.id_factory import kmviz_factory as kf
-from kmviz.ui.components.select import make_select_provider, make_select_provider_callbacks
-from kmviz.ui.components.input import make_input, make_input_callbacks, KMVIZ_UPLOAD_STYLE
-from kmviz.ui.components.input import make_input_session_file, make_input_session_file_callbacks
-from kmviz.ui.components.option import make_config, make_config_callbacks
-from kmviz.ui.components.submit import make_submit, make_submit_callbacks
+from kmviz.ui.id_factory import kid
+from kmviz.ui.utils import icons
 from kmviz.core.io import KmVizIOError
+from kmviz.core.config import state
 
-from kmviz.ui.utils import prevent_update_on_none
-import base64
-import pandas as pd
-from io import StringIO, BytesIO
+import kmviz
 
+class Sidebar:
+    def __init__(self, st: state):
+        self.st = st
+        self.mode = st.mode
 
-from kmviz.ui import state
-klf = kf.child("layout")
-ksb = klf.child("ksb")
+    def _make_database_layout(self) -> html.Div:
+        sinput = SideInputLayout(self.st)
+        sdb = SideDBLayout(self.st)
+        sconfig = ConfigLayout(self.st)
+        ssubmit = SubmitLayout(self.st)
 
-def make_sidebar_layout():
-
-    if state.kmstate.plot_only:
-        res = html.Div([
-            dcc.Store(id=kf.sid("plot-only"), data={}),
-            dmc.Center([
-                html.H1(f"kmviz v{kmviz_version}"),
-            ]),
-            html.H4(f"Plot only mode"),
-            dmc.Divider(size="sm", color="gray", label="INPUT (csv/tsv/xlsx)", labelPosition="center"),
-            dcc.Upload(
-                id=ksb.sid("dataframe"),
-                children=["Drop or ", html.A("Select a file")],
-                style = KMVIZ_UPLOAD_STYLE
-            ),
-            dmc.Divider(size="sm", color="gray", label="CONFIG", labelPosition="center"),
-            dmc.Group([
-                dmc.TextInput(
-                    label="Index column",
-                    id=ksb.sid("index-column"),
-                    style = {"width": "100px"}
-                ),
-                dmc.TextInput(
-                    label="Separator",
-                    id=ksb.sid("separator"),
-                    style = {"width": "100px"}
-                )
-            ]),
-            dmc.Group([
-                dmc.TextInput(
-                    label="Latitude column",
-                    id=ksb.sid("latitude"),
-                    style = {"width": "100px"}
-                ),
-                dmc.TextInput(
-                    label="Longitude column",
-                    id=ksb.sid("longitude"),
-                    style = {"width": "100px"}
-                )
-            ]),
-            dmc.Space(h=5),
-            html.Div(id=ksb.sid("dataframe-error")),
-            dmc.Space(h=5),
-            dmc.Button(
-                "Load",
-                id=ksb.sid("df-button"),
-            ),
-
-        ], className="sidebar", id=ksb.sid("div"))
-    elif state.kmstate.session_only:
-        res = html.Div([
-            dcc.Store(id=kf.sid("plot-only"), data={}),
-        #    make_input_session_file()
-        ]) #, className="sidebar", id=ksb.sid("div"))
-    else:
-        res = html.Div([
-            dcc.Store(id=kf.sid("plot-only"), data={}),
-            dmc.Center([
-                html.H1(f"kmviz v{kmviz_version}"),
-            ]),
-            dmc.Space(h=5),
-            make_select_provider(),
-            dmc.Space(h=0 if state.kmstate.defaults["hide_db"] else 20),
-            make_input(),
-            dmc.Space(h=20),
-            make_config(),
-            dmc.Space(h=20),
-            make_submit()
-        ], className="sidebar", id=ksb.sid("div"))
-
-    return res
-
-def make_sidebar_layout_callbacks():
-
-    if state.kmstate.plot_only:
-        @callback(
-            Input(ksb.sid("dataframe"), "filename"),
-            Output(ksb.sid("dataframe-error"), "children"),
+        layout = cf.div(
+            kid.kmviz["side-div"],
+            dmc.Center(cf.h1(f"kmviz {kmviz.__version_str__}")),
+            sdb.layout(),
+            sinput.layout(),
+            sconfig.layout(),
+            ssubmit.layout(),
         )
-        def show_filename(filename):
-            return dmc.Text(f"🗎 {filename}", weight=500)
+
+        sinput.callbacks()
+        sdb.callbacks()
+        sconfig.callbacks()
+        ssubmit.callbacks()
+
+        return layout
+
+    def _make_plot_mode_layout(self) -> html.Div:
+        return cf.div(
+            kid.pom["div"],
+            dmc.Center(cf.h4("Plot Mode")),
+            cf.divider(size="sm", color="gray", label="CONFIG", labelPosition="center"),
+            cf.group(
+                kid.pom["grp-1"],
+                cf.text(kid.pom["index"], label="Index", required=True,  classNames={"root": "kmviz-dmc-text-input-root"}),
+                cf.text(kid.pom["sep"], label="Separator",  classNames={"root": "kmviz-dmc-text-input-root"})
+            ),
+            cf.group(
+                kid.pom["grp-2"],
+                cf.text(kid.pom["latitude"], label="Latitude", classNames={"root": "kmviz-dmc-text-input-root"}),
+                cf.text(kid.pom["longitude"], label="Longitude", classNames={"root": "kmviz-dmc-text-input-root"})
+            ),
+            dmc.Space(h=10),
+            dmc.Center(
+                cf.upload(
+                    kid.pom["upload"],
+                    cf.button(kid.pom["load-button"], "Load (csv,tsv,xlsx)", disabled=True, leftSection=icons("file")),
+                ),
+            ),
+            cf.div(kid.pom["error"]),
+        )
+
+    def _plot_mode_callbacks(self) -> None:
 
         @callback(
-            Input(ksb.sid("df-button"), "n_clicks"),
-            State(ksb.sid("dataframe"), "filename"),
-            State(ksb.sid("dataframe"), "contents"),
-            State(ksb.sid("separator"), "value"),
-            State(ksb.sid("index-column"), "value"),
-            State(ksb.sid("latitude"), "value"),
-            State(ksb.sid("longitude"), "value"),
-            Output(kf.sid("plot-only"), "data"),
-            Output(ksb.sid("dataframe-error"), "children"),
-
-            prevent_initial_callbacks=True,
-            prevent_initial_call=True,
+            Input(kid.pom["index"], "value"),
+            Output(kid.pom["load-button"], "disabled"),
+            prevent_initial_call=True
         )
-        def load_df_file(button, filename, contents, sep, index, lat, lon):
+        def enable_button(value):
+            if value:
+                return False
+            return True
 
-            hide = {"display": "none"}
-            prevent_update_on_none(filename, contents)
-            content_type, data = contents.split(",")
-            content = base64.b64decode(data)
-
+        @callback(
+            Input(kid.pom["upload"], "filename"),
+            Input(kid.pom["upload"], "contents"),
+            State(kid.pom["index"], "value"),
+            State(kid.pom["sep"], "value"),
+            State(kid.pom["latitude"], "value"),
+            State(kid.pom["longitude"], "value"),
+            Output(kid.pom["store"], "data"),
+            Output(kid.pom["error"], "children"),
+            Output(kid.kmviz["side-layout"], "style"),
+            Output(kid.kmviz["main-layout"], "style"),
+            prevent_initial_call=True
+        )
+        def upload_df_file(filename, contents, index, sep, lat, lon):
             try:
-                df = None
-                if filename.endswith("csv") or filename.endswith("tsv"):
-                    pdio = StringIO(content.decode("utf-8"))
-                    try:
-                        if sep:
-                            df = pd.read_csv(pdio, sep=sep)
-                        else:
-                            df = pd.read_csv(pdio)
-                    except:
-                        raise KmVizIOError(f"Error while loading '{filename}'")
-                else:
-                    pdio = BytesIO(content)
-                    try:
-                        df = pd.read_excel(pdio)
-                    except:
-                        raise KmVizIOError(f"Error while loading '{filename}'")
+                df = load_file_as_df(filename, contents, sep)
+                df.rename(columns={index: "ID"}, inplace=True)
 
-                res = {}
+                res = dict(df=df, geodata=None)
 
-                if not index or index not in list(df):
-                    raise KmVizIOError(f"'{index}' not found in dataframe.")
-
-                df.rename(columns={index : "ID"}, inplace=True)
-                res["df"] = df
-
-                res["geodata"] = None
                 if lat and lon:
                     if lat in list(df) and lon in list(df):
                         res["geodata"] = { "latitude": lat, "longitude": lon}
                     else:
-                        raise KmVizIOError(f"'{lat}' or '{lon}' not found in dataframe")
+                        KmVizIOError(f"'{lat}' or '{lon}' not found in dataframe")
 
-                return Serverside(res), dmc.Text(f"🗎 {filename}", weight=500)
+                return Serverside(res), [], khide, {"padding-left": "10px"}
+
             except KmVizIOError as e:
-                return Serverside(res), dmc.Text(str(e), color="red", weight=500)
-    elif state.kmstate.session_only:
-        make_input_session_file_callbacks()
-    else:
-        make_select_provider_callbacks()
-        make_input_callbacks()
-        make_config_callbacks()
-        make_submit_callbacks()
+                no_update, dmc.Text(str(e), color="red", weight=500), no_update, no_update
+
+    def _database_callbacks(self) -> None:
+        pass
+
+    def layout(self) -> html.Div:
+        if self.mode == "plot":
+            return self._make_plot_mode_layout()
+        elif self.mode == "db":
+            return self._make_database_layout()
+
+    def callbacks(self) -> None:
+        if self.mode == "plot":
+            self._plot_mode_callbacks()
+        elif self.mode == "db":
+            self._database_callbacks()

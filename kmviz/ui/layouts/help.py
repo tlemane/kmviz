@@ -1,38 +1,38 @@
+from kmviz.core.config import state
+from kmviz.ui.components.factory import ComponentFactory as cf
 from dash_extensions.enrich import html, dcc
-from kmviz.ui import state
-import dash
+import kmviz
 
-from importlib_resources import files
+class HelpLayout:
+    def __init__(self, st: state, factory):
+        self.st = st
+        self.f = factory
 
-def make_help_layout():
+    def layout(self):
+        ph = []
+        p_header = cf.div(self.f["plugin-header"])
 
-    plugin_help = []
-    for _, plugin in state.kmstate.plugins.items():
-        if h := plugin.help():
-            plugin_help.append(h)
+        if self.st.conf.plugins:
+            for name, plugin in self.st.conf.plugins.items():
+                if h := plugin.help():
+                    ph.append(h)
+            if ph:
+                p_header = cf.div(
+                    self.f["plugin-header"],
+                    html.H2("Plugins"),
+                    html.P("The <b>kmviz</b> instance has loaded one or more plugins. You may find some help below, when provided.")
+                )
 
-    plugin_section = html.Div()
+        return cf.div(
+            self.f["div"],
+            html.H1(f"kmviz {kmviz.__version_str__}"),
+            html.H2("Links"),
+            html.Ul(
+                [html.Li(dcc.Link("Github", href="https://github.com/tlemane/kmviz", target="_blank")),
+                html.Li(dcc.Link("Documentation", href="https://tlemane.github.io/kmviz", target="_blank"))]
+            ),
+            *ph
+        )
 
-    if state.kmstate.plugins:
-        plugin_section = dcc.Markdown("""
-        ---
-
-        ## Plugins
-
-        This instance has loaded one or more plugins. If these provide help, you will find it below.
-        """)
-
-    help_md = ""
-
-    with open(files("kmviz").joinpath("assets/help.md"), "r") as doc:
-        help_md = doc.read()
-
-    res = html.Div([
-        dcc.Markdown(help_md, mathjax=True),
-        plugin_section,
-        html.Div([
-            *plugin_help
-        ]),
-    ], style = {"margin": 20})
-
-    return res
+    def callbacks(self):
+        pass

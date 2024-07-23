@@ -1,94 +1,170 @@
-from kmviz.ui import state
+from kmviz.core.config import state
 from kmviz.core.io import parse_fastx, KmVizIOError
 from kmviz.core.query import Query, QueryResponseGeo
-
-from flask import jsonify
+from kmviz.core.log import kmv_info, kmv_warn
+from flask import jsonify, send_file
 from flask import request
 import orjson
 import uuid
-import base64
-
 import dataclasses
+from io import StringIO, BytesIO
+from zipfile import ZipFile
 
-def api_root():
-    res = dict(database={})
+from typing import List
 
-    for name, provider in state.kmstate.providers.all().items():
-        options = list(provider.options.keys())
-        res["database"][name] = {}
+class KmvizAPI:
+    def __init__(self, st: state, server):
+        self.st = st
+        self.server = server
+        self._register()
 
+    def _register(self):
+        if self.st.api.enabled:
+            self._register_route(self.st.api.route, ["GET"], self._make_info_callback())
+            self._register_route(f"{self.st.api.route}{self.st.api.query_route}", ["POST"], self._make_query_callback())
+            self._register_route(f"{self.st.api.route}{self.st.api.query_route}/<db>", ["POST"], self._make_query_metadata_callback())
+
+
+    def _get_options(self, database, form, with_prefix = True):
         options = {}
-        for opt_name, opt in provider.options.items():
-            options[opt_name] = {
-                "type": type(opt.default).__name__,
-                "state": dataclasses.asdict(opt)
-            }
-        res["database"][name]["options"] = options
-
-    res["input"] = state.kmstate.api_config["limits"]
-
-    return jsonify(res)
-
-def make_query(fastx, on):
-    uuid_str = f"kmviz-{str(uuid.uuid4())}"
-
-    queries = [Query(name, seq) for name, seq, _ in parse_fastx(fastx, state.kmstate.api_config["limits"])]
-
-    results = {}
-
-    for provider in list(on.keys()):
-        for k, v in state.kmstate.providers.get(provider).options.items():
-            if k not in on[provider]:
-                on[provider][k] = v.value
+        for key in form:
+            if with_prefix:
+                if key.startswith(database):
+                    n = key.split("#", 1)[1]
+                    if n not in self.st.engine.get(database).options:
+                        raise KmVizIOError(f"'{n}' is not a valid option for '{database}'")
+                    options[n] = form[key]
             else:
-                on[provider][k] = type(v.value)(on[provider][k])
+                if key not in self.st.engine.get(database).options:
+                    raise KmVizIOError(f"'{key}' is not a valid option for '{database}'")
+                options[key] = form[key]
 
-    for i, query in enumerate(queries):
-        result = state.kmstate.providers.query(query, list(on.keys()), on, uuid_str)
+        for opt_name, opt in self.st.engine.get(database).options.items():
+            if opt_name not in options:
+                options[opt_name] = opt.value
+            else:
+                options[opt_name] = type(opt.value)(options[opt_name])
+        return options
 
-        for name in result:
-            R = QueryResponseGeo(
-                result[name]._query,
-                result[name]._response,
-                orjson.loads(result[name].df.to_json()),
-                state.kmstate.providers.get(name).db.geodata
-            )
-            result[name] = R
+    def _make_geo_response(self, response, db, df_as_json):
+        return QueryResponseGeo(
+            response._query,
+            response._response,
+            orjson.loads(response.df.to_json()) if df_as_json else response.df,
+            self.st.engine.get(db).db.geodata
+        )
 
-        results[query.name] = result
+    def _make_session_query(self, fastx: str, options: dict, df_as_json):
+        uuid_str = f"kmviz-{str(uuid.uuid4())}"
 
-    return results
+        queries = [Query(name, seq) for name, seq, _ in parse_fastx(fastx, self.st.api.limits)]
 
-def api_query():
-    try:
-        if not "database" in request.form:
-            return f"'database' entry is missing!", 400
-        if not "fastx" in request.files:
-            return f"'fastx' entry is missing!", 400
+        results = {}
+        stores = {}
 
-        options = {}
-        for db in request.form.getlist("database"):
-            if db not in state.kmstate.providers.list():
-                return f"'{db}' is not a valid database", 400
-            options[db] = {}
-            for k in request.form:
-                if k.startswith(db):
-                    name = k.split("-", 1)[1]
-                    if name not in state.kmstate.providers.get(db).options:
-                        return f"'{name}' is not a valid option for '{db}'"
-                    options[db][name] = request.form[k]
+        for i, query in enumerate(queries):
+            result = self.st.engine.query(query, list(options.keys()), options, uuid_str)
+
+            stores[query.name] = {}
+            for name in result:
+                stores[query.name][name] = result[name]
+                result[name] = self._make_geo_response(result[name], name, df_as_json)
+
+            results[query.name] = result
+
+        data_db = list(options.keys())
+        def_db = data_db[0]
+
+        self.st.put(uuid_str, (stores, data_db, def_db, [q.name for q in queries], queries[0].name))
+        return { uuid_str: results }
+
+    def _make_query_callback(self):
+        def api_query():
+            try:
+                if not "database" in request.form:
+                    kmv_warn("🔗 API (POST): 'database' is missing")
+                    return f"'database' entry is missing!", 400
+                if not "fastx" in request.files:
+                    kmv_warn("🔗 API (POST): 'fastx' is missing")
+                    return f"'fastx' entry is missing!", 400
+
+                options = {}
+                for db in request.form.getlist("database"):
+                    options[db] = self._get_options(db, request.form, True)
+
+                return jsonify(self._make_session_query(request.files["fastx"].stream.read().decode(), options, True))
+            except KmVizIOError as e:
+                kmv_warn(f"🔗 API (POST): Error ({str(e)})")
+                return f"Error: {str(e)}", 400
+            except Exception as e:
+                kmv_warn(f"🔗 API (POST): Unknown error: {str(e)}")
+                return "An error occured while processing your request", 400
+        return api_query
+
+    def _make_metadata_query(self, fastx: str, options: dict):
+        uuid_str = f"kmviz-{str(uuid.uuid4())}"
+
+        queries = [Query(name, seq) for name, seq, _ in parse_fastx(fastx, self.st.api.limits)]
+
+        zf_io = BytesIO()
+        with ZipFile(zf_io, "w") as zf:
+            stores = {}
+            for i, query in enumerate(queries):
+                result = self.st.engine.query(query, list(options.keys()), options, uuid_str)
+                stores[query.name] = {}
+                for name in result:
+                    zf.writestr(f"{query.name}.tsv", result[name].df.to_csv(index=False, sep="\t"))
+                    stores[query.name][name] = result[name]
 
 
-        res = make_query(request.files["fastx"].stream.read().decode(), options)
-        return jsonify(res)
-    except KmVizIOError as e:
-        return f"Error: {str(e)}", 400
-    except:
-        return "An error occured while processing your request", 400
+        data_db = list(options.keys())
+        def_db = data_db[0]
+        self.st.put(uuid_str, (stores, data_db, def_db, [q.name for q in queries], queries[0].name))
+
+        zf_io.seek(0)
+        return send_file(zf_io, download_name=f"{uuid_str}.zip")
+
+    def _make_query_metadata_callback(self):
+        def api_metadata_query(db):
+            try:
+                if db not in self.st.engine.list():
+                    return f"'{db}' database does not exist!", 400
+                if not "fastx" in request.files:
+                    kmv_warn("🔗 API (POST): 'fastx' is missing")
+                    return f"'fastx' entry is missing!", 400
+                options = {db: self._get_options(db, request.form, False)}
+                return self._make_metadata_query(request.files["fastx"].stream.read().decode(), options)
+            except KmVizIOError as e:
+                kmv_warn(f"🔗 API (POST): Error ({str(e)})")
+                return f"Error: {str(e)}", 400
+            except Exception as e:
+                kmv_warn(f"🔗 API (POST): Unknown error: {str(e)}")
+                return "An error occured while processing your request", 400
+        return api_metadata_query
 
 
-def register_api_routes(server):
-    if state.kmstate.api:
-        root = state.kmstate.api_config["route"]
-        server.route(root, methods=["GET"])(api_root)
-        server.route(root + state.kmstate.api_config["query_route"], methods=["POST"])(api_query)
+    def _make_info_callback(self):
+        def api_info():
+            results = dict(database={})
+
+            kmv_info("🔗 API (GET)[info]")
+
+            for name, db in self.st.engine.all().items():
+                results["database"] = { name: {}}
+
+                options = {}
+                for opt_name, opt in db.options.items():
+                    options[opt_name] = {
+                        "type": type(opt.default).__name__,
+                        "state": dataclasses.asdict(opt)
+                    }
+                results["database"][name]["options"] = options
+
+            results["input"] = self.st.api.limits.model_dump()
+
+            return jsonify(results)
+
+        return api_info
+
+    def _register_route(self, route: str, methods: List[str], callback):
+        self.server.route(route, methods=methods)(callback)

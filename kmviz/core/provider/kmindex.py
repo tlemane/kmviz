@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Optional, Union, List
 
 from .provider import Provider
-from .options import RangeOption, ChoiceOption
+from .options import RangeOption, ChoiceOption, NumericOption
 from kmviz.core.query import Query, Response, QueryResponse
 from kmviz.core.utils import covxb_from_covxk, covyb_from_covyk
 from kmviz.core.io import KmVizInvalidQuery

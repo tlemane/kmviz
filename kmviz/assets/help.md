@@ -1,1 +1,0 @@
-See [documentation](https://tlemane.github.io/kmviz).

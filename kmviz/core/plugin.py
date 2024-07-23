@@ -4,6 +4,10 @@ from kmviz.core import KmVizError
 from typing import List, Tuple, Any, Union, Dict
 import importlib
 import pkgutil
+import shutil
+from importlib_resources import files
+import os
+from pathlib import Path
 
 plugin_prefix = "kmviz_"
 
@@ -79,6 +83,41 @@ def installed_plugins() -> List[str]:
         if name.startswith("kmviz_"):
             res.append(name)
     return res
+
+def search_for_plugin(name: str):
+    module = importlib.import_module(name)
+    p = module.kmviz_plugin
+
+    if not isinstance(p, KmVizPlugin):
+        raise KmVizError(f"Found module {name}, but 'kmviz_plugin' is not an instance of KmVizPlugin")
+    return p
+
+def copy_custom_assets(paths: List[str]):
+    main = str(files("kmviz").joinpath("assets"))
+    custom = f"{main}/_custom"
+
+    if not paths:
+        shutil.rmtree(custom, ignore_errors=True)
+        return False
+
+    os.makedirs(custom, exist_ok=True)
+
+    for path in paths:
+        path = Path(path)
+        if path.exists():
+            shutil.copy(path, custom)
+        else:
+            raise KmVizError(f"'{path}' not found.")
+    return True
+
+
+def copy_plugin_assets(plugin_name):
+    p = files(plugin_name).joinpath("assets")
+    main = str(files("kmviz").joinpath("assets"))
+    if p.exists() and p.is_dir():
+        shutil.copytree(p, f"{main}/_{plugin_name}_assets", dirs_exist_ok=True)
+        return p
+    return None
 
 def search_for_plugins(modules: List[str]):
     plugins = {}

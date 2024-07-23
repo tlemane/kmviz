@@ -1,133 +1,182 @@
-from dash_extensions.enrich import html, dash_table, Input, Output, dcc, State, callback, ctx
+from kmviz.core.config import state
+from dash_extensions.enrich import html, Input, State, callback, Output, no_update, clientside_callback
+from kmviz.ui.components.factory import ComponentFactory as cf
+from kmviz.ui.components.factory import km_color
+from kmviz.ui.id_factory import kid
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-
-import dash_ag_grid as dag
-from dash import Patch
-from kmviz.ui import state
-import pandas as pd
-
-from kmviz.ui.components.grid import make_ag_grid
-from kmviz.ui.id_factory import kmviz_factory as kf
 from kmviz.ui.utils import prevent_update_on_none
-from kmviz.ui.components.select import kgsf
-from kmviz.ui.components.store import ksf
-
+from dash.exceptions import PreventUpdate
+from dash import Patch
+import duckdb
+import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_datetime64_dtype
+from kmviz.ui.layouts.filter import FilterLayout
+import uuid
 
-ktable = kf.child("table")
+class TableLayout:
+    def __init__(self, st: state):
+        self.st = state
+        self._filter = FilterLayout(kid.table, kid.table("grid"))
 
-def make_table_layout():
-    res = html.Div([
-        dmc.Space(h=5),
-        make_ag_grid(ktable.sid("grid"), {}, {}, {}, style = {"height": "85vh"}),
-        dmc.Space(h=5),
-        dmc.Group([
-            dmc.Button(
-                "Export",
-                id=ktable.sid("button"),
-                disabled=True,
-                leftIcon=DashIconify(icon="ph:export", width=20)
+    def layout(self) -> html.Div:
+        return cf.div(
+            kid.table["div"],
+            dmc.Space(h=5),
+            self._filter.layout(),
+            dmc.Space(h=5),
+            cf.ag_grid(kid.table("grid"), {}, {}, {}, style = {"height": "80vh"}),
+            dmc.Space(h=5),
+            cf.group(
+                kid.table["grp-button"],
+                cf.button(
+                    kid.table["export-button"],
+                    "Export",
+                    disabled=True,
+                    leftSection=DashIconify(icon="ph:export", width=20)
+                ),
+                cf.button(
+                    kid.table["rmf-button"],
+                    "Remove filters",
+                    disabled=True,
+                    leftSection=DashIconify(icon="ph:trash", width=20)
+                ),
+                cf.button(
+                    kid.table["filter-button"],
+                    "Filter NaN",
+                    disabled=True,
+                    leftSection=DashIconify(icon="mingcute:na-fill", width=20)
+                )
             ),
-            dmc.Button(
-                "Remove filters",
-                id=ktable.sid("rmf"),
-                disabled=True,
-                leftIcon=DashIconify(icon="ph:trash", width=20)
-            ),
-            dmc.Button(
-                "Filter NaN",
-                id=ktable.sid("nan"),
-                disabled=True,
-                leftIcon=DashIconify(icon="mingcute:na-fill", width=20)
-            )
-        ])
-    ])
+        )
 
-    return res
+    def callbacks(self) -> None:
 
-def make_table_layout_callbacks():
+        #@callback(
+        #    Input(kid.kmviz("query"), "value"),
+        #    State(kid.kmviz("database"), "value"),
+        #    Output(kid.table["filter-button"], "disabled"),
+        #    Output(kid.table["export-button"], "disabled"),
+        #    Output(kid.table["rmf-button"], "disabled"),
+        #    prevent_initial_call=True
+        #)
+        #def enable_button(query, db):
+        #    prevent_update_on_none(query, db)
+        #    return (False,) * 3
 
-    @callback(
-        Input(kgsf("query"), "value"),
-        Input(kf.sid("plot-only"), "data"),
-        State(kgsf("provider"), "value"),
-        State(ksf("query-results"), "data"),
-        Output(ktable.sid("grid"), "rowData"),
-        Output(ktable.sid("grid"), "columnDefs"),
-        Output(ktable.sid("panel"), "disabled"),
-        prevent_initial_call=True,
-    )
-    def update_table_grid(query, plot_only, provider, query_result):
 
-        def column_filter(data):
-            if is_numeric_dtype(data):
-                return "agNumberColumnFilter"
-            if is_datetime64_dtype(data):
-                return "agDateColumnFilter"
-            return "agTextColumnFilter"
-
-        if "df" not in plot_only:
-            df = query_result[query][provider].df
-        else:
-            df = plot_only["df"]
-
-        fields = [
-            {
-                "field": x,
-                "filterParams": {"maxNumConditions": 10000},
-                "suppressMenu": True,
-                "filter": column_filter(df[x])
+        clientside_callback(
+            """
+            function(database, query) {
+                if (!database || !query) {
+                    return [window.dash_clientside.no_update, window.dash_clientside.no_update, window.dash_clientside.no_update];
+                }
+                return [false, false, false];
             }
-            for x in list(df)
-        ]
+            """,
+            Input(kid.kmviz("query"), "value"),
+            State(kid.kmviz("database"), "value"),
+            Output(kid.table["filter-button"], "disabled"),
+            Output(kid.table["export-button"], "disabled"),
+            Output(kid.table["rmf-button"], "disabled"),
+            prevent_initial_call=True
+        )
 
-        return df.to_dict("records"), fields, False
+        #@callback(
+        #    Input(kid.table["rmf-button"], "n_clicks"),
+        #    Output(kid.table("grid"), "filterModel"),
+        #    prevent_initial_call=True
+        #)
+        #def rmf(n_clicks):
+        #    if n_clicks:
+        #        return {}
+        #    return no_update
 
-    @callback(
-        Input(ktable.sid("button"), "n_clicks"),
-        Output(ktable.sid("grid"), "exportDataAsCsv"),
-        prevent_initial_callbacks=True,
-    )
-    def download_table_as_csv(n_clicks):
-        if n_clicks:
-            return True
-        prevent_update_on_none(None)
+        clientside_callback(
+            """
+            function(n_clicks) {
+                if (n_clicks) {
+                    return {};
+                }
+                return window.dash_clientside.no_update;
+            }
+            """,
+            Input(kid.table["rmf-button"], "n_clicks"),
+            Output(kid.table("grid"), "filterModel"),
+            prevent_initial_call=True
+        )
 
-    @callback(
-        Input(kgsf("query"), "value"),
-        State(kgsf("provider"), "value"),
-        Input(kf.sid("plot-only"), "data"),
-        Output(ktable.sid("button"), "disabled"),
-        Output(ktable.sid("rmf"), "disabled"),
-        Output(ktable.sid("nan"), "disabled"),
-        prevent_initial_callbacks=True,
-    )
-    def enable_table_grid_buttons(query, provider, po):
-        prevent_update_on_none(query, provider)
-        return False, False, False
+        #@callback(
+        #    Input(kid.table["export-button"], "n_clicks"),
+        #    Output(kid.table("grid"), "exportDataAsCsv"),
+        #    prevent_initial_call=True
+        #)
+        #def export(n_clicks):
+        #    if n_clicks:
+        #        return True
+        #    return no_update
 
-    @callback(
-        Input(ktable.sid("rmf"), "n_clicks"),
-        Output(ktable.sid("grid"), "filterModel")
-    )
-    def remove_table_filters(n_clicks):
-        if n_clicks:
-            return {}
-        prevent_update_on_none(None)
+        clientside_callback(
+            """
+            function(n_clicks) {
+                if (n_clicks) {
+                    return true;
+                }
+                return window.dash_clientside.no_update;
+            }
+            """,
+            Input(kid.table["export-button"], "n_clicks"),
+            Output(kid.table("grid"), "exportDataAsCsv"),
+            prevent_initial_call=True
+        )
 
-    @callback(
-        Input(ktable.sid("nan"), "n_clicks"),
-        State(ktable.sid("grid"), "columnDefs"),
-        Output(ktable.sid("grid"), "filterModel", allow_duplicate=True),
-    )
-    def filter_nan(n_clicks, fields):
-        if n_clicks:
-            cols = [x["field"] for x in fields]
-            p = Patch()
-            for c in cols[1:]:
-                p[c] = {'filterType': 'text', 'type': 'notBlank', 'filter': ''}
-            return p
+        @callback(
+            Input(kid.table["filter-button"], "n_clicks"),
+            State(kid.table("grid"), "columnDefs"),
+            Output(kid.table("grid"), "filterModel", allow_duplicate=True),
+            prevent_initial_call=True
+        )
+        def filter_nan(n_clicks, fields):
+            if n_clicks:
+                cols = [x["field"] for x in fields]
+                p = Patch()
+                for c in cols[1:]:
+                    p[c] = {'filterType': 'text', 'type': 'notBlank', 'filter': ''}
+                return p
+
+        @callback(
+            Input(kid.kmviz("query"), "value"),
+            Input(kid.pom["store"], "data"),
+            State(kid.kmviz("database"), "value"),
+            State(kid.store["results"], "data"),
+            Output(kid.table("grid"), "rowData"),
+            Output(kid.table("grid"), "columnDefs"),
+            prevent_initial_call=True
+        )
+        def update_grid(query, plot_only, db, results):
+
+            def colf(data):
+                if is_numeric_dtype(data):
+                    return "agNumberColumnFilter"
+                if is_datetime64_dtype(data):
+                    return "agDateColumnFilter"
+                return "agTextColumnFilter"
 
 
+            if "df" not in plot_only:
+                df = results[query][db].df
+            else:
+                df = plot_only["df"]
 
+            fields = [
+                {
+                    "field": x,
+                    "filterParams": {"maxNumConditions": 10000},
+                    "suppressMenu": True,
+                    "filter": colf(df[x])
+                } for x in list(df)
+            ]
+
+            return df.to_dict("records"), fields
+
+        self._filter.callbacks()
