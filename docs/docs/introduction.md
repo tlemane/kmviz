@@ -1,0 +1,8 @@
+# Introduction
+
+**kmviz** is a web interface that allows querying sequence indexes and exploring the metadata associated with the results. An instance can query multiple `Databases` (a `Provider` and `MetaDB` pair). This part of the documentation focuses on using the interface and the REST API. The [Advanced section](./advanced.md) covers running **kmviz** instances, implementing plugins, and deployment, and is intended for users interested in hosting instances. However, running an instance locally on a personal machine can be useful in several cases:
+
+1. One can host a `Provider` and a `MetaDB` but not **kmviz**. In this case, you can run the instance locally, which will connect to these services. See [X]().
+2. To visualize previous results. Results can be reloaded later, using a `session-id` (see [Session ID](./interface/database/input.md#session-id)) on a remote instance for a duration that depends on the configuration. However, the session can also be downloaded and reviewed in a **local instance**, which is advisable as it reduces the load on the shared service. See [`Download`](./interface/database/download.md) and [`session` mode](./interface/session.md).
+3. To visualize a session file obtained using the [API](./api/index.md). Similar to the previous point, this reduces the load on the shared service and recommended. Note that the API is optional and some instances may not support it. One can also host only the API without the graphical interface. See [session API](./api/session.md) and [`session` mode](./interface/session.md).
+4. **kmviz** has a `plot` mode allowing to make maps and plots from arbitrary data, i.e. a partial graphical interface for [plotly](https://plotly.com/). See [Plot mode](./interface/plot.md).

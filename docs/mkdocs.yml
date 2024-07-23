@@ -1,4 +1,4 @@
-site_name: kmviz v0.5.1
+site_name: kmviz v0.6.0
 site_url: https://tlemane.github.io/kmviz
 
 repo_url:  https://github.com/tlemane/kmviz
@@ -7,36 +7,58 @@ edit_uri: edit/main/docs/
 
 nav:
   - Home: 'index.md'
-  - User Guide:
+  - Usage:
+    - Introduction: 'introduction.md'
+    - Interface:
+      - Database mode:
+        - 'interface/database/index.md'
+        - Input: 'interface/database/input.md'
+        - Submit: 'interface/database/submit.md'
+        - Navigation: 'interface/database/nav.md'
+        - Tabs:
+          - Index: 'interface/database/index_table.md'
+          - Table: 'interface/database/table.md'
+          - Figure:
+            - 'interface/database/figure/index.md'
+            - Map: 'interface/database/map.md'
+            - Plot: 'interface/database/plot.md'
+          - Sequence: 'interface/database/sequence.md'
+      - Session mode: 'interface/session.md'
+      - Plot mode: 'interface/plot.md'
+    - API:
+      - api/index.md
+      - Infos: 'api/info.md'
+      - Metadata: 'api/metadata.md'
+      - Session: 'api/session.md'
+  - Advanced:
+    - Introduction: 'advanced.md'
     - Installation: 'installation.md'
     - Quickstart: 'quickstart.md'
     - Configuration:
       - configuration/index.md
       - Builtins Provider: 'builtins/provider.md'
       - Builtins MetaDB: 'builtins/metadb.md'
-    - Interface:
-      - interface/index.md
-      - Database mode: 'interface/database.md'
-      - Session mode: 'interface/session.md'
-      - Plot-Only mode: 'interface/plot_only.md'
-      - REST API: 'interface/rest.md'
-      - User options: 'configuration/user_options.md'
-  - Advanced:
+    - CLI:
+      - cli/index.md
+      - app: 'cli/app.md'
+      - api: 'cli/api.md'
+      - config: 'cli/config.md'
+      - plugin: 'cli/plugin.md'
+    - Deployment:
+      - deploy/index.md
+      - Docker: 'deploy/docker.md'
+      - Docker compose: 'deploy/compose.md'
     - Plugin:
       - plugins/index.md
       - Provider plugin: 'plugins/plugin_provider.md'
       - MetaDB plugin: 'plugins/plugin_metadb.md'
       - Layout plugin: 'plugins/plugin_layout.md'
       - Instance plugin: 'plugins/plugin_instance.md'
-    - Deployment:
-      - deploy/index.md
-      - Docker: 'deploy/docker.md'
-      - Docker compose: 'deploy/compose.md'
-      - API: 'deploy/api.md'
 
 plugins:
   - mike
   - search
+  - termynal
 
 theme:
     name: material
@@ -73,6 +95,7 @@ theme:
       - search.suggest
       - search.highlight
       - search.share
+      - content.tabs.link
 
 
 markdown_extensions:
@@ -87,6 +110,9 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.superfences
   - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - attr_list
   - toc:
       permalink: true

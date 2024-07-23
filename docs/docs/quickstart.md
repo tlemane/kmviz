@@ -36,7 +36,7 @@ kmindex-server -i index
 ```bash
 poetry shell
 cd tests/small_example
-python -m kmviz.app --config config.toml
+python -m kmviz app -c config.toml start
 ```
 
 ```toml title="config.toml"

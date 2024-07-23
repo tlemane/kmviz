@@ -125,7 +125,7 @@ services:
     depends_on:
       - kmindex-service
       - metadata-service
-    command: "-w 1 -b 0.0.0.0:5000"
+    command: "-w 1 -u 0.0.0.0 -p 5000"
     ports:
       - "5000:5000"
 ```
@@ -211,7 +211,7 @@ services:
     depends_on:
       - kmindex-service
       - metadata-service
-    command: "-w 1 -b 0.0.0.0:5000"
+    command: "-w 1 -u 0.0.0.0 -p 5000"
     ports:
       - "5000:5000"
 
@@ -242,7 +242,7 @@ services:
     depends_on:
       - kmindex-service
       - metadata-service
-    command: "-w 1 -b 0.0.0.0:5000"
+    command: "-w 1 -u 0.0.0.0 -p 5000"
     ports:
       - "5000:5000"
 
@@ -279,7 +279,7 @@ services:
       - kmindex-service
       - metadata-service
       - redis-service
-    command: "-w 1 -b 0.0.0.0:5000"
+    command: "-w 1 -u 0.0.0.0 -p 5000"
     ports:
       - "5000:5000"
 

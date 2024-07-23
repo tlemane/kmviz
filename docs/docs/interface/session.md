@@ -1,12 +1,15 @@
 # Session mode
 
-**kmviz** support a `session` mode that allows to load results from a `json` file (from the [API](../interface/rest.md) or download from another [kmviz interface](../interface/database.md#2-databasequery-selector)).
+**kmviz** supports a `session` mode that allows loading a session JSON file obtained via the [API](../api/session.md) or downloaded from another [**kmviz** instance](../interface/database.md#2-databasequery-selector).
 
 The `session` mode does not require any configuration and can be started as follows:
 
 ```bash
-python -m kmviz.app --session
+python -m kmviz app start session
 ```
 
-With the `session` mode, the sidebar is disabled and a `Upload session` button is available at the top of the page.
+An upload button is available at the top, otherwise the interface is the same as the database interface, but without the sidebar.
+
+<img src="../assets/session.png", class="ImageBorder">
+
 
