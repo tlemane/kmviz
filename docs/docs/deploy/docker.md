@@ -10,15 +10,15 @@ WORKDIR /home
 RUN pip install kmviz gunicorn
 ENV KMVIZ_CONF=/home/config.toml
 
-ENTRYPOINT ["kmviz", "app", "deploy"]
-CMD ["-u 0.0.0.0", "-p 8000"]
+ENTRYPOINT ["python", "-m", "kmviz", "app", "deploy"]
+CMD ["-u 0.0.0.0", "-p 8000", "-w 4"]
 ```
 
 </details>
 
 ```bash title="Start the service using docker"
-docker pull tlemane/kmviz
-docker run -d --network="host" -p .:/home/ -w 1 -u 0.0.0.0 -p 8000
+docker pull tlemane/kmviz:latest
+docker run -d --network="host" -v.:/home/ tlemane/kmviz -w 1 -u 0.0.0.0 -p 8000
 ```
 
 * Docker Options
