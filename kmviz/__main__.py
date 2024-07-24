@@ -28,8 +28,8 @@ class AttrDict(dict):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
-def check_input_path(config):
-    if config is None:
+def check_input_path(config, skip):
+    if not skip and config is None:
         kmv_error("Path to config file is empty. Use 'kmviz app -c/--config <path>' or set KMVIZ_CONF env variable")
         exit(1)
 
@@ -226,7 +226,7 @@ def start(ctx, mode, url, port, debug):
       - api: Only start the kmviz REST API (see https://tlemane/github.io/kmviz/)
     """
     kconf.init_global_state()
-    check_input_path(ctx.obj.config)
+    check_input_path(ctx.obj.config, mode == "session" or mode == "plot")
     kconf.st.configure(mode if mode != "api" else "db", ctx.obj.config)
 
     if mode == "api":
@@ -363,7 +363,8 @@ def schema(fmt, output):
         with open(f"{output}.json", "r") as f:
             with redirect_stdout(f):
                 print(schema)
-    print(schema)
+    else:
+        print(schema)
 
 def convert_to(data: dict, format: str):
     import tomli_w
@@ -439,7 +440,8 @@ def template(fmt, section, output):
         with open(f"{output}.{fmt}", "w") as f:
             with redirect_stdout(f):
                 print(schema)
-    print(convert_to(c, fmt))
+    else:
+        print(convert_to(c, fmt))
 
 
 @click.group(epilog=epilog())

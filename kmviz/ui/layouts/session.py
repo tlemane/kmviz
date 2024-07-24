@@ -59,6 +59,9 @@ class SessionLayout:
                 providers = []
                 queries = []
                 geo = {}
+
+                session_id = list(session.keys())[0]
+                session = session[session_id]
                 for query, pres in session.items():
                     queries.append(query)
                     for provider, res in pres.items():
