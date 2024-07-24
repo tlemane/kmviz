@@ -173,16 +173,24 @@ class SideInputLayout:
             Output(kid.store["session-id"], "data"),
             Output(kid.kmviz["side-layout"], "style"),
             Output(kid.kmviz["main-layout"], "style"),
+
+            Output(kid.tabs["index"], "disabled"),
+            Output(kid.tabs["table"], "disabled"),
+            Output(kid.tabs["map"], "disabled"),
+            Output(kid.tabs["plot"], "disabled"),
+            Output(kid.tabs["sequence"], "disabled"),
+            Output(kid.tabs["tabs"], "value"),
+
             prevent_initial_call=True
         )
         def load_session(n_clicks, session_id):
             if n_clicks:
                 try:
                     res = self.st.get(session_id)
-                    return Serverside(res[0]), res[1], res[2], res[3], res[4], no_update, session_id, khide, {"padding-left": "10px"}
+                    return (Serverside(res[0]), res[1], res[2], res[3], res[4], no_update, session_id, khide, {"padding-left": "10px"}) + (False,) * 5 + ("table",)
                 except:
                     msg = "Session not found. Invalid session id, query still running, or results erased."
-                    return (no_update,) * 5 + (msg, None) + (no_update,) * 2
+                    return (no_update,) * 5 + (msg, None) + (no_update,) * 8
             return (no_update,) * 8
 
     def callbacks(self) -> None:

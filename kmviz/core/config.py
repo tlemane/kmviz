@@ -207,7 +207,7 @@ class cdatabase(BaseModel):
     params: Dict[str, Any]
     defaults: Optional[Dict[str, Any]]=None
     metadata: cmetadb
-    presets: Optional[str]=None
+    presets: Optional[str] = Field(None, validate_default=True)
 
     @field_validator("presets")
     @classmethod
@@ -215,7 +215,7 @@ class cdatabase(BaseModel):
         if value:
             res = parse_config(value)
             return cpresets(**res)
-        return None
+        return cpresets(priority=False, map = {}, plot = {}, defaults=None)
 
 class capi(BaseModel):
     enabled: bool=False
