@@ -386,4 +386,4 @@ class MapLayout:
                     rtitle = set_preset_values(ids_title, p.title.model_dump())
                     rlegend = set_preset_values(ids_legend, p.legend.model_dump())
                     return rmap, rtitle, rlegend
-                return (no_update,) * 3
+                return (no_update,) * len(ids_map), (no_update,) * len(ids_title), (no_update,) * len(ids_legend)

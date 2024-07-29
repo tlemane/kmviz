@@ -1,3 +1,6 @@
+import os
+import shutil
+from pathlib import Path
 
 from Bio import SeqIO
 
@@ -70,7 +73,8 @@ def parse_fastx(content: str, limits: dict):
         max_size += seq_size
         nb += 1
 
-        validate_input(record.id, record.seq, seq_size, max_size, nb, limits)
+        if limits is not None:
+            validate_input(record.id, record.seq, seq_size, max_size, nb, limits)
 
         yield record.id, str(record.seq), None
 
@@ -81,3 +85,11 @@ def make_url(url: str, route: str=None, port: int=None) -> str:
     if route:
         res += route
     return res
+
+def rm(*paths):
+    for path in paths:
+        p = Path(path)
+        if p.is_file() or p.is_symlink():
+            p.unlink()
+        elif p.is_dir():
+            shutil.rmtree(p)

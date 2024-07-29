@@ -1,5 +1,6 @@
 from typing import Tuple, List, Iterable
-import orjson
+from executor import execute, ExternalCommandFailed
+from kmviz.core.io import KmVizInvalidQuery
 
 def covxb_from_covxk(cov: Iterable[int], k: int, size: int) -> Tuple[float, List[int]]:
     covxb = [0 for _ in range(size)]
@@ -29,3 +30,27 @@ def covyb_from_covyk(cov: Iterable[int], k: int, size: int) -> Tuple[float, List
 
     nk = size - k + 1
     return (m / nk), (n / size), sum(covyb) / size, covyb
+
+
+def make_cmd(executable: str, subcmd: str, prefix: str="", *args, **kwargs):
+    cmd = executable
+
+    if subcmd:
+        cmd += f" {subcmd}"
+
+    for k, v in kwargs.items():
+        if v is not None:
+            cmd += f" {prefix}{k} {v}"
+        else:
+            cmd += f" {prefix}{k}"
+
+    for e in args:
+        cmd += f" {args}"
+
+    return cmd
+
+def exec_cmd(cmd: str, **options):
+    try:
+        return execute(cmd, **options)
+    except ExternalCommandFailed as ec:
+        raise KmVizInvalidQuery(str(ec))

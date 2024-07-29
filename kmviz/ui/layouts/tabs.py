@@ -248,8 +248,8 @@ class Tabs:
         if self.st.mode != "plot":
             self._sequence_layout()
 
-        self._help_layout()
         self._plugin_layout()
+        self._help_layout()
 
 
         if self.st.mode == "session":
