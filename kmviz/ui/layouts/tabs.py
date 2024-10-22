@@ -155,7 +155,8 @@ class Tabs:
                 "Sequence",
                 value="sequence",
                 leftSection=DashIconify(icon="mdi:dna"),
-                disabled=self._disabled
+                disabled=self._disabled,
+                style = khide.copy()
             )
         )
         self._panels.append(
@@ -273,7 +274,7 @@ class Tabs:
         self._table_callbacks()
         self._map_callbacks()
         self._plot_callbacks()
-        self._sequence_callbacks()
+        #self._sequence_callbacks()
         self._corner_callbacks()
 
         if self.st.mode == "session":

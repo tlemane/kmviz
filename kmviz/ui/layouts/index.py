@@ -19,7 +19,7 @@ class Index:
             dmc.Center(cf.h2("Index information")),
             cf.ag_grid(
                 kid.index("info-grid"),
-                grid_opt = {"domLayout": "autoHeight"}
+                grid_opt = {"height": "80vh"}
             ),
             dmc.Space(h=20),
             cf.button(
@@ -28,57 +28,57 @@ class Index:
                 disabled=True,
                 leftSection=DashIconify(icon="ph:export", width=20)
             ),
-            dmc.Center(cf.h2("Index metadata")),
-            cf.ag_grid(
-                kid.index("meta-grid")
-            ),
-            dmc.Space(h=20),
-            cf.group(
-                kid.index["grp-btn"],
-                cf.button(
-                    kid.index["meta-export"],
-                    "Export",
-                    disabled=True,
-                    leftSection=DashIconify(icon="ph:export", width=20)
-                ),
-                cf.button(
-                    kid.index["meta-rmf"],
-                    "Remove filters",
-                    disabled=True,
-                    leftSection=DashIconify(icon="ph:trash", width=20)
-                )
-            )
+            #dmc.Center(cf.h2("Index metadata")),
+            #cf.ag_grid(
+            #    kid.index("meta-grid")
+            #),
+            #dmc.Space(h=20),
+            #cf.group(
+            #    kid.index["grp-btn"],
+            #    cf.button(
+            #        kid.index["meta-export"],
+            #        "Export",
+            #        disabled=True,
+            #        leftSection=DashIconify(icon="ph:export", width=20)
+            #    ),
+            #    cf.button(
+            #        kid.index["meta-rmf"],
+            #        "Remove filters",
+            #        disabled=True,
+            #        leftSection=DashIconify(icon="ph:trash", width=20)
+            #    )
+            #)
         )
 
     def callbacks(self) -> None:
 
-        clientside_callback(
-            """
-            function(n_clicks) {
-                if (n_clicks) {
-                    return {};
-                }
-                return window.dash_clientside.no_update;
-            }
-            """,
-            Input(kid.index["meta-rmf"], "n_clicks"),
-            Output(kid.index("meta-grid"), "filterModel"),
-            prevent_initial_call=True
-        )
+        #clientside_callback(
+        #    """
+        #    function(n_clicks) {
+        #        if (n_clicks) {
+        #            return {};
+        #        }
+        #        return window.dash_clientside.no_update;
+        #    }
+        #    """,
+        #    Input(kid.index["meta-rmf"], "n_clicks"),
+        #    Output(kid.index("meta-grid"), "filterModel"),
+        #    prevent_initial_call=True
+        #)
 
-        clientside_callback(
-            """
-            function(n_clicks) {
-                if (n_clicks) {
-                    return true;
-                }
-                return window.dash_clientside.no_update;
-            }
-            """,
-            Input(kid.index["meta-export"], "n_clicks"),
-            Output(kid.index("meta-grid"), "exportDataAsCsv"),
-            prevent_initial_call=True
-        )
+        #clientside_callback(
+        #    """
+        #    function(n_clicks) {
+        #        if (n_clicks) {
+        #            return true;
+        #        }
+        #        return window.dash_clientside.no_update;
+        #    }
+        #    """,
+        #    Input(kid.index["meta-export"], "n_clicks"),
+        #    Output(kid.index("meta-grid"), "exportDataAsCsv"),
+        #    prevent_initial_call=True
+        #)
 
         clientside_callback(
             """
@@ -98,15 +98,15 @@ class Index:
             """
             function(database) {
                 if (!database) {
-                    return [window.dash_clientside.no_update, window.dash_clientside.no_update, window.dash_clientside.no_update];
+                    return window.dash_clientside.no_update;
                 }
-                return [false, false, false];
+                return false;
             }
             """,
             Input(kid.kmviz("database"), "value"),
             Output(kid.index["info-export"], "disabled"),
-            Output(kid.index["meta-export"], "disabled"),
-            Output(kid.index["meta-rmf"], "disabled"),
+            #Output(kid.index["meta-export"], "disabled"),
+            #Output(kid.index["meta-rmf"], "disabled"),
             prevent_initial_call=True
         )
 
@@ -114,8 +114,8 @@ class Index:
             Input(kid.kmviz("database"), "value"),
             Output(kid.index("info-grid"), "rowData"),
             Output(kid.index("info-grid"), "columnDefs"),
-            Output(kid.index("meta-grid"), "rowData"),
-            Output(kid.index("meta-grid"), "columnDefs"),
+            #Output(kid.index("meta-grid"), "rowData"),
+            #Output(kid.index("meta-grid"), "columnDefs"),
             prevent_initial_call=True
         )
         def update_index_table(db):
@@ -128,8 +128,8 @@ class Index:
             infos_rd = idf.to_dict("records")
             infos_f = [{"field": f} for f in list(idf)]
 
-            df = p.db.df()
-            meta_rd = df.to_dict("records")
-            meta_f = [{"field": f} for f in list(df)]
+            #df = p.db.df()
+            #meta_rd = df.to_dict("records")
+            #meta_f = [{"field": f} for f in list(df)]
 
-            return infos_rd, infos_f, meta_rd, meta_f
+            return infos_rd, infos_f# meta_rd, meta_f
