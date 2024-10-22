@@ -33,12 +33,6 @@ class Sidebar:
             sconfig.layout(),
             ssubmit.layout(),
         )
-
-        sinput.callbacks()
-        sdb.callbacks()
-        sconfig.callbacks()
-        ssubmit.callbacks()
-
         return layout
 
     def _make_plot_mode_layout(self) -> html.Div:
@@ -110,7 +104,15 @@ class Sidebar:
                 no_update, dmc.Text(str(e), color="red", weight=500), no_update, no_update
 
     def _database_callbacks(self) -> None:
-        pass
+        sinput = SideInputLayout(self.st)
+        sdb = SideDBLayout(self.st)
+        sconfig = ConfigLayout(self.st)
+        ssubmit = SubmitLayout(self.st)
+
+        sinput.callbacks()
+        sdb.callbacks()
+        sconfig.callbacks()
+        ssubmit.callbacks()
 
     def layout(self) -> html.Div:
         if self.mode == "plot":
