@@ -66,7 +66,6 @@ def make_dashboard(session_id=None):
 
     return layout
 
-#dash.register_page(__name__, path_template=kconf.st.instance_plugin[0] + "<session_id>", path=kconf.st.instance_plugin[0], name="dashboard", title="dashboard")
-dash.register_page(__name__, path_template="/dashboard/<session_id>", path="/dashboard", name="dashboard", title="dashboard")
+dash.register_page(__name__, path_template=kconf.st.instance_plugin[0] + "<session_id>", path=kconf.st.instance_plugin[0], name="dashboard", title="dashboard")
 
-layout = make_dashboard()
+layout = make_dashboard

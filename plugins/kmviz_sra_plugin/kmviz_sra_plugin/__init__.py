@@ -24,7 +24,7 @@ content_template = """Dear user,
 
 Your query '{QUERY}' over all Logan unitigs is complete.
 
-Please visit '{URL}/api/download/{SESSION}' to download your results. You can also visit '{URL}/{SESSION}' to visualize them using our web interface.
+Please visit '{URL}api/download/{SESSION}' to download your results. You can also visit '{URL}{SESSION}' to visualize them using our web interface.
 
 Best regards,
 
@@ -51,7 +51,11 @@ class Notifier:
         self.client = sendgrid.SendGridAPIClient(api_key=self.key)
 
     def send(self, idx, query_name, to):
-        c = Content("text/plain", content_template.format(QUERY=query_name, URL=request.host_url, SESSION=idx))
+        url = request.host_url
+        if not url.endswith("/"):
+            url = url + "/"
+
+        c = Content("text/plain", content_template.format(QUERY=query_name, URL=url, SESSION=idx))
         m = Mail(Email(self.sender), To(to), f"{self.obj_prefix} {idx}", c)
         self.client.client.mail.send.post(request_body=m.get())
 
