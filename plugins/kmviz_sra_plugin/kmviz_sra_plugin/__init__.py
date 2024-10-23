@@ -17,7 +17,7 @@ from dash import dcc
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from dash_extensions.enrich import html
-
+from kmviz.core import KmVizQueryError
 
 content_template = """Dear user,
 
@@ -30,6 +30,18 @@ Best regards,
 The Logan/IndexThePlanet/kmindex teams
 
 """
+
+content_template_failure = """Dear user,
+
+Your query '{QUERY}' over all Logan unitigs failed. (session: {SESSION})
+If the issue persists please contact us.
+
+Best regards,
+
+The Logan/IndexThePlanet/kmindex teams
+
+"""
+
 class Notifier:
     def __init__(self, key: str, sender: str, obj_prefix: str):
         self.key = key
@@ -41,6 +53,13 @@ class Notifier:
         c = Content("text/plain", content_template.format(QUERY=query_name, URL=request.host_url, SESSION=idx))
         m = Mail(Email(self.sender), To(to), f"{self.obj_prefix} {idx}", c)
         self.client.client.mail.send.post(request_body=m.get())
+
+    def send_failure(self, idx, query_name, to):
+        c = Content("text/plain", content_template_failure.format(QUERY=query_name, SESSION=idx))
+        m = Mail(Email(self.sender), To(to), f"{self.obj_prefix} {idx}", c)
+        self.client.client.mail.send.post(request_body=m.get())
+
+import re
 
 class KmindexSRAProvider(KmindexProvider):
     def __init__(self,
@@ -114,7 +133,6 @@ class KmindexSRAProvider(KmindexProvider):
             stream.write(f">{query.name}\n")
             stream.write(f"{query.seq}\n")
 
-
         cmd = self._make_kmindex_query_cmd(fastx=fastx, idx=idx, groups=groups)
 
         wd = os.makedirs(output + "-nf");
@@ -140,7 +158,17 @@ class KmindexSRAProvider(KmindexProvider):
         self.index_infos = self._stats.to_dict()
 
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
-        return self._make_kmindex_query(query, options, idx)
+        if not options["mail"].value:
+            raise KmVizQueryError("email is mandatory.")
+        else:
+            v = options["mail"].value
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', options["mail"].value):
+                raise KmVizQueryError(f"'{v}' not a valid email.")
+        try:
+            return self._make_kmindex_query(query, options, idx)
+        except:
+            self.notif.send_failure(idx, query.name, options["mail"].value)
+            raise KmVizQueryError("Query failure. Please retry later")
 
     def _from_json(self, query: Query, rj) -> QueryResponse:
 

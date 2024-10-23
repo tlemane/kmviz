@@ -79,7 +79,6 @@ def make_text_option(opt: TextOption, id):
         className="kmviz-dmc-user-text-input",
         classNames={"root": "kmviz-dmc-text-input-root"},
         size="xs",
-        required=opt.required
     )
 
 def make_user_option(opt: ProviderOption, id):
