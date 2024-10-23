@@ -187,8 +187,9 @@ class KmindexSRAProvider(KmindexProvider):
         for k, v in rj["SRA"].items():
             responses[k] = Response(self.kmer_size() + 5, float(v), None, None, None, None, None, None, None)
 
-        data = { 'ID' : list(responses.keys()) }
-        metadata = pd.DataFrame(data)
+        #data = { 'ID' : list(responses.keys()) }
+        #metadata = pd.DataFrame(data)
+        metadata = self.db.query(responses.keys())
 
         covxks = []
         for r in metadata["ID"]:
