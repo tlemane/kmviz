@@ -124,7 +124,7 @@ class SubmitLayout:
             results = {}
             set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(0, nb_queries))))
 
-            r = self.st.inc("RUNNING", 1)
+            r = self.st.cache.inc("RUNNING", 1)
             if r > 1:
                 return self._on_error(uuid_str, "Sorry too many queries are already running. Please retry later")
 
@@ -137,8 +137,7 @@ class SubmitLayout:
                             raise KmVizQueryError(result[key])
                     results[query.name] = result
                     set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(i+1, nb_queries))))
-                    r = self.st.get("RUNNING")
-                    self.st.dec("RUNNING", 1)
+                    self.st.cache.dec("RUNNING", 1)
             except KmVizQueryError as e:
                 kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
                 return self._on_error(uuid_str, str(e))
