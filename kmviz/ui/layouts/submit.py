@@ -23,7 +23,7 @@ class SubmitLayout:
 
     def _update_submit_notification(self, title, message):
         return dmc.Alert(
-            f"Processing... {message}",
+            f"Processing... {message}\n Depending on traffic, the job may take hours. You can leave and wait for your email",
             title=title,
             icon=DashIconify(icon="eos-icons:hourglass", width=30),
             color=km_color,
