@@ -158,6 +158,7 @@ class KmindexSRAProvider(KmindexProvider):
         self.index_infos = self._stats.to_dict()
 
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
+        print(options["mail"].value)
         if not options["mail"].value:
             raise KmVizQueryError("email is mandatory.")
         else:
