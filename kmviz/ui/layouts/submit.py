@@ -131,7 +131,7 @@ class SubmitLayout:
 
             try:
                 for i, query in enumerate(sequences):
-                    self.set.put("RUNNING", r + 1)
+                    self.st.put("RUNNING", r + 1)
                     result = kconf.st.engine.query(query, actives, options, uuid_str)
                     keys = list(result.keys())
                     for key in keys:
@@ -140,7 +140,7 @@ class SubmitLayout:
                     results[query.name] = result
                     set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(i+1, nb_queries))))
                     r = self.st.get("RUNNING")
-                    self.set.put("RUNNING", r - 1)
+                    self.st.put("RUNNING", r - 1)
             except KmVizQueryError as e:
                 kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
                 return self._on_error(uuid_str, str(e))
