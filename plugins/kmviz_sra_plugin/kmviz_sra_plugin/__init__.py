@@ -247,6 +247,7 @@ class AuroraDB(MetaDB):
 
         df = pd.read_sql(Q2, self.db)
         df.insert(0, "ID", keys, True)
+        df.insert(1, "Biosample", sra_ids, True)
         return df
 
     def df(self):
