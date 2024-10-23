@@ -26,7 +26,6 @@ def load_session_page(n_i, n_c, data):
     return no_update, no_update
 
 def make_dashboard(session_id=None):
-    print("ok")
     glob = Global(kconf.st)
     sidebar = Sidebar(kconf.st)
     tabs = Tabs(kconf.st)
