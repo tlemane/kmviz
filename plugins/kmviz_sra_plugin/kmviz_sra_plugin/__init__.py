@@ -25,7 +25,7 @@ content_template = """Dear user,
 
 Your query '{QUERY}' over all Logan unitigs is complete.
 
-Please visit '{URL}api/download/{SESSION}' to download your results. You can also visit '{URL}{SESSION}' to visualize them using our web interface.
+Please visit '{URL}api/download/{SESSION}' to download your results. You can also visit '{URL}dashboard/{SESSION}' to visualize them using our web interface.
 
 Best regards,
 
@@ -55,6 +55,9 @@ class Notifier:
         url = request.host_url
         if not url.endswith("/"):
             url = url + "/"
+        
+        if "https" not in url:
+            url.replace("http", "https")
 
         c = Content("text/plain", content_template.format(QUERY=query_name, URL=url, SESSION=idx))
         m = Mail(Email(self.sender), To(to), f"{self.obj_prefix} {idx}", c)
@@ -187,9 +190,9 @@ class KmindexSRAProvider(KmindexProvider):
         for k, v in rj["SRA"].items():
             responses[k] = Response(self.kmer_size() + 5, float(v), None, None, None, None, None, None, None)
 
-        #data = { 'ID' : list(responses.keys()) }
-        #metadata = pd.DataFrame(data)
-        metadata = self.db.query(responses.keys())
+        data = { 'ID' : list(responses.keys()) }
+        metadata = pd.DataFrame(data)
+        #metadata = self.db.query(responses.keys())
 
         covxks = []
         for r in metadata["ID"]:
@@ -228,17 +231,21 @@ class AuroraDB(MetaDB):
 
     def query(self, keys):
         keys_str = (f"'{x}'" for x in keys)
+        
+        print("QQ")
 
         Q = f"""
             SELECT biosample
             FROM sra
-            WHERE sample_acc IN ({','.join(keys_str)})
+            WHERE acc IN ({','.join(keys_str)})
         """
         self.cursor.execute(Q)
         sra = self.cursor.fetchall()
 
         sra_ids = [x[0] for x in sra]
         sra_str = (f"'{x}'" for x in sra_ids)
+
+        print(sra_ids)
 
         Q2 = f"""
             SELECT title
