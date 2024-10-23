@@ -1,4 +1,4 @@
-from dash_extensions.enrich import html, dcc, Input, Output, State, no_update
+from dash_extensions.enrich import html, dcc, Input, Output, State, no_update, callback
 import dash
 import dash_mantine_components as dmc
 from kmviz.ui.layouts.sidebar import Sidebar
@@ -21,6 +21,7 @@ Tabs(kconf.st).callbacks()
     Output(kid.input("session"), "value"),
 )
 def load_session_page(n_i, n_c, data):
+    print(f"Direct loading: {data}")
     if n_i == 1:
         return 500, data
     return no_update, no_update
@@ -57,7 +58,7 @@ def make_dashboard(session_id=None):
             dmc.Grid([
                 dmc.Col(sidebar.layout(), id=kid.kmviz["side-layout"], span="content", className="kmviz-sidebar-layout"),
                 dmc.Col(tabs.layout(), id=kid.kmviz["main-layout"], span="auto", className="kmviz-main-layout", style = style),
-                dcc.Interval(id="kmviz-session-interval", max_intervals=10, n_intervals=0, interval=50),
+                dcc.Interval(id="kmviz-session-interval", max_intervals=1, n_intervals=0, interval=50),
                 dcc.Store(id="kmviz-session-store-page", data=str(session_id))
             ])
         ])
