@@ -2,6 +2,7 @@ from typing import Any
 from kmviz.core.plugin import KmVizPlugin
 from kmviz.core.provider.kmindex import KmindexProvider
 from kmviz.core.query import Query, QueryResponse, Response
+from kmviz.core.metadata.db import MetaDB
 import pandas as pd
 from kmviz.core.utils import make_cmd, exec_cmd
 from kmviz.core.log import kmv_info, kmv_warn
@@ -65,6 +66,7 @@ class Notifier:
         self.client.client.mail.send.post(request_body=m.get())
 
 import re
+import psycopg2
 
 class KmindexSRAProvider(KmindexProvider):
     def __init__(self,
@@ -205,6 +207,49 @@ class KmindexSRAProvider(KmindexProvider):
     def infos_df(self) -> pd.DataFrame:
         return self._stats
 
+class AuroraDB(MetaDB):
+    def __init__(self, idx: str, geodata: str, host, database, user, password):
+        super().__init__(idx, geodata)
+        self.db = None
+        self._host = host
+        self._database = database
+        self._user = user
+        self._password = password
+
+    def connect(self) -> None:
+        self.db = psycopg2.connect(
+            host=self._host,
+            database=self._database,
+            user=self._user,
+            password=self._password,
+        )
+        self.cursor = self.db.cursor()
+
+    def query(self, keys):
+        keys_str = (f"'{x}'" for x in keys)
+
+        Q = f"""
+            SELECT biosample
+            FROM sra
+            WHERE sample_acc IN ({','.join(keys_str)})
+        """
+        self.cursor.execute(Q)
+        sra = self.cursor.fetchall()
+
+        sra_ids = [x[0] for x in sra]
+        sra_str = (f"'{x}'" for x in sra_ids)
+
+        Q2 = f"""
+            SELECT title
+            FROM biosample
+            WHERE accession IN ({','.join(sra_str)})
+        """
+
+        df = pd.read_sql(Q2, self.db)
+        df.insert(0, "ID", keys, True)
+        return df
+
+
 class SRAPlugin(KmVizPlugin):
     def name(self) -> str:
         return "SRAPlugin"
@@ -214,6 +259,9 @@ class SRAPlugin(KmVizPlugin):
 
     def providers(self):
         return [("kmindex-sra", KmindexSRAProvider)]
+
+    def databases(self):
+        return [("aurora", AuroraDB)]
 
     def instance(self) -> html.Div:
         layout = html.Div([
