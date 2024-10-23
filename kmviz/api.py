@@ -19,13 +19,13 @@ class KmvizAPI:
         self._register()
 
     def _register(self):
-        print("R")
         if self.st.api.enabled:
-            print("R")
             self._register_route(self.st.api.route, ["GET"], self._make_info_callback())
-            self._register_route(f"{self.st.api.route}{self.st.api.query_route}", ["POST"], self._make_query_callback())
-            self._register_route(f"{self.st.api.route}{self.st.api.query_route}/<db>", ["POST"], self._make_query_metadata_callback())
-            self._register_route(f"{self.st.api.route}{self.st.api.download_route}/<session>", ["GET", "POST"], self._make_download_callback())
+            if self.st.api.with_query:
+                self._register_route(f"{self.st.api.route}{self.st.api.query_route}", ["POST"], self._make_query_callback())
+                self._register_route(f"{self.st.api.route}{self.st.api.query_route}/<db>", ["POST"], self._make_query_metadata_callback())
+            if self.st.api.with_download:
+                self._register_route(f"{self.st.api.route}{self.st.api.download_route}/<session>", ["GET", "POST"], self._make_download_callback())
 
     def _get_options(self, database, form, with_prefix = True):
         options = {}
@@ -118,7 +118,6 @@ class KmvizAPI:
                     zf.writestr(f"{query.name}.tsv", result[name].df.to_csv(index=False, sep="\t"))
                     stores[query.name][name] = result[name]
 
-
         data_db = list(options.keys())
         def_db = data_db[0]
         self.st.put(uuid_str, (stores, data_db, def_db, [q.name for q in queries], queries[0].name))
@@ -146,7 +145,6 @@ class KmvizAPI:
 
     def _make_download_result(self, session):
         res = self.st.get(session)[0]
-        print(res)
         zf_io = BytesIO()
         with ZipFile(zf_io, "w") as zf:
             stores = {}

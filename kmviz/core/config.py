@@ -219,6 +219,9 @@ class cdatabase(BaseModel):
 
 class capi(BaseModel):
     enabled: bool=False
+    with_query: bool=True
+    with_download: bool=True
+
     route: Annotated[
         str,
         Field(default="/api", validate_default=True)
