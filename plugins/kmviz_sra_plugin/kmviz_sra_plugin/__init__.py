@@ -211,6 +211,7 @@ class KmindexSRAProvider(KmindexProvider):
 
 class ParquetDB(MetaDB):
     def __init__(self, files):
+        super().__init__("ID", {})
         self._files = files
 
     def connect(self) -> None:
