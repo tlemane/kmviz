@@ -4,6 +4,7 @@ from kmviz.core.provider.kmindex import KmindexProvider
 from kmviz.core.query import Query, QueryResponse, Response
 import pandas as pd
 from kmviz.core.utils import make_cmd, exec_cmd
+from kmviz.core.log import kmv_info, kmv_warn
 from kmviz.core.provider.options import MultiChoiceOption, TextOption
 import os
 from flask import request
@@ -158,7 +159,6 @@ class KmindexSRAProvider(KmindexProvider):
         self.index_infos = self._stats.to_dict()
 
     def query(self, query: Query, options: dict, idx: str) -> QueryResponse:
-        print(options["mail"].value)
         if not options["mail"].value:
             raise KmVizQueryError("email is mandatory.")
         else:
