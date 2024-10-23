@@ -37,6 +37,7 @@ class ChoiceOption(ProviderOption):
 class MultiChoiceOption(ProviderOption):
     choices: Iterable[Union[str, int, float]]
     value: Iterable[Union[str, int, float]] = None
+    required: bool = False
 
 @dataclass
 class RangeOption(ProviderOption):
@@ -49,6 +50,7 @@ class RangeOption(ProviderOption):
 class TextOption(ProviderOption):
     placeholder: str = None
     value: str = None
+    required: bool = False
 
 def update_option(opt, d):
     for k, v in d.items():
