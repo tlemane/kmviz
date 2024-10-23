@@ -21,7 +21,6 @@ Tabs(kconf.st).callbacks()
     Output(kid.input("session"), "value"),
 )
 def load_session_page(n_i, n_c, data):
-    print(f"Direct loading: {data}")
     if n_i == 1:
         return 500, data
     return no_update, no_update
