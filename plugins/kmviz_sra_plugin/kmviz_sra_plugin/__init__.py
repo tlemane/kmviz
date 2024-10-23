@@ -91,8 +91,8 @@ class KmindexSRAProvider(KmindexProvider):
         self._stats = pd.read_csv(self._group_stat, sep=" ")
 
         self.options = {
-          "groups": MultiChoiceOption(name="groups", default=[], choices=["all"] + list(self._groups.keys()), required=True),
-          "mail": TextOption(name="mail", default=None, placeholder="Your email", required=True)
+          "groups": MultiChoiceOption(name="groups", default=[], choices=["all"] + list(self._groups.keys())),
+          "mail": TextOption(name="mail", default=None, placeholder="Your email")
         }
 
         self.notif = Notifier(notif_apikey, notif_sender, notif_obj)
