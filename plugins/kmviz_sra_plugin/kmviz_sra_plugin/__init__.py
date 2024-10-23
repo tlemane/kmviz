@@ -20,6 +20,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 from dash_extensions.enrich import html
 from kmviz.core import KmVizQueryError
+import duckdb
 
 content_template = """Dear user,
 
@@ -244,7 +245,7 @@ class SRAPlugin(KmVizPlugin):
         return [("kmindex-sra", KmindexSRAProvider)]
 
     def databases(self):
-        return [("aurora", AuroraDB)]
+        return [("parquet", ParquetDB)]
 
     def instance(self) -> html.Div:
         layout = html.Div([
