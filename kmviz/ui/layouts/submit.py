@@ -126,7 +126,7 @@ class SubmitLayout:
             set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(0, nb_queries))))
 
             r = self.st.get("RUNNING")
-            if r > 1:
+            if r > 0:
                 return self._on_error(uuid_str, "Sorry too many queries are already running. Please retry later")
 
             try:
