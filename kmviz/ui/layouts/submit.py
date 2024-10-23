@@ -16,7 +16,7 @@ class SubmitLayout:
     def __init__(self, st: state):
         self.st = st
         self._def_tab = "table"
-
+        self.st.put("RUNNING", 0)
 
     def _make_notif_msg(self, current: int, nb_queries: int) -> str:
         return f"[{current}/{nb_queries}]"
@@ -125,8 +125,13 @@ class SubmitLayout:
             results = {}
             set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(0, nb_queries))))
 
+            r = self.st.get("RUNNING")
+            if r > 1:
+                return self._on_error(uuid_str, "Sorry too many queries are already running. Please retry later")
+
             try:
                 for i, query in enumerate(sequences):
+                    self.set.put("RUNNING", r + 1)
                     result = kconf.st.engine.query(query, actives, options, uuid_str)
                     keys = list(result.keys())
                     for key in keys:
@@ -134,6 +139,8 @@ class SubmitLayout:
                             raise KmVizQueryError(result[key])
                     results[query.name] = result
                     set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(i+1, nb_queries))))
+                    r = self.st.get("RUNNING")
+                    self.set.put("RUNNING", r - 1)
             except KmVizQueryError as e:
                 kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
                 return self._on_error(uuid_str, str(e))
@@ -143,7 +150,6 @@ class SubmitLayout:
 
             def_query = sequences[0].name
             def_db = actives[0]
-
             data_db = make_select_data(actives)
             data_query = [query.name for query in sequences]
 
