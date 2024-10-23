@@ -249,6 +249,12 @@ class AuroraDB(MetaDB):
         df.insert(0, "ID", keys, True)
         return df
 
+    def df(self):
+        return None
+
+    def keys(self):
+        return None
+
 
 class SRAPlugin(KmVizPlugin):
     def name(self) -> str:
