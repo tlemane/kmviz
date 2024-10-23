@@ -15,8 +15,8 @@ def _make_sqlalchemy_connection(user: str, password: str, host: str, dbname: str
             user=user, password=password, server=host, dbname=dbname))
 
 class MySQLMetaDB(MetaDB):
-    def __init__(self, host: str, user: str, password: str, database: str, table: str, port: int=None) -> None:
-        super().__init__("ID", {})
+    def __init__(self, idx: str, geodata: str, host: str, user: str, password: str, database: str, table: str, port: int=None) -> None:
+        super().__init__(idx, geodata)
         self.host = host
         self.table = table
         self.user = user

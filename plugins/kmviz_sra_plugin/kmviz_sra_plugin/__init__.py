@@ -208,8 +208,8 @@ class KmindexSRAProvider(KmindexProvider):
         return self._stats
 
 class AuroraDB(MetaDB):
-    def __init__(self, idx: str, geodata: str, host, database, user, password):
-        super().__init__(idx, geodata)
+    def __init__(self, host, database, user, password):
+        super().__init__("ID", {})
         self.db = None
         self._host = host
         self._database = database
