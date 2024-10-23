@@ -21,6 +21,7 @@ Tabs(kconf.st).callbacks()
     Output(kid.input("session"), "value"),
 )
 def load_session_page(n_i, n_c, data):
+    print(n_i, data)
     if n_i == 1:
         return 500, data
     return no_update, no_update
@@ -56,7 +57,7 @@ def make_dashboard(session_id=None):
             dmc.Grid([
                 dmc.Col(sidebar.layout(), id=kid.kmviz["side-layout"], span="content", className="kmviz-sidebar-layout"),
                 dmc.Col(tabs.layout(), id=kid.kmviz["main-layout"], span="auto", className="kmviz-main-layout", style = style),
-                dcc.Interval(id="kmviz-session-interval", max_intervals=1, n_intervals=0, interval=50),
+                dcc.Interval(id="kmviz-session-interval", max_intervals=1, n_intervals=0, interval=100),
                 dcc.Store(id="kmviz-session-store-page", data=str(session_id))
             ])
         ])
@@ -64,6 +65,6 @@ def make_dashboard(session_id=None):
 
     return layout
 
-dash.register_page(__name__, path_template=kconf.st.instance_plugin[0] + "<session_id>", path=kconf.st.instance_plugin[0], name="dashboard", title="dashboard")
+dash.register_page(__name__, path_template=kconf.st.instance_plugin[0] + "/<session_id>", path=kconf.st.instance_plugin[0], name="dashboard", title="dashboard")
 
 layout = make_dashboard
