@@ -189,6 +189,7 @@ class KmindexSRAProvider(KmindexProvider):
 
         #data = { 'ID' : list(responses.keys()) }
         #metadata = pd.DataFrame(data)
+
         metadata = self.db.query(responses.keys())
 
         covxks = []
@@ -208,47 +209,22 @@ class KmindexSRAProvider(KmindexProvider):
     def infos_df(self) -> pd.DataFrame:
         return self._stats
 
-class AuroraDB(MetaDB):
-    def __init__(self, host, database, user, password):
-        super().__init__("ID", {})
-        self.db = None
-        self._host = host
-        self._database = database
-        self._user = user
-        self._password = password
+class ParquetDB(MetaDB):
+    def __init__(self, files):
+        self._files = files
 
     def connect(self) -> None:
-        self.db = psycopg2.connect(
-            host=self._host,
-            database=self._database,
-            user=self._user,
-            password=self._password,
-        )
-        self.cursor = self.db.cursor()
+        self.db = duckdb.read_parquet(self._files)
 
     def query(self, keys):
         keys_str = (f"'{x}'" for x in keys)
-
         Q = f"""
             SELECT biosample
-            FROM sra
-            WHERE sample_acc IN ({','.join(keys_str)})
+            FROM self.db
+            WHERE acc IN ({','.join(keys_str)})
         """
-        self.cursor.execute(Q)
-        sra = self.cursor.fetchall()
-
-        sra_ids = [x[0] for x in sra]
-        sra_str = (f"'{x}'" for x in sra_ids)
-
-        Q2 = f"""
-            SELECT title
-            FROM biosample
-            WHERE accession IN ({','.join(sra_str)})
-        """
-
-        df = pd.read_sql(Q2, self.db)
-        df.insert(0, "ID", keys, True)
-        df.insert(1, "Biosample", sra_ids, True)
+        d = duckdb.sql(Q).df()
+        d.insert(0, "ID", keys, True)
         return df
 
     def df(self):
