@@ -6,18 +6,24 @@ import pandas as pd
 from kmviz.core.utils import make_cmd, exec_cmd
 from kmviz.core.provider.options import MultiChoiceOption, TextOption
 import os
-
+from flask import request
 from typing import List, Tuple, Any
 from pathlib import Path
 import tempfile
 import orjson
 import sendgrid
 from sendgrid.helpers.mail import Mail, Email, To, Content
+from dash import dcc
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
+from dash_extensions.enrich import html
+
 
 content_template = """Dear user,
 
 Your query '{QUERY}' over all Logan unitigs is complete.
-Please visit '{URL}/{SESSION}'.
+
+Please visit '{URL}/api/download/{SESSION}' to download your results. You can also visit '{URL}/{SESSION}' to visualize them using our web interface.
 
 Best regards,
 
@@ -25,33 +31,28 @@ The Logan/IndexThePlanet/kmindex teams
 
 """
 class Notifier:
-    def __init__(self, key: str, sender: str, obj_prefix: str, url: str):
+    def __init__(self, key: str, sender: str, obj_prefix: str):
         self.key = key
         self.sender = sender
         self.obj_prefix = obj_prefix
         self.client = sendgrid.SendGridAPIClient(api_key=self.key)
-        self.url = url
 
     def send(self, idx, query_name, to):
-        print(idx, query_name, to)
-        c = Content("text/plain", content_template.format(QUERY=query_name, URL=self.url, SESSION=idx))
-        print(c) 
+        c = Content("text/plain", content_template.format(QUERY=query_name, URL=request.host_url, SESSION=idx))
         m = Mail(Email(self.sender), To(to), f"{self.obj_prefix} {idx}", c)
-
         self.client.client.mail.send.post(request_body=m.get())
 
 class KmindexSRAProvider(KmindexProvider):
     def __init__(self,
                  name: str,
                  blob_query_path: str,
-                 blob_prefix: str, 
-                 query_script: str, 
-                 group_dict: str, 
-                 group_stat: str, 
-                 notif_apikey: str, 
+                 blob_prefix: str,
+                 query_script: str,
+                 group_dict: str,
+                 group_stat: str,
+                 notif_apikey: str,
                  notif_sender: str,
                  notif_obj: str,
-                 url: str,
                  fp_file: str = ""):
         super().__init__(name)
         self._tmp = tempfile.mkdtemp()
@@ -75,8 +76,7 @@ class KmindexSRAProvider(KmindexProvider):
           "mail": TextOption(name="mail", default=None, placeholder="Your email")
         }
 
-
-        self.notif = Notifier(notif_apikey, notif_sender, notif_obj, url)
+        self.notif = Notifier(notif_apikey, notif_sender, notif_obj)
 
     def has_abs(self) -> bool:
         return False
@@ -119,9 +119,9 @@ class KmindexSRAProvider(KmindexProvider):
 
         wd = os.makedirs(output + "-nf");
         self._execute(cmd, wd)
-            
+
         response = {"SRA": {}}
-        
+
         exec_cmd(f"ls {self._blob_prefix}/{self._query_path}", capture=False)
         for p in Path(f"{self._blob_prefix}/{self._query_path}/{idx}").rglob('*.json'):
             with open(p) as jin:
@@ -130,7 +130,7 @@ class KmindexSRAProvider(KmindexProvider):
                 response["SRA"].update(R[query.name])
 
         res = self._from_json(query, response)
-        
+
         if len(options["mail"].value) > 1:
             self.notif.send(idx, query.name, options["mail"].value)
 
@@ -147,7 +147,7 @@ class KmindexSRAProvider(KmindexProvider):
         responses = {}
         for k, v in rj["SRA"].items():
             responses[k] = Response(self.kmer_size() + 5, float(v), None, None, None, None, None, None, None)
-        
+
         data = { 'ID' : list(responses.keys()) }
         metadata = pd.DataFrame(data)
 
@@ -156,7 +156,7 @@ class KmindexSRAProvider(KmindexProvider):
             covxks.append(round(responses[r].xk, 3))
 
         metadata.insert(1, "CovXK", covxks, True)
-        
+
 
         return QueryResponse(
             query,
@@ -172,8 +172,27 @@ class SRAPlugin(KmVizPlugin):
     def name(self) -> str:
         return "SRAPlugin"
 
+    def is_instance_plugin(self) -> bool:
+        return True
+
     def providers(self):
         return [("kmindex-sra", KmindexSRAProvider)]
 
+    def instance(self) -> html.Div:
+        layout = html.Div([
+            dcc.Markdown("""
+            ## Welcome to the kmviz Logan instance
+            """),
+            html.A(
+                dmc.Button(
+                    "Query the planet",
+                    leftIcon=DashIconify(icon="noto:rocket", width=20),
+                    style={"position":"fixed", "top": "30%", "left":"50%"}
+                ),
+                href="/dashboard"
+            ),
+        ])
+
+        return layout
 
 kmviz_plugin = SRAPlugin()

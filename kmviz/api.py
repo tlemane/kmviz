@@ -19,11 +19,13 @@ class KmvizAPI:
         self._register()
 
     def _register(self):
+        print("R")
         if self.st.api.enabled:
+            print("R")
             self._register_route(self.st.api.route, ["GET"], self._make_info_callback())
             self._register_route(f"{self.st.api.route}{self.st.api.query_route}", ["POST"], self._make_query_callback())
             self._register_route(f"{self.st.api.route}{self.st.api.query_route}/<db>", ["POST"], self._make_query_metadata_callback())
-
+            self._register_route(f"{self.st.api.route}{self.st.api.download_route}/<session>", ["GET", "POST"], self._make_download_callback())
 
     def _get_options(self, database, form, with_prefix = True):
         options = {}
@@ -142,6 +144,33 @@ class KmvizAPI:
                 return "An error occured while processing your request", 400
         return api_metadata_query
 
+    def _make_download_result(self, session):
+        res = self.st.get(session)[0]
+        print(res)
+        zf_io = BytesIO()
+        with ZipFile(zf_io, "w") as zf:
+            stores = {}
+            for query_name, result in res.items():
+                stores[query_name] = {}
+                for name in result:
+                    zf.writestr(f"{query_name}.tsv", result[name].df.to_csv(index=False, sep="\t"))
+                    stores[query_name][name] = result[name]
+
+        zf_io.seek(0)
+        return send_file(zf_io, download_name=f"{session}.zip")
+
+    def _make_download_callback(self):
+        def api_download(session):
+            try:
+                kmv_info("🔗 API (POST)[download]")
+                return self._make_download_result(session)
+            except KmVizIOError as e:
+                kmv_warn(f"🔗 API (GET): Error ({str(e)})")
+                return f"Error: {str(e)}", 400
+            except Exception as e:
+                kmv_warn(f"🔗 API (GET): Unknown error: {str(e)}")
+                return "An error occured while processing your request", 400
+        return api_download
 
     def _make_info_callback(self):
         def api_info():

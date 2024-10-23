@@ -10,6 +10,7 @@ from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 from kmviz.core import KmVizQueryError
 import uuid
+import flask
 
 class SubmitLayout:
     def __init__(self, st: state):
@@ -122,7 +123,6 @@ class SubmitLayout:
             kmv_info(f"⌛ {uuid_str}")
 
             results = {}
-
             set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(0, nb_queries))))
 
             try:

@@ -227,6 +227,10 @@ class capi(BaseModel):
         str,
         Field(default="/query", validate_default=True)
     ]
+    download_route: Annotated[
+        str,
+        Field(default="/download", validate_default=True)
+    ]
     limits: Annotated[
         cinput,
         Field(default=cinput())
