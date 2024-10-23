@@ -169,6 +169,10 @@ class KmindexSRAProvider(KmindexProvider):
             v = options["mail"].value
             if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', options["mail"].value):
                 raise KmVizQueryError(f"'{v}' not a valid email.")
+
+        if not options["groups"].value:
+            raise KmVizQueryError("groups is mandatory.")
+
         try:
             return self._make_kmindex_query(query, options, idx)
         except:
