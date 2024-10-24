@@ -57,8 +57,8 @@ class Notifier:
         if not url.endswith("/"):
             url = url + "/"
 
-        if "https" not in url:
-            url.replace("http", "https")
+#        if "https" not in url:
+#            url.replace("http", "https")
 
         c = Content("text/plain", content_template.format(QUERY=query_name, URL=url, SESSION=idx))
         m = Mail(Email(self.sender), To(to), f"{self.obj_prefix} {idx}", c)
@@ -215,18 +215,19 @@ class ParquetDB(MetaDB):
         self._files = files
 
     def connect(self) -> None:
-        self.db = duckdb.read_parquet(self._files)
+        return None
 
     def query(self, keys):
         keys_str = (f"'{x}'" for x in keys)
+        db = duckdb.read_parquet(self._files)
         Q = f"""
-            SELECT biosample
-            FROM self.db
+            SELECT *
+            FROM db
             WHERE acc IN ({','.join(keys_str)})
         """
         d = duckdb.sql(Q).df()
         d.insert(0, "ID", keys, True)
-        return df
+        return d
 
     def df(self):
         return None
