@@ -6,7 +6,7 @@ from kmviz.core.metadata.db import MetaDB
 import pandas as pd
 from kmviz.core.utils import make_cmd, exec_cmd
 from kmviz.core.log import kmv_info, kmv_warn
-from kmviz.core.provider.options import MultiChoiceOption, TextOption
+from kmviz.core.provider.options import MultiChoiceOption, TextOption, RangeOption
 import os
 from flask import request
 from typing import List, Tuple, Any
@@ -88,7 +88,7 @@ class KmindexSRAProvider(KmindexProvider):
         self._query_path = blob_query_path
         self._blob_prefix = blob_prefix
         self._query_script = query_script
-        self._query_cmd = self._query_script + " --list_groups {groups} --query_output " + self._query_path + "/{idx} " + "--query {fastx}"
+        self._query_cmd = self._query_script + " --list_groups {groups} --query_output " + self._query_path + "/{idx} " + "--query {fastx} --ratio {ratio}"
         self._group_stat = group_stat
         self._group_dict = group_dict
         self._fp_file = fp_file
@@ -98,11 +98,17 @@ class KmindexSRAProvider(KmindexProvider):
         with open(self._group_dict) as stream:
             self._groups = orjson.loads(stream.read())
 
+        self._fp = None
+        if self._fp_file:
+            with open(self._fp_file) as stream:
+                self._fp = orjson.loads(stream.read())
+
         self._stats = pd.read_csv(self._group_stat, sep=" ")
 
         self.options = {
           "groups": MultiChoiceOption(name="groups", default=[], choices=["all"] + list(self._groups.keys())),
-          "mail": TextOption(name="mail", default=None, placeholder="Your email")
+          "mail": TextOption(name="mail", default=None, placeholder="Your email"),
+          "threshold": RangeOption(name="threshold", default=0.7, min=0.5, max=1.0, step=0.05)
         }
 
         self.notif = Notifier(notif_apikey, notif_sender, notif_obj)
@@ -143,7 +149,7 @@ class KmindexSRAProvider(KmindexProvider):
             stream.write(f">{query.name}\n")
             stream.write(f"{query.seq}\n")
 
-        cmd = self._make_kmindex_query_cmd(fastx=fastx, idx=idx, groups=groups)
+        cmd = self._make_kmindex_query_cmd(fastx=fastx, idx=idx, groups=groups, ratio=options["threshold"].value)
 
         wd = os.makedirs(output + "-nf");
         self._execute(cmd, wd)
@@ -152,10 +158,22 @@ class KmindexSRAProvider(KmindexProvider):
 
         exec_cmd(f"ls {self._blob_prefix}/{self._query_path}", capture=False)
         for p in Path(f"{self._blob_prefix}/{self._query_path}/{idx}").rglob('*.json'):
+            if self._fp:
+                P = Path(p)
+                grp = P.parent.name.split("_", 1)[1]
+                sub = P.stem
+
             with open(p) as jin:
                 I = str(p).split("/")[-1].split(".")[0]
                 R = orjson.loads(jin.read())[I]
+                if self._fp:
+                    if grp in self._fp and sub in self._fp[grp]:
+                        for k, v in self._fp[grp][sub].items():
+                            if k in R[query.name]:
+                                R[query.name][k] = R[query.name][k] - v[query.name]
                 response["SRA"].update(R[query.name])
+
+
 
         res = self._from_json(query, response)
 
@@ -240,7 +258,8 @@ markdown_home ="""## Welcome to the kmviz Logan instance
 
 ### About the groups
 
-- Single cell
+Groups are computed based on the SRA STAT information. The group name uses the following convention <library_type>_<superkingdom>. An accession is associated to a superkingdom using the first tax_id reported by STAT.
+- GENOMICSINGLE_CELL
     - GENOMICSINGLECELL_BCT
     - GENOMICSINGLECELL_HUMAN
     - GENOMICSINGLECELL_INV
@@ -253,6 +272,7 @@ markdown_home ="""## Welcome to the kmviz Logan instance
     - GENOMICSINGLECELL_UNKNOWN
     - GENOMICSINGLECELL_VRL
     - GENOMICSINGLECELL_VRT
+- TRANSCRIPTOMICSINGLECELL
     - TRANSCRIPTOMICSINGLECELL_BCT
     - TRANSCRIPTOMICSINGLECELL_HUMAN
     - TRANSCRIPTOMICSINGLECELL_INV
@@ -265,7 +285,7 @@ markdown_home ="""## Welcome to the kmviz Logan instance
     - TRANSCRIPTOMICSINGLECELL_UNKNOWN
     - TRANSCRIPTOMICSINGLECELL_VRL
     - TRANSCRIPTOMICSINGLECELL_VRT
-- Genomic
+- GENOMIC
     - GENOMIC_BCT
     - GENOMIC_HUMAN
     - GENOMIC_INV
@@ -278,7 +298,7 @@ markdown_home ="""## Welcome to the kmviz Logan instance
     - GENOMIC_UNKNOWN
     - GENOMIC_VRL
     - GENOMIC_VRT
-- Metagenomic
+- METAGENOMIC
     - METAGENOMIC_BCT
     - METAGENOMIC_ENV
     - METAGENOMIC_HUMAN
@@ -292,7 +312,7 @@ markdown_home ="""## Welcome to the kmviz Logan instance
     - METAGENOMIC_UNKNOWN
     - METAGENOMIC_VRL
     - METAGENOMIC_VRT
-- Transcriptomic
+- TRANSCRIPTOMIC
     - TRANSCRIPTOMIC_BCT
     - TRANSCRIPTOMIC_HUMAN
     - TRANSCRIPTOMIC_INV
@@ -305,46 +325,20 @@ markdown_home ="""## Welcome to the kmviz Logan instance
     - TRANSCRIPTOMIC_UNKNOWN
     - TRANSCRIPTOMIC_VRL
     - TRANSCRIPTOMIC_VRT
-    - Metatranscriptomic
-        - METATRANSCRIPTOMIC_BCT
-        - METATRANSCRIPTOMIC_HUMAN
-        - METATRANSCRIPTOMIC_INV
-        - METATRANSCRIPTOMIC_MAM
-        - METATRANSCRIPTOMIC_MICE
-        - METATRANSCRIPTOMIC_PHG
-        - METATRANSCRIPTOMIC_PLN
-        - METATRANSCRIPTOMIC_PRI
-        - METATRANSCRIPTOMIC_ROD
-        - METATRANSCRIPTOMIC_UNKNOWN
-        - METATRANSCRIPTOMIC_VRL
-        - METATRANSCRIPTOMIC_VRT
-- Other
-    - OTHER_BCT
-    - OTHER_HUMAN
-    - OTHER_INV
-    - OTHER_MAM
-    - OTHER_MICE
-    - OTHER_PHG
-    - OTHER_PLN
-    - OTHER_PRI
-    - OTHER_ROD
-    - OTHER_UNKNOWN
-    - OTHER_VRL
-    - OTHER_VRT
-- Synthetic
-    - SYNTHETIC_BCT
-    - SYNTHETIC_HUMAN
-    - SYNTHETIC_INV
-    - SYNTHETIC_MAM
-    - SYNTHETIC_MICE
-    - SYNTHETIC_PHG
-    - SYNTHETIC_PLN
-    - SYNTHETIC_PRI
-    - SYNTHETIC_ROD
-    - SYNTHETIC_UNKNOWN
-    - SYNTHETIC_VRL
-    - SYNTHETIC_VRT
-- Viral
+- METATRANSCRIPTOMIC
+    - METATRANSCRIPTOMIC_BCT
+    - METATRANSCRIPTOMIC_HUMAN
+    - METATRANSCRIPTOMIC_INV
+    - METATRANSCRIPTOMIC_MAM
+    - METATRANSCRIPTOMIC_MICE
+    - METATRANSCRIPTOMIC_PHG
+    - METATRANSCRIPTOMIC_PLN
+    - METATRANSCRIPTOMIC_PRI
+    - METATRANSCRIPTOMIC_ROD
+    - METATRANSCRIPTOMIC_UNKNOWN
+    - METATRANSCRIPTOMIC_VRL
+    - METATRANSCRIPTOMIC_VRT
+- VIRALRNA
     - VIRALRNA_BCT
     - VIRALRNA_HUMAN
     - VIRALRNA_INV
@@ -357,6 +351,32 @@ markdown_home ="""## Welcome to the kmviz Logan instance
     - VIRALRNA_UNKNOWN
     - VIRALRNA_VRL
     - VIRALRNA_VRT
+- SYNTHETIC
+    - SYNTHETIC_BCT
+    - SYNTHETIC_HUMAN
+    - SYNTHETIC_INV
+    - SYNTHETIC_MAM
+    - SYNTHETIC_MICE
+    - SYNTHETIC_PHG
+    - SYNTHETIC_PLN
+    - SYNTHETIC_PRI
+    - SYNTHETIC_ROD
+    - SYNTHETIC_UNKNOWN
+    - SYNTHETIC_VRL
+    - SYNTHETIC_VRT
+- OTHER
+    - OTHER_BCT
+    - OTHER_HUMAN
+    - OTHER_INV
+    - OTHER_MAM
+    - OTHER_MICE
+    - OTHER_PHG
+    - OTHER_PLN
+    - OTHER_PRI
+    - OTHER_ROD
+    - OTHER_UNKNOWN
+    - OTHER_VRL
+    - OTHER_VRT
 """
 
 class SRAPlugin(KmVizPlugin):
