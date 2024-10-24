@@ -170,7 +170,11 @@ class KmindexSRAProvider(KmindexProvider):
                     if grp in self._fp and sub in self._fp[grp]:
                         for k, v in self._fp[grp][sub].items():
                             if k in R[query.name]:
-                                R[query.name][k] = R[query.name][k] - v[query.name]
+                                nv = R[query.name][k] - v[query.name]
+                                if nv <= 0:
+                                    del R[query.name][k]
+                                else:
+                                    R[query.name][k] = nv
                 response["SRA"].update(R[query.name])
 
 
