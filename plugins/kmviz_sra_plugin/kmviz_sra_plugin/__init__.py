@@ -236,6 +236,129 @@ class ParquetDB(MetaDB):
         return None
 
 
+markdown_home ="""## Welcome to the kmviz Logan instance
+
+### About the groups
+
+- Single cell
+    - GENOMICSINGLECELL_BCT
+    - GENOMICSINGLECELL_HUMAN
+    - GENOMICSINGLECELL_INV
+    - GENOMICSINGLECELL_MAM
+    - GENOMICSINGLECELL_MICE
+    - GENOMICSINGLECELL_PHG
+    - GENOMICSINGLECELL_PLN
+    - GENOMICSINGLECELL_PRI
+    - GENOMICSINGLECELL_ROD
+    - GENOMICSINGLECELL_UNKNOWN
+    - GENOMICSINGLECELL_VRL
+    - GENOMICSINGLECELL_VRT
+    - TRANSCRIPTOMICSINGLECELL_BCT
+    - TRANSCRIPTOMICSINGLECELL_HUMAN
+    - TRANSCRIPTOMICSINGLECELL_INV
+    - TRANSCRIPTOMICSINGLECELL_MAM
+    - TRANSCRIPTOMICSINGLECELL_MICE
+    - TRANSCRIPTOMICSINGLECELL_PHG
+    - TRANSCRIPTOMICSINGLECELL_PLN
+    - TRANSCRIPTOMICSINGLECELL_PRI
+    - TRANSCRIPTOMICSINGLECELL_ROD
+    - TRANSCRIPTOMICSINGLECELL_UNKNOWN
+    - TRANSCRIPTOMICSINGLECELL_VRL
+    - TRANSCRIPTOMICSINGLECELL_VRT
+- Genomic
+    - GENOMIC_BCT
+    - GENOMIC_HUMAN
+    - GENOMIC_INV
+    - GENOMIC_MAM
+    - GENOMIC_MICE
+    - GENOMIC_PHG
+    - GENOMIC_PLN
+    - GENOMIC_PRI
+    - GENOMIC_ROD
+    - GENOMIC_UNKNOWN
+    - GENOMIC_VRL
+    - GENOMIC_VRT
+- Metagenomic
+    - METAGENOMIC_BCT
+    - METAGENOMIC_ENV
+    - METAGENOMIC_HUMAN
+    - METAGENOMIC_INV
+    - METAGENOMIC_MAM
+    - METAGENOMIC_MICE
+    - METAGENOMIC_PHG
+    - METAGENOMIC_PLN
+    - METAGENOMIC_PRI
+    - METAGENOMIC_ROD
+    - METAGENOMIC_UNKNOWN
+    - METAGENOMIC_VRL
+    - METAGENOMIC_VRT
+- Transcriptomic
+    - TRANSCRIPTOMIC_BCT
+    - TRANSCRIPTOMIC_HUMAN
+    - TRANSCRIPTOMIC_INV
+    - TRANSCRIPTOMIC_MAM
+    - TRANSCRIPTOMIC_MICE
+    - TRANSCRIPTOMIC_PHG
+    - TRANSCRIPTOMIC_PLN
+    - TRANSCRIPTOMIC_PRI
+    - TRANSCRIPTOMIC_ROD
+    - TRANSCRIPTOMIC_UNKNOWN
+    - TRANSCRIPTOMIC_VRL
+    - TRANSCRIPTOMIC_VRT
+    - Metatranscriptomic
+        - METATRANSCRIPTOMIC_BCT
+        - METATRANSCRIPTOMIC_HUMAN
+        - METATRANSCRIPTOMIC_INV
+        - METATRANSCRIPTOMIC_MAM
+        - METATRANSCRIPTOMIC_MICE
+        - METATRANSCRIPTOMIC_PHG
+        - METATRANSCRIPTOMIC_PLN
+        - METATRANSCRIPTOMIC_PRI
+        - METATRANSCRIPTOMIC_ROD
+        - METATRANSCRIPTOMIC_UNKNOWN
+        - METATRANSCRIPTOMIC_VRL
+        - METATRANSCRIPTOMIC_VRT
+- Other
+    - OTHER_BCT
+    - OTHER_HUMAN
+    - OTHER_INV
+    - OTHER_MAM
+    - OTHER_MICE
+    - OTHER_PHG
+    - OTHER_PLN
+    - OTHER_PRI
+    - OTHER_ROD
+    - OTHER_UNKNOWN
+    - OTHER_VRL
+    - OTHER_VRT
+- Synthetic
+    - SYNTHETIC_BCT
+    - SYNTHETIC_HUMAN
+    - SYNTHETIC_INV
+    - SYNTHETIC_MAM
+    - SYNTHETIC_MICE
+    - SYNTHETIC_PHG
+    - SYNTHETIC_PLN
+    - SYNTHETIC_PRI
+    - SYNTHETIC_ROD
+    - SYNTHETIC_UNKNOWN
+    - SYNTHETIC_VRL
+    - SYNTHETIC_VRT
+- Viral
+    - VIRALRNA_BCT
+    - VIRALRNA_HUMAN
+    - VIRALRNA_INV
+    - VIRALRNA_MAM
+    - VIRALRNA_MICE
+    - VIRALRNA_PHG
+    - VIRALRNA_PLN
+    - VIRALRNA_PRI
+    - VIRALRNA_ROD
+    - VIRALRNA_UNKNOWN
+    - VIRALRNA_VRL
+    - VIRALRNA_VRT
+"""
+
 class SRAPlugin(KmVizPlugin):
     def name(self) -> str:
         return "SRAPlugin"
@@ -251,14 +374,12 @@ class SRAPlugin(KmVizPlugin):
 
     def instance(self) -> html.Div:
         layout = html.Div([
-            dcc.Markdown("""
-            ## Welcome to the kmviz Logan instance
-            """),
+            dcc.Markdown(markdown_home),
             html.A(
                 dmc.Button(
                     "Query the planet",
                     leftIcon=DashIconify(icon="noto:rocket", width=20),
-                    style={"position":"fixed", "top": "30%", "left":"50%"}
+                    style={"position":"fixed", "top": "80%", "left":"90%"}
                 ),
                 href="/dashboard"
             ),
