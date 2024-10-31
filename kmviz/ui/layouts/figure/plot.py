@@ -185,7 +185,7 @@ class TraceLayout:
         )
 
     def layout(self):
-        ptype = [ "Scatter", "Line", "Area", "Bar", "Parallel categories", "Parallel coordinates", "Scatter matrix", "Density heatmap", "Density contour", "Violin", "Box" ]
+        ptype = [ "Scatter", "Line", "Area", "Bar", "Parallel categories", "Parallel coordinates", "Scatter matrix", "Density heatmap", "Density contour", "Violin", "Box", "Histogram" ]
         return cf.tabs(
             self.f["tabs"],
             cf.tabs_list(
