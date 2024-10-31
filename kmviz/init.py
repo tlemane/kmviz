@@ -75,5 +75,6 @@ def make_kmviz_app(st: state):
         make_auth(app, st.auth)
 
     KmvizAPI(st, app.server)
+    st.init_plugins_api(app.server)
 
     return app

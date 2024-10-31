@@ -111,6 +111,10 @@ class plot_presets(BaseModel):
     marginal_x: Optional[Literal["rug", "box", "violin", "histogram"]]=None
     marginal_y: Optional[Literal["rug", "box", "violin", "histogram"]]=None
 
+    histfunc: Optional[Literal["count", "sum", "avg", "min", "max"]]=None
+    histnorm: Optional[Literal["rug", "box", "violin", "histogram"]]=None
+    nbins: Annotated[Optional[int], Ge(1), Le(1000)]=None
+
     facet_row: Optional[str]=None
     facet_col: Optional[str]=None
     facet_col_spacing: Annotated[Optional[float], Ge(0.0), Le(1.0)]=None

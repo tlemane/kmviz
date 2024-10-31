@@ -1,7 +1,7 @@
 import pandas as pd
 from enum import Enum
 from typing import List, Union, Iterable, Dict, Any
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from kmviz.core import KmVizError
 
@@ -80,6 +80,7 @@ class QueryResponse:
     _query: Query
     _response: Dict[str, Response]
     _metadata: pd.DataFrame
+    _extra: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def query(self) -> Query:
@@ -103,4 +104,4 @@ class QueryResponse:
 
 @dataclass
 class QueryResponseGeo(QueryResponse):
-    _geodata: Dict[str, str]
+    _geodata: Dict[str, str] = field(default_factory=dict)

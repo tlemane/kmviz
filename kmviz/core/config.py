@@ -13,6 +13,7 @@ from kmviz.core.cache import KmvizResultCache
 from kmviz.core.plugin import installed_plugins, search_for_plugin, copy_plugin_assets, copy_custom_assets
 from kmviz.core.provider import Provider, Providers, PROVIDERS
 from kmviz.core.metadata import MetaDB, METADBS
+from kmviz.core.notifier import Notifier, NOTIFIERS, NullNotifier
 from kmviz.core.query import Query, QueryResponse
 from kmviz.ui.presets import cpresets
 
@@ -202,6 +203,15 @@ class cmetadb(BaseModel):
     type: str
     params: Dict[str, Any]
 
+class cnotif(BaseModel):
+    type: str
+    success: str
+    failure: str
+    subject: str
+    subject_failure: str
+    custom: Optional[Dict[str, Any]] = {}
+    params: Optional[Dict[str, Any]] = {}
+
 class cdatabase(BaseModel):
     type: str
     params: Dict[str, Any]
@@ -217,8 +227,18 @@ class cdatabase(BaseModel):
             return cpresets(**res)
         return cpresets(priority=False, map = {}, plot = {}, defaults=None)
 
+class cui(BaseModel):
+    with_map_tab: bool=True
+    with_help_tab: bool=True
+    with_plot_tab: bool=True
+    with_sequence_tab: bool=True
+    with_index_tab: bool=True
+    crs: Optional[Dict[str, Tuple[str, Dict[str, Any]]]]={}
+
 class capi(BaseModel):
     enabled: bool=False
+    with_query: bool=True
+    with_download: bool=True
     route: Annotated[
         str,
         Field(default="/api", validate_default=True)
@@ -226,6 +246,10 @@ class capi(BaseModel):
     query_route: Annotated[
         str,
         Field(default="/query", validate_default=True)
+    ]
+    download_route: Annotated[
+        str,
+        Field(default="/download", validate_default=True)
     ]
     limits: Annotated[
         cinput,
@@ -262,6 +286,11 @@ def make_metadb(config: cmetadb, metadbs: Dict[str, MetaDB]) -> MetaDB:
         raise KmVizConfigError(f"Unknown metadb type: '{config.type}'")
     return metadbs[config.type](**config.params)
 
+def make_notif(config: cnotif, notifiers: Dict[str, Notifier]) -> Notifier:
+    if config.type not in notifiers:
+        raise KmVizConfigError(f"Unknown notifier type '{config.type}'")
+    return notifiers[config.type](config.success, config.failure, config.subject, config.subject_failure, custom=config.custom, **config.params)
+
 def make_db(name: str, config: cdatabase, providers: Dict[str, Provider], metadbs: Dict[str, MetaDB], connect: bool=True):
     try:
         prov = make_provider(name, config, providers)
@@ -281,9 +310,11 @@ def make_db(name: str, config: cdatabase, providers: Dict[str, Provider], metadb
 
     return prov
 
+
 class ckmviz(BaseModel):
     idx: str = Field(kmviz_idx, frozen=True)
     databases: Dict[str, cdatabase]
+    notif: Optional[cnotif]=None
     input: Optional[cinput]=cinput()
     default: cdefault = Field(cdefault(), alias="defaults")
     cache: Optional[ccache]=ccache()
@@ -293,6 +324,7 @@ class ckmviz(BaseModel):
     plugins: Optional[Dict[str, Dict[str, Any]]]={}
     assets: Optional[List[str]]=[]
     preset: Optional[Literal["flex", "fixed"]]="flex"
+    ui: Optional[cui]=cui()
 
     _builtin_providers: Dict[str, Provider] = PrivateAttr(PROVIDERS.copy())
     _builtin_metadbs: Dict[str, Provider] = PrivateAttr(METADBS.copy())
@@ -302,8 +334,10 @@ class ckmviz(BaseModel):
 
     providers: Dict[str, Provider] = Field(PROVIDERS.copy(), exclude=True)
     metadbs: Dict[str, MetaDB] = Field(METADBS.copy(), exclude=True)
+    notifiers: Dict[str, Notifier] = Field(NOTIFIERS.copy(), exclude=True)
 
     engine: Providers = Field(Providers(), exclude=True)
+    notifier: Notifier = Field(NullNotifier(), exclude=True)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -338,7 +372,7 @@ class ckmviz(BaseModel):
     @model_validator(mode="after")
     def post_init_plugins(self) -> Self:
         for name, plugin in self.plugins.items():
-            ps, ds = [], []
+            ps, ds, ns = [], [], []
             for pname, p in plugin.providers():
                 if pname not in self.providers:
                     ps.append(pname)
@@ -347,9 +381,14 @@ class ckmviz(BaseModel):
                 if dname not in self.metadbs:
                     ds.append(dname)
                     self.metadbs[dname] = d
+            for nname, n in plugin.notifiers():
+                if nname not in self.notifiers:
+                    ns.append(nname)
+                    self.notifiers[nname] = n
 
             kmv_info(f"💾 Provider[{name}]: include {ps}")
             kmv_info(f"💾 MetaDB[{name}]: include {ds}")
+            kmv_info(f"💾 Notifier[{name}]: include {ns}")
 
             if styles := plugin.external_styles():
                 self.external_css.extend(styles)
@@ -367,6 +406,14 @@ class ckmviz(BaseModel):
             db = make_db(db_name, self.databases[db_name], self.providers, self.metadbs, True)
             self.engine.add(db)
         return self
+
+    @model_validator(mode="after")
+    def init_notifiers(self) -> Self:
+        if self.notif:
+            kmv_info(f"📖 Init[Notifier]: with type '{self.notif.type}'")
+            self.notifier = make_notif(self.notif, self.notifiers)
+        return self
+
 
 @dataclass
 class _wrap_cache:
@@ -403,7 +450,7 @@ class state:
     @cached_property
     def instance_plugin(self) -> Tuple[Optional[str], Optional[Any]]:
         if not self._config.plugins:
-            return "/", None
+            return "/dashboard", None
 
         for name, p in self._config.plugins.items():
             if p.is_instance_plugin():
@@ -412,6 +459,17 @@ class state:
                 else:
                     return "/dashboard", p
         return "/dashboard", None
+
+    def init_plugins_api(self, app):
+        if not self.api.enabled:
+            return
+        apis = []
+        for name, p in self._config.plugins.items():
+            if p.has_api():
+                apis.append(name)
+                p.set_api(app)
+        if apis:
+            kmv_info(f"Load APIs from: [{','.join(apis)}]")
 
     @property
     def mode(self) -> str:
@@ -452,6 +510,10 @@ class state:
         return self._config.default
 
     @property
+    def ui(self) -> cui:
+        return self._config.ui
+
+    @property
     def databases(self) -> Providers:
         return self._config.engine
 
@@ -469,6 +531,10 @@ class state:
     @property
     def engine(self) -> Providers:
         return self._config.engine
+
+    @property
+    def notif(self) -> Notifier:
+        return self._config.notifier
 
     @property
     def db_list(self) -> List[str]:

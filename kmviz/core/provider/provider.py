@@ -132,6 +132,8 @@ class Providers:
         res = {}
         for p in actives:
             opt = { k: _Opt(v) for k, v in options[p].items()}
+            if "notif" in options:
+                opt["notif"] = options["notif"]
             res[self._providers[p].name()] = self._providers[p].query(query, opt, idx)
         return res
 

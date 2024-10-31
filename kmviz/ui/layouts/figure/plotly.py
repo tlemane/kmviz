@@ -49,6 +49,45 @@ px_bar_options = {
     "color_cyc_continuous_scale",
 }
 
+px_histo_options = {
+    "type",
+    "xselect",
+    "yselect",
+    "color",
+    "pattern_shape",
+    "facet_row",
+    "facet_col",
+    "facet_col_wrap",
+    "facet_row_spacing",
+    "facet_col_spacing",
+    "hover_name",
+    "hover_data",
+    "animation_frame",
+    "animation_group",
+    "category_orders",
+    "labels",
+    "color_discrete_sequence",
+    "color_discrete_map",
+    "pattern_shape_sequence",
+    "pattern_shape_map",
+    "opacity",
+    "orientation",
+    "barmode",
+    "log_x",
+    "log_y",
+    "range_x",
+    "histfunc",
+    "histnorm",
+    "cumulative",
+    "nbins",
+    "range_y",
+    "text_auto",
+    "title",
+    "template",
+    "width",
+    "height",
+}
+
 px_scatter_options = {
     "type",
     "xselect",
@@ -430,7 +469,8 @@ px_options = {
     "Density heatmap": px_density_heat,
     "Density contour": px_density_contour,
     "Violin": px_violin_options,
-    "Box": px_box_options
+    "Box": px_box_options,
+    "Histogram": px_histo_options
 }
 
 def list_to_str(value):
@@ -492,6 +532,8 @@ def make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
     if ptype == "Box":
         return px.box(df, x=X, y=Y, hover_name="ID", **params)
 
+    if ptype == "Histogram":
+        return px.histogram(df, x=X, y=Y, hover_name="ID", **params)
 
 def fix_px_params(params, ptype):
     for k in list(params):

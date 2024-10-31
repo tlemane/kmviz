@@ -15,3 +15,10 @@ dagcomponentfuncs.CustomLoadingOverlay = function (props) {
     );
 };
 
+dagcomponentfuncs.RenderLink = function (props) {
+    return React.createElement(
+        'a',
+        {href: props.link_prefix + props.value + props.link_suffix, target: props.link_target},
+        props.value
+    );
+};

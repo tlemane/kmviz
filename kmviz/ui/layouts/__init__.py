@@ -16,6 +16,9 @@ class Global:
             for opt_name, opt in self.st.engine.get(db_name).options.items():
                 default_options[db_name][opt_name] = opt.value if opt.value else opt.default
 
+        default_options["notif"] = {}
+        for name, opt in self.st.notif.options().items():
+            default_options["notif"][name] = opt.value if opt.value else opt.default
 
         return cf.div(
             kid.store["div"],

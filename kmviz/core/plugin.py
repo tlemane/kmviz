@@ -1,5 +1,6 @@
 from kmviz.core.provider import Provider
 from kmviz.core.metadata.db import MetaDB
+from kmviz.core.notifier import Notifier
 from kmviz.core import KmVizError
 from typing import List, Tuple, Any, Union, Dict
 import importlib
@@ -26,6 +27,11 @@ class KmVizPlugin:
         :returns: The metadbs implemented by the plugin, as list of tuples <name,'MetaDB'>
         """
         return []
+
+    def notifiers(self) -> List[Tuple[str, Notifier]]:
+        """
+        :returns: The notifiers implemented by the plugin, as list of tuples <name, 'Notifier'>
+        """
 
     def layouts(self) -> List[Tuple[str, Any, str]]:
         """
@@ -71,6 +77,12 @@ class KmVizPlugin:
 
     def configure(self, config: Dict[str, Any]) -> None:
         self._config = config
+
+    def has_api(self) -> str:
+        return False
+
+    def set_api(self, app):
+        return None
 
     @property
     def config(self) -> Dict[str, Any]:

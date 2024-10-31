@@ -107,9 +107,13 @@ class SequenceGraphViewLayout:
                 cols = ["kmer", "base"]
 
             if qr.response[sample].has_abs():
+                if qr.response[sample].covyk is None:
+                    raise PreventUpdate
                 df = pd.DataFrame({"Sequence": index, "kmer": qr.response[sample].covyk + m, "base": qr.response[sample].covyb})
                 fig = px.line(df, x="Sequence", y=cols, line_shape="linear", markers=True)
             else:
+                if qr.response[sample].covxk is None:
+                    raise PreventUpdate
                 df = pd.DataFrame({"Sequence": index, "kmer": qr.response[sample].covxk + m, "base": qr.response[sample].covxb})
                 fig = px.line(df, x="Sequence", y=cols, line_shape="linear", markers=True)
 
@@ -274,8 +278,12 @@ class SequenceTextViewLayout:
                 mode = "base"
 
             if qr.response[sample].has_abs():
+                if qr.response[sample].covyk is None:
+                    raise PreventUpdate
                 cov, leg = self._make_coverage(qr.response[sample].covyb if mode == "base" else qr.response[sample].covyk, True, start, end)
             else:
+                if qr.response[sample].covxk is None:
+                    raise PreventUpdate
                 cov, leg = self._make_coverage(qr.response[sample].covxb if mode == "base" else qr.response[sample].covxk, True, start, end)
 
             return qr.query.seq, cov, leg, sample

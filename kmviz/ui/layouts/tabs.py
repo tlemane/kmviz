@@ -71,7 +71,8 @@ class Tabs:
                 "Index",
                 value="index",
                 leftSection=DashIconify(icon="iconoir:db"),
-                disabled=self._disabled
+                disabled=self._disabled,
+                style = khide.copy() if not self.st.ui.with_index_tab else {}
             )
         )
         self._panels.append(
@@ -113,7 +114,8 @@ class Tabs:
                 "Map",
                 value="map",
                 leftSection=DashIconify(icon="fluent-mdl2:world"),
-                disabled=self._disabled
+                disabled=self._disabled,
+                style = khide.copy() if not self.st.ui.with_map_tab else {}
             )
         )
         self._panels.append(
@@ -134,7 +136,8 @@ class Tabs:
                 "Plot",
                 value="plot",
                 leftSection=DashIconify(icon="carbon:qq-plot"),
-                disabled=self._disabled
+                disabled=self._disabled,
+                style = khide.copy() if not self.st.ui.with_plot_tab else {}
             )
         )
         self._panels.append(
@@ -155,7 +158,8 @@ class Tabs:
                 "Sequence",
                 value="sequence",
                 leftSection=DashIconify(icon="mdi:dna"),
-                disabled=self._disabled
+                disabled=self._disabled,
+                style = khide.copy() if not self.st.ui.with_sequence_tab else {}
             )
         )
         self._panels.append(
@@ -176,6 +180,7 @@ class Tabs:
                 "Help",
                 value="help",
                 leftSection=DashIconify(icon="material-symbols:help-outline"),
+                style = khide.copy() if not self.st.ui.with_help_tab else {}
             )
         )
         self._panels.append(
@@ -207,14 +212,14 @@ class Tabs:
             gap=4
         ))
 
-
     def _corner_callbacks(self) -> None:
         @callback(
             Input(kid.kmviz["download-button"], "n_clicks"),
             State(kid.store["results"], "data"),
+            State(kid.store["session-id"], "data"),
             Output(kid.kmviz["download"], "data")
         )
-        def download_all(n_clicks, data):
+        def download_all(n_clicks, data, session):
             if n_clicks and len(data) and self.st.engine.list():
                 for qname, res in data.items():
                     for name in res:
@@ -226,7 +231,7 @@ class Tabs:
                         )
                         res[name] = R
 
-                return dict(content=orjson.dumps(jsonify(data).json).decode(), filename=f"session.json")
+                return dict(content=orjson.dumps(jsonify({session: data}).json).decode(), filename=f"session.json")
             raise PreventUpdate
 
     def _session_layout(self):
@@ -269,11 +274,17 @@ class Tabs:
         )
 
     def callbacks(self):
-        self._index_callbacks()
+        if self.st.ui.with_index_tab:
+            self._index_callbacks()
         self._table_callbacks()
-        self._map_callbacks()
-        self._plot_callbacks()
-        self._sequence_callbacks()
+
+        if self.st.ui.with_map_tab:
+            self._map_callbacks()
+        if self.st.ui.with_plot_tab:
+            self._plot_callbacks()
+        if self.st.ui.with_sequence_tab:
+            self._sequence_callbacks()
+
         self._corner_callbacks()
 
         if self.st.mode == "session":

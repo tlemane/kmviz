@@ -212,11 +212,12 @@ def app(ctx, **kwargs):
 @click.argument("mode", type=click.Choice(["db", "session", "plot", "api"]), default="db")
 @click.option("--url", "-u", default="localhost", help="url", show_default=True, metavar="<str>")
 @click.option("--port", "-p", default=8050, help="port", show_default=True, type=int, metavar="<int>")
+@click.option("--no-seq-tab", is_flag=True)
 @click.option("--debug", "-d", is_flag=True)
 @click.pass_context
-def start(ctx, mode, url, port, debug):
+def start(ctx, mode, url, port, no_seq_tab, debug):
     """
-    Start with flask server (recommenced for single users)
+    Start with flask server (recommended for single users)
 
     \b
     Mode:
@@ -228,6 +229,9 @@ def start(ctx, mode, url, port, debug):
     kconf.init_global_state()
     check_input_path(ctx.obj.config, mode == "session" or mode == "plot")
     kconf.st.configure(mode if mode != "api" else "db", ctx.obj.config)
+
+    if no_seq_tab:
+        kconf.st.ui.with_sequence_tab = False
 
     if mode == "api":
         app = Flask(__name__)

@@ -3,3 +3,6 @@ class KmVizError(Exception):
 
 class KmVizQueryError(KmVizError):
     pass
+
+class KmVizQueryErrorNotif(KmVizError):
+    pass

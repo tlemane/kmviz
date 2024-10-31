@@ -37,3 +37,19 @@ class KmvizResultCache:
 
     def put(self, uid: str, value):
         self._backend.set(uid, value)
+
+    def inc(self, uid: str, delta):
+        return self._backend.inc(uid, delta)
+
+    def dec(self, uid: str, delta):
+        return self._backend.dec(uid, delta)
+
+    def has(self, uid: str):
+        return self._backend.has(uid)
+
+    def set(self, uid: str, value):
+        self._backend.set(uid, value)
+
+    @property
+    def back(self):
+        return self._backend

@@ -227,6 +227,8 @@ class MapTraceLayout:
         def on_selected(sdata):
             trigger = ctx.triggered_id
 
+            print(self.fid, len(sdata["points"]))
+
             if trigger == self.fid:
                 conditions = []
 
@@ -244,7 +246,7 @@ class MapTraceLayout:
 
             raise PreventUpdate
 
-        if self.st.mode != "plot":
+        if self.st.mode != "plot" and self.st.ui.with_sequence_tab:
             @callback(
                 Input(self.fid, "clickData"),
                 Output(kid.sequence["sample"], "value"),

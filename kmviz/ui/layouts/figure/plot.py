@@ -98,6 +98,8 @@ class TraceLayout:
                 cf.number(self.f("nbinsx"), label = "X bins", min=0, max=1000, step=1, value=4, icon=icons("integer"), size="xs"),
                 cf.number(self.f("nbinsy"), label = "Y bins", min=0, max=1000, step=1, value=4, icon=icons("integer"), size="xs"),
                 cf.select(self.f("contours_coloring"), ["fill", "heatmap", "lines", "none"], label="Contours coloring", searchable=True, clearable=True, size="xs", className="kmviz-figure-select"),
+                cf.segmented(self.f("cumulative"), data=[{"label":"cumulative", "value":"True"}, {"label":"noncumulative", "value":"False"}], value="False", size="xs", className="kmviz-figure-segmented"),
+                cf.select(self.f("contours_coloring"), ["fill", "heatmap", "lines", "none"], label="Contours coloring", searchable=True, clearable=True, size="xs", className="kmviz-figure-select"),
             ),
             value="dens"
         )
@@ -345,6 +347,8 @@ class TraceLayout:
             Input(self.f("notched"), "value"),
             Input(self.f("box"), "value"),
             Input(self.f("contours_coloring"), "value"),
+            Input(self.f("cumulative"), "value"),
+            Input(self.f("nbins"), "value"),
             State(kid.store["session-id"], "data"),
             State(kid.kmviz("database"), "value"),
             Input(self.preset, "value"),
@@ -359,6 +363,7 @@ class TraceLayout:
                       line_dash, line_group, line_shape, ld_seq, ld_map, markers,
                       dimensions, values, names, histn, histf, binx, biny,
                       boxmode, violinmode, points, notched, box, contours_coloring,
+                      cumulative, nbins,
                       session, database, preset):
 
             if not data:
@@ -372,6 +377,7 @@ class TraceLayout:
             notched = to_bool(notched)
             box = to_bool(box)
             points = to_bool(points)
+            cumulative = to_bool(cumulative)
 
             scale = select_cscale([cscs, cdcs, cccs])
 
@@ -425,7 +431,9 @@ class TraceLayout:
                 "points": points,
                 "notched": notched,
                 "box": box,
-                "contours_coloring": contours_coloring
+                "contours_coloring": contours_coloring,
+                "nbins": nbins,
+                "cumulative": cumulative
             }
 
             if self.st.conf.preset == "fixed":
@@ -450,6 +458,7 @@ class TraceLayout:
             prevent_initial_call=True
         )
         def on_selected(sdata):
+            print(self.fid, len(sdata["points"]))
             trigger = ctx.triggered_id
 
             if trigger == self.fid:
@@ -457,6 +466,9 @@ class TraceLayout:
 
                 if sdata is None:
                     return {}
+
+                if not len(sdata["points"]):
+                    raise PreventUpdate
 
                 for data in sdata["points"]:
                     conditions.append(
@@ -470,7 +482,7 @@ class TraceLayout:
             raise PreventUpdate
 
 
-        if self.st.mode != "plot":
+        if self.st.mode != "plot" and self.st.ui.with_sequence_tab:
             @callback(
                 Input(self.fid, "clickData"),
                 Output(kid.sequence["sample"], "value"),

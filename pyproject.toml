@@ -41,6 +41,7 @@ dash-mantine-components = "~0.12.1"
 dash-extensions = "=1.0.14"
 tomli-w = "^1.0.0"
 duckdb = "^1.0.0"
+sendgrid = "^6.11.0"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"

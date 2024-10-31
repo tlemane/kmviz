@@ -16,7 +16,7 @@ import uuid
 
 class TableLayout:
     def __init__(self, st: state):
-        self.st = state
+        self.st = st
         self._filter = FilterLayout(kid.table, kid.table("grid"))
 
     def layout(self) -> html.Div:
@@ -51,20 +51,6 @@ class TableLayout:
         )
 
     def callbacks(self) -> None:
-
-        #@callback(
-        #    Input(kid.kmviz("query"), "value"),
-        #    State(kid.kmviz("database"), "value"),
-        #    Output(kid.table["filter-button"], "disabled"),
-        #    Output(kid.table["export-button"], "disabled"),
-        #    Output(kid.table["rmf-button"], "disabled"),
-        #    prevent_initial_call=True
-        #)
-        #def enable_button(query, db):
-        #    prevent_update_on_none(query, db)
-        #    return (False,) * 3
-
-
         clientside_callback(
             """
             function(database, query) {
@@ -82,16 +68,6 @@ class TableLayout:
             prevent_initial_call=True
         )
 
-        #@callback(
-        #    Input(kid.table["rmf-button"], "n_clicks"),
-        #    Output(kid.table("grid"), "filterModel"),
-        #    prevent_initial_call=True
-        #)
-        #def rmf(n_clicks):
-        #    if n_clicks:
-        #        return {}
-        #    return no_update
-
         clientside_callback(
             """
             function(n_clicks) {
@@ -105,16 +81,6 @@ class TableLayout:
             Output(kid.table("grid"), "filterModel"),
             prevent_initial_call=True
         )
-
-        #@callback(
-        #    Input(kid.table["export-button"], "n_clicks"),
-        #    Output(kid.table("grid"), "exportDataAsCsv"),
-        #    prevent_initial_call=True
-        #)
-        #def export(n_clicks):
-        #    if n_clicks:
-        #        return True
-        #    return no_update
 
         clientside_callback(
             """
@@ -173,7 +139,9 @@ class TableLayout:
                     "field": x,
                     "filterParams": {"maxNumConditions": 10000},
                     "suppressMenu": True,
-                    "filter": colf(df[x])
+                    "filter": colf(df[x]),
+                    "cellRenderer": self.st.ui.crs[x][0] if x in self.st.ui.crs else "",
+                    "cellRendererParams": self.st.ui.crs[x][1] if x in self.st.ui.crs else ""
                 } for x in list(df)
             ]
 

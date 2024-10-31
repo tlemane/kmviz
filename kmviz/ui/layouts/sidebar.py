@@ -6,6 +6,7 @@ from kmviz.ui.components.helpers import load_file_as_df
 from kmviz.ui.layouts.input import SideInputLayout, SideDBLayout
 from kmviz.ui.layouts.config import ConfigLayout
 from kmviz.ui.layouts.submit import SubmitLayout
+from kmviz.ui.layouts.notif import NotifLayout
 
 from kmviz.ui.id_factory import kid
 from kmviz.ui.utils import icons
@@ -19,25 +20,23 @@ class Sidebar:
         self.st = st
         self.mode = st.mode
 
-    def _make_database_layout(self) -> html.Div:
-        sinput = SideInputLayout(self.st)
-        sdb = SideDBLayout(self.st)
-        sconfig = ConfigLayout(self.st)
-        ssubmit = SubmitLayout(self.st)
+        if self.mode == "db":
+            self.sinput = SideInputLayout(self.st)
+            self.sdb = SideDBLayout(self.st)
+            self.sconfig = ConfigLayout(self.st)
+            self.ssubmit = SubmitLayout(self.st)
+            self.snotif = NotifLayout(self.st)
 
+    def _make_database_layout(self) -> html.Div:
         layout = cf.div(
             kid.kmviz["side-div"],
             dmc.Center(cf.h1(f"kmviz {kmviz.__version_str__}")),
-            sdb.layout(),
-            sinput.layout(),
-            sconfig.layout(),
-            ssubmit.layout(),
+            self.sdb.layout(),
+            self.sinput.layout(),
+            self.snotif.layout(),
+            self.sconfig.layout(),
+            self.ssubmit.layout(),
         )
-
-        sinput.callbacks()
-        sdb.callbacks()
-        sconfig.callbacks()
-        ssubmit.callbacks()
 
         return layout
 
@@ -110,7 +109,11 @@ class Sidebar:
                 no_update, dmc.Text(str(e), color="red", weight=500), no_update, no_update
 
     def _database_callbacks(self) -> None:
-        pass
+        self.sinput.callbacks()
+        self.sdb.callbacks()
+        self.sconfig.callbacks()
+        self.ssubmit.callbacks()
+        self.snotif.callbacks()
 
     def layout(self) -> html.Div:
         if self.mode == "plot":

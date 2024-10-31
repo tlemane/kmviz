@@ -8,7 +8,7 @@ from kmviz.ui.utils import make_select_data
 from kmviz.core.log import kmv_info, kmv_warn, kmv_error
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
-from kmviz.core import KmVizQueryError
+from kmviz.core import KmVizQueryError, KmVizQueryErrorNotif
 import uuid
 
 class SubmitLayout:
@@ -126,6 +126,9 @@ class SubmitLayout:
             set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(0, nb_queries))))
 
             try:
+                print(options["notif"])
+                kconf.st.notif.check(options["notif"])
+                print(options["notif"])
                 for i, query in enumerate(sequences):
                     result = kconf.st.engine.query(query, actives, options, uuid_str)
                     keys = list(result.keys())
@@ -135,10 +138,14 @@ class SubmitLayout:
                     results[query.name] = result
                     set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(i+1, nb_queries))))
             except KmVizQueryError as e:
-                kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
+                kmv_warn(f"⚠️  {uuid_str} -> {str(e)}")
+                return self._on_error(uuid_str, str(e))
+            except KmVizQueryErrorNotif as e:
+                kmv_warn(f"⚠️  {uuid_str} -> {str(e)}")
+                kconf.st.notif.send_failure(uuid_str, options["notif"], str(e))
                 return self._on_error(uuid_str, str(e))
             except Exception as e:
-                kmv_warn(f"⚠️ {uuid_str} -> {str(e)}")
+                kmv_warn(f"⚠️  {uuid_str} -> {str(e)}")
                 return self._on_error(uuid_str)
 
             def_query = sequences[0].name
@@ -154,6 +161,9 @@ class SubmitLayout:
             kmv_info(f"✅ {uuid_str}")
 
             notif = self._update_ok_submit_notification(f"{uuid_str}", None),
+
+            kconf.st.notif.send_success(uuid_str, options["notif"], results)
+
             return (Serverside(store[0]), *store[1:], uuid_str, notif, True) + (khide, {"padding-left": "10px"}) + (False,) * 5 + (self._def_tab, khide, no_update)
 
     def layout(self) -> html.Div:
