@@ -362,6 +362,8 @@ class ComponentFactory:
                 "loadingMessage": "Waiting for results..."
             },
             "rowSelection": "single",
+            "enableCellTextSelection": True,
+            "ensureDomOrder": True
         }
 
         _default_export = {
