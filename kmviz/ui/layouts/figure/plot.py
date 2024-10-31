@@ -458,7 +458,6 @@ class TraceLayout:
             prevent_initial_call=True
         )
         def on_selected(sdata):
-            print(self.fid, len(sdata["points"]))
             trigger = ctx.triggered_id
 
             if trigger == self.fid:

@@ -20,7 +20,6 @@ class NotifLayout:
     def _layout(self):
         layout = []
         for name, opt in self.st.notif.options().items():
-            print(self.opt(f"notif-{opt.name}"))
             layout.append(cf.div(
                 self.opt(name),
                 make_user_option(opt, id=self.opt(f"notif-{opt.name}"))

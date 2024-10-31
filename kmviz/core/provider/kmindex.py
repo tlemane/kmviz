@@ -178,7 +178,6 @@ class KmindexCLIProvider(KmindexProvider):
 
         res = self._from_json(query, options, response)
 
-        print("rm")
         rm(fastx, output)
 
         return res

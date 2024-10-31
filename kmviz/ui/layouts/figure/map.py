@@ -227,8 +227,6 @@ class MapTraceLayout:
         def on_selected(sdata):
             trigger = ctx.triggered_id
 
-            print(self.fid, len(sdata["points"]))
-
             if trigger == self.fid:
                 conditions = []
 

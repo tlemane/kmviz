@@ -126,9 +126,7 @@ class SubmitLayout:
             set_progress((self._update_submit_notification(uuid_str, self._make_notif_msg(0, nb_queries))))
 
             try:
-                print(options["notif"])
                 kconf.st.notif.check(options["notif"])
-                print(options["notif"])
                 for i, query in enumerate(sequences):
                     result = kconf.st.engine.query(query, actives, options, uuid_str)
                     keys = list(result.keys())
