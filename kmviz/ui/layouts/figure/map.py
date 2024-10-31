@@ -284,18 +284,20 @@ class MapLayout:
         return fig
 
     def _make_graph(self) -> dcc.Graph:
-        return dcc.Graph(
-            id=self.fid,
-            figure=self._blank(),
-            responsive=True,
-            mathjax=True,
-            className="kmviz-dcc-plot-graph",
-            config = {
-                "modeBarButtonsToAdd": [
-                    "drawline", "drawopenpath", "drawclosedpath", "drawcircle", "drawrect", "eraseshape"
-                ]
-            }
-        )
+        return dcc.Loading(id=self.f("loading"), type="default", children=[
+            dcc.Graph(
+                id=self.fid,
+                figure=self._blank(),
+                responsive=True,
+                mathjax=True,
+                className="kmviz-dcc-plot-graph",
+                config = {
+                    "modeBarButtonsToAdd": [
+                        "drawline", "drawopenpath", "drawclosedpath", "drawcircle", "drawrect", "eraseshape"
+                    ]
+                }
+            )
+        ])
 
     def _make_tabs(self):
         return cf.tabs(
