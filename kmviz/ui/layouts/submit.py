@@ -22,7 +22,7 @@ class SubmitLayout:
 
     def _update_submit_notification(self, title, message):
         return dmc.Alert(
-            f"Processing... {message} {self.st.conf.notif.ui_notif_msg}",
+            f"Processing... {message} {self.st.ui.ui_notif_msg}",
             title=title,
             icon=DashIconify(icon="eos-icons:hourglass", width=30),
             color=km_color,

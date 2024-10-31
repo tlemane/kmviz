@@ -97,9 +97,9 @@ class TraceLayout:
                 cf.select(self.f("histnorm"), ["percent", "probability", "density", "probability density"], label="Hist norm", value="count", searchable=True, clearable=True, size="xs", className="kmviz-figure-select"),
                 cf.number(self.f("nbinsx"), label = "X bins", min=0, max=1000, step=1, value=4, icon=icons("integer"), size="xs"),
                 cf.number(self.f("nbinsy"), label = "Y bins", min=0, max=1000, step=1, value=4, icon=icons("integer"), size="xs"),
+                cf.number(self.f("nbins"), label = "N bins", min=0, max=1000, step=1, value=4, icon=icons("integer"), size="xs"),
                 cf.select(self.f("contours_coloring"), ["fill", "heatmap", "lines", "none"], label="Contours coloring", searchable=True, clearable=True, size="xs", className="kmviz-figure-select"),
                 cf.segmented(self.f("cumulative"), data=[{"label":"cumulative", "value":"True"}, {"label":"noncumulative", "value":"False"}], value="False", size="xs", className="kmviz-figure-segmented"),
-                cf.select(self.f("contours_coloring"), ["fill", "heatmap", "lines", "none"], label="Contours coloring", searchable=True, clearable=True, size="xs", className="kmviz-figure-select"),
             ),
             value="dens"
         )

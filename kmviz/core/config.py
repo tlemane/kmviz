@@ -211,7 +211,6 @@ class cnotif(BaseModel):
     subject_failure: str
     custom: Optional[Dict[str, Any]] = {}
     params: Optional[Dict[str, Any]] = {}
-    ui_notif_msg: Optional[str] = ""
 
 class cdatabase(BaseModel):
     type: str
@@ -235,6 +234,7 @@ class cui(BaseModel):
     with_sequence_tab: bool=True
     with_index_tab: bool=True
     crs: Optional[Dict[str, Tuple[str, Dict[str, Any]]]]={}
+    ui_notif_msg: Optional[str] = ""
 
 class capi(BaseModel):
     enabled: bool=False
