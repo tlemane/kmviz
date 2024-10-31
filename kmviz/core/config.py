@@ -211,6 +211,7 @@ class cnotif(BaseModel):
     subject_failure: str
     custom: Optional[Dict[str, Any]] = {}
     params: Optional[Dict[str, Any]] = {}
+    ui_notif_msg: Optional[str] = ""
 
 class cdatabase(BaseModel):
     type: str
