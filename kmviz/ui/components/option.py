@@ -66,7 +66,6 @@ def make_multichoice_option(opt: MultiChoiceOption, id):
         className="kmviz-dmc-user-multi-select",
         clearable=True,
         searchable=True,
-        maxDropdownHeight=100,
         classNames={"root": "kmviz-dmc-select-input-root"},
         size="xs"
     )
