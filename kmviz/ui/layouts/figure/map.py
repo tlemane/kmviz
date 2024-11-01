@@ -284,7 +284,7 @@ class MapLayout:
         return fig
 
     def _make_graph(self) -> dcc.Graph:
-        return dcc.Loading(id=self.f("loading"), type="default", delay_show=200, children=[
+        return dcc.Loading(id=self.f("loading"), type="default", delay_show=250, children=[
             dcc.Graph(
                 id=self.fid,
                 figure=self._blank(),
