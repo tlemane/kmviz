@@ -165,7 +165,7 @@ class MapTraceLayout:
                       projection, cscs, cdcs, cccs, ccm, smap, sseq, cdm, cds, opacity,
                       size_max, session, database, pom, preset):
 
-            kmv_debug(f"{session}: 'update_plot' triggered by '{ctx.triggered_id}'")
+            kmv_debug(f"{session}: 'update_map' triggered by '{ctx.triggered_id}'")
 
             if not data:
                 raise PreventUpdate
