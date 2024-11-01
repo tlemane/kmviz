@@ -361,7 +361,8 @@ class ckmviz(BaseModel):
                 raise ValueError(f"'{name}' is not a valid plugin name")
             if name not in installed:
                 raise ValueError(f"'{name}' is not installed")
-            kmv_info(f"💾 Init[{name}]: with {params}")
+
+            kmv_info(f"💾 Init[{name}]: with {list(params.keys())}")
             plugin = search_for_plugin(name)
             plugin.configure(params)
 
