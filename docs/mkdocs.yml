@@ -38,6 +38,7 @@ nav:
       - configuration/index.md
       - Builtins Provider: 'builtins/provider.md'
       - Builtins MetaDB: 'builtins/metadb.md'
+      - Builtins Notifier: 'builtins/notifier.md'
     - CLI:
       - cli/index.md
       - app: 'cli/app.md'

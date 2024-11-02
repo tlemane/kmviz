@@ -111,3 +111,35 @@ idx = "Sample"
 geodata = { latitude = "Lat", longitude = "Long"}
 ```
 </div>
+
+## `Parquet`
+
+|Parameter|Description|Default|Required|
+|---|---|---|---|
+|files|List of parquet files|-|:white_check_mark:|
+|idx|Column containing identifiers|-|:white_check_mark:|
+|geodata|Columns containing geographical data, if applicable|-|:x:|
+
+<div class="grid" markdown>
+
+```yaml title="parquet_ex.yaml"
+metadata:
+  type: "parquet"
+  params:
+    files: ["/path/to/file.parquet"]
+    idx: "Sample"
+    geodata:
+      latitude: "Lat"
+      longitude: "Long"
+```
+
+```toml title="parquet_ex.toml"
+[databases.Example.metadata]
+type = "parquet"
+[databases.Example.metadata.params]
+files = ["/path/to/file.parquet"]
+idx = "Sample"
+geodata = { latitude = "Lat", longitude = "Long"}
+```
+</div>
+

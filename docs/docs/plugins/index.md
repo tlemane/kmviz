@@ -53,6 +53,11 @@ class KmVizPlugin:
         """
         return []
 
+    def notifiers(self) -> List[Tuple[str, Notifier]]:
+        """
+        :returns: The notifiers implemented by the plugin, as list of tuples <name, 'Notifier'>
+        """
+
     def layouts(self) -> List[Tuple[str, Any, str]]:
         """
         :returns: The layouts implemented by the plugin, as list of tuples <name, dash_component, icon_name>
@@ -92,6 +97,19 @@ class KmVizPlugin:
     def name(self) -> str:
         """
         :returns: The plugin name
+        """
+        return None
+
+    def has_api(self) -> str:
+        """
+        :returns: True if the plugin add API routes
+        """
+        return False
+
+    def set_api(self, app):
+        """
+        Set API routes
+        :returns: None
         """
         return None
 ```

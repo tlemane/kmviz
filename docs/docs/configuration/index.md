@@ -64,6 +64,10 @@ configuration = "ExampleDB"   # The database configuration displayed by default
 hide = false
 ```
 
+### `notif`
+
+The `notif` section allows to set up a mail notifier. See See [Builtins Notifier](../builtins/notifier.md)
+
 ### `cache`
 
 **kmviz** requires some caches. For local instances, cache configuration is not a critical point. The example below will work in many cases.
@@ -102,6 +106,19 @@ max_query_size = 4294967296   # Max number of symbols per query
 max_size = 4294967296         # Max number of symbols for all queries
 max_query = 4294967296        # Max number of queries
 alphabet = "all"              # Use "dna" or "amino" to perform a check when loading the queries
+```
+
+### `ui`
+
+The `ui` section is optional and defines the tabs to display.
+
+
+```toml
+[ui]
+with_index_tab = false
+with_sequence_tab = false
+with_map_tab = false
+with_plot_tab = false
 ```
 
 ### `auth`
