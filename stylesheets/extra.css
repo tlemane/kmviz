@@ -1,0 +1,22 @@
+.md-grid {
+  max-width: 100%;
+}
+
+.ImageBorder {
+  border-width: 0px;
+  border-style: solid;
+  border-color: black;
+  outline-width: 2px;
+  outline-style: solid;
+  outline-color: #4051B5;
+}
+
+.ImageHelp {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.md-typeset .grid {
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr))
+}
