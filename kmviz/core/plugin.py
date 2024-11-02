@@ -79,9 +79,16 @@ class KmVizPlugin:
         self._config = config
 
     def has_api(self) -> str:
+        """
+        :returns: True if the plugin add API routes
+        """
         return False
 
     def set_api(self, app):
+        """
+        Set API routes
+        :returns: None
+        """
         return None
 
     @property
