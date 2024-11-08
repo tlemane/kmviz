@@ -547,7 +547,7 @@ def to_bool(value):
 def select_cscale(scales):
     scale = None
     if any(scales):
-        next(s for s in scales if s is not None)
+        scale = next(s for s in scales if s is not None)
     return scale
 
 def valid_input(ptype, X, Y, Z):
