@@ -57,6 +57,7 @@ class map_presets(BaseModel):
     color_continuous_midpoint: Optional[Union[int, float]]=None
     opacity: Annotated[Optional[float], Ge(0.0), Le(1.0)]=None
     size_max: Annotated[Optional[int], Ge(0), Le(50)]=None
+    size_min: Annotated[Optional[int], Ge(0), Le(50)]=None
     color_discrete_map: Optional[Dict[Any, str]]=None
     symbol_map: Optional[Dict[Any, str]]=None
     color_discrete_sequence: Optional[List[str]]=None
@@ -93,6 +94,7 @@ class plot_presets(BaseModel):
     color_continuous_midpoint: Optional[Union[int, float]]=None
     opacity: Annotated[Optional[float], Ge(0.0), Le(1.0)]=None
     size_max: Annotated[Optional[int], Ge(0), Le(50)]=None
+    size_min: Annotated[Optional[int], Ge(0), Le(50)]=None
 
     color_discrete_map: Optional[Dict[Any, str]]=None
     symbol_map: Optional[Dict[Any, str]]=None

@@ -162,7 +162,8 @@ class TraceLayout:
                     cf.scycscale(self.f("color_cyc_continuous_scale"), label="Color cyclical scale", clearable=True, searchable=True, size="xs", className="kmviz-figure-select"),
                     cf.number(self.f("color_continuous_midpoint"), label="Color midpoint", min=None, max=None, step=None, value=None, leftSection=icons("floating"), decimalScale=2, size="xs"),
                     cf.number(self.f("opacity"), label="Opacity", min=0.0, max=1.0, step=0.01, value=0.7, leftSection=icons("floating"), decimalScale=2, size="xs"),
-                    cf.number(self.f("size_max"), label="Max size", min=0, max=50, step=1, value=15, leftSection=icons("integer"), decimalScale=2, size="xs"),
+                    cf.number(self.f("size_max"), label="Marker max size", min=0, max=50, step=1, value=15, leftSection=icons("integer"), decimalScale=2, size="xs"),
+                    cf.number(self.f("size_min"), label="Marker min size", min=0, max=50, step=1, value=2, leftSection=icons("integer"), decimalScale=2, size="xs"),
                 ),
                 cf.group(
                     self.f["style-grp-3"],
@@ -243,6 +244,8 @@ class TraceLayout:
             for opt in options:
                 if opt["index"] in px_options[ptype]:
                     out.append(show)
+                elif opt["index"] == "size_min" and "Scatter" in ptype:
+                    out.append(show)
                 else:
                     out.append(hide)
             return out
@@ -311,6 +314,7 @@ class TraceLayout:
             Input(self.f("color_discrete_sequence"), "value"),
             Input(self.f("opacity"), "value"),
             Input(self.f("size_max"), "value"),
+            Input(self.f("size_min"), "value"),
             Input(self.f("facet_row"), "value"),
             Input(self.f("facet_col"), "value"),
             Input(self.f("facet_col_wrap"), "value"),
@@ -356,7 +360,7 @@ class TraceLayout:
         )
         def make_plot(data, ptype, X, Y, Z,
                       size, color, text, symbol, animation_frame, animation_group,
-                      cscs, cdcs, cccs, ccm, sm, ss, cdm, cds, opacity, size_max,
+                      cscs, cdcs, cccs, ccm, sm, ss, cdm, cds, opacity, size_max, size_min,
                       frow, fcol, fcolw, frows, fcols, template,
                       trendline, trendline_scope, trendline_opt, mx, my,
                       base, pattern_shape, orientation, ps_map, ps_seq, barmode,
@@ -450,7 +454,12 @@ class TraceLayout:
 
             valid_input(ptype, X, Y, Z)
             params = fix_px_params(params, ptype)
-            return make_plot_px(ptype, df, X, Y, Z, params)
+            fig = make_plot_px(ptype, df, X, Y, Z, params)
+
+            if ("Scatter" in ptype):
+                fig.update_traces(marker=dict(sizemin=size_min))
+
+            return fig
 
         @callback(
             Input(self.fid, "selectedData"),

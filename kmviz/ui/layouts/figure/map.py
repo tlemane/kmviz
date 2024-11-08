@@ -77,7 +77,8 @@ class MapTraceLayout:
                     cf.scycscale(self.f("color_cyc_continuous_scale"), label="Color cyclical scale", clearable=True, searchable=True, size="xs", className="kmviz-figure-select"),
                     cf.number(self.f("color_continuous_midpoint"), label="Color midpoint", min=None, max=None, step=None, value=None, leftSection=icons("floating"), decimalScale=2, size="xs"),
                     cf.number(self.f("opacity"), label="Opacity", min=0.0, max=1.0, step=0.01, value=0.7, leftSection=icons("floating"), decimalScale=2, size="xs"),
-                    cf.number(self.f("size_max"), label="Max size", min=0, max=50, step=1, value=15, leftSection=icons("integer"), decimalScale=2, size="xs"),
+                    cf.number(self.f("size_max"), label="Marker max size", min=0, max=50, step=1, value=15, leftSection=icons("integer"), decimalScale=2, size="xs"),
+                    cf.number(self.f("size_min"), label="Marker min size", min=0, max=50, step=1, value=2, leftSection=icons("integer"), decimalScale=2, size="xs"),
                 ),
                 cf.group(
                     self.f["style-grp-2"],
@@ -155,6 +156,7 @@ class MapTraceLayout:
             Input(self.f("color_discrete_sequence"), "value"),
             Input(self.f("opacity"), "value"),
             Input(self.f("size_max"), "value"),
+            Input(self.f("size_min"), "value"),
             State(kid.store["session-id"], "data"),
             State(kid.kmviz("database"), "value"),
             State(kid.pom["store"], "data"),
@@ -163,7 +165,7 @@ class MapTraceLayout:
         )
         def make_plot(data, template, color, size, text, symbol, aframe, agroup,
                       projection, cscs, cdcs, cccs, ccm, smap, sseq, cdm, cds, opacity,
-                      size_max, session, database, pom, preset):
+                      size_max, size_min, session, database, pom, preset):
 
             kmv_debug(f"{session}: 'update_map' triggered by '{ctx.triggered_id}'")
 
@@ -217,7 +219,9 @@ class MapTraceLayout:
                     apply_legend_and_title_presets(fig, presets[preset])
                     return fig
 
-            return px.scatter_geo(df, hover_name="ID", **params)
+            fig = px.scatter_geo(df, hover_name="ID", **params)
+            fig.update_traces(marker=dict(sizemin=size_min))
+            return fig
 
         @callback(
             Input(self.fid, "selectedData"),
