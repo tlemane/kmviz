@@ -45,16 +45,20 @@ class Tabs:
         for name, plugin in self.st.conf.plugins.items():
             layouts = plugin.layouts()
             if layouts:
-                for tab_name, panel, icon in layouts:
-                    self._tabs.append(
-                        cf.tabs_tab(
+                for ptab, panel, icon in layouts:
+                    if not isinstance(ptab, str):
+                        tab_name = ptab[0]
+                        tab = ptab[1]
+                    else:
+                        tab_name = ptab
+                        tab = cf.tabs_tab(
                             kid.plugin[f"{name}-{tab_name}-tab"],
                             tab_name,
                             value=f"{name}-{tab_name}-tab",
                             leftSection=DashIconify(icon=icon) if icon else None,
-                            style=self.plugin_show
-                        )
-                    )
+                            style=self.plugin_show)
+
+                    self._tabs.append(tab)
                     self._panels.append(
                         cf.tabs_panel(
                             kid.plugin[f"{name}-{tab_name}-panel"],
@@ -227,7 +231,8 @@ class Tabs:
                             res[name]._query,
                             res[name]._response,
                             orjson.loads(res[name].df.to_json()),
-                            self.st.engine.get(name).db.geodata
+                            _extra = {},
+                            _geodata = self.st.engine.get(name).db.geodata
                         )
                         res[name] = R
 

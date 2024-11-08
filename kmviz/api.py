@@ -53,7 +53,8 @@ class KmvizAPI:
             response._query,
             response._response,
             orjson.loads(response.df.to_json()) if df_as_json else response.df,
-            self.st.engine.get(db).db.geodata
+            _extra = {},
+            _geodata = self.st.engine.get(db).db.geodata
         )
 
     def _make_session_query(self, fastx: str, options: dict, df_as_json):
