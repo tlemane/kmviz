@@ -5,7 +5,7 @@ from kmviz.ui.id_factory import kid
 from kmviz.core.config import state
 from kmviz.core.query import QueryResponseGeo
 from dash_iconify import DashIconify
-from dash_extensions.enrich import dcc, callback, Input, Output, State
+from dash_extensions.enrich import dcc, callback, Input, Output, State, html
 from kmviz.ui.layouts.index import Index
 from kmviz.ui.layouts.table import TableLayout
 from kmviz.ui.layouts.sequence import SequenceLayout
@@ -17,7 +17,7 @@ from dash.exceptions import PreventUpdate
 from flask import jsonify
 import dash_mantine_components as dmc
 import orjson
-
+import dash_bootstrap_components as dbc
 class Tabs:
     def __init__(self, st: state):
         self._tabs = []
@@ -203,9 +203,21 @@ class Tabs:
 
         group_content = [
             dcc.Download(id=kid.kmviz["download"]),
-            cf.switch( kid.kmviz("auto"), onLabel=icons("autoff", width=20), offLabel=icons("auton", width=20), checked=True),
+            dmc.Tooltip(
+                label="When making figures, kmviz distinguishes 2 types of action: those that create a new figure (the 'Trace' tab for both maps and plots), e.g. change the plot type, and those that update the figure, e.g. change the title. The blue switch at the top right corner allows to enabled/disabled the auto updates. When enabled, all properties corresponding to update actions are automatically re-applied when the figure is modified. For example, if you set a title, then change the plot type, the title remains",
+                withArrow=True,
+                children=[cf.switch( kid.kmviz("auto"), onLabel=icons("autoff", width=20), offLabel=icons("auton", width=20), checked=True)],
+                multiline=True,
+                width=300
+            ),
             dmc.Space(w=3, style=style),
-            cf.action( kid.kmviz["download-button"], DashIconify(icon="bi:filetype-json", width=25), variant="filled", color = km_color, style=style),
+            dmc.Tooltip(
+                label="Download a session JSON file which can be loaded by any kmviz instance running in session mode. See kmviz documentation.",
+                withArrow=True,
+                children=[cf.action( kid.kmviz["download-button"], DashIconify(icon="bi:filetype-json", width=25), variant="filled", color = km_color, style=style)],
+                multiline=True,
+                width=300
+            ),
             dmc.Space(w=5, style=style),
             cf.select( kid.kmviz("database"), data=[], placeholder="Database", size="xs", style=style),
             cf.select( kid.kmviz("query"), data=[], placeholder="Query", size="xs", style=style),

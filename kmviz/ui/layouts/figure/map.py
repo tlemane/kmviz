@@ -288,8 +288,8 @@ class MapLayout:
         self._legend = LegendLayout(self.f.new("legend"), self.fid)
         self._clegend = ColorLegendLayout(self.f.new("clegend"), self.fid)
         self._shape = ShapeLayout(self.f.new("shape"), self.fid)
-        self._dl = DownloadGraphLayout(self.f.new("download"), self.fid, "plot")
-        self._filter = FilterLayout(self.f.new("filter"), self.fdata)
+        self._dl = DownloadGraphLayout(self.f.new("download"), self.fid, "map")
+        self._filter = FilterLayout(self.f.new("filter"), self.fdata, self.st.ui.map_filter_message)
 
     def _blank(self) -> go.Figure:
         fig = go.Figure(go.Scattergeo())

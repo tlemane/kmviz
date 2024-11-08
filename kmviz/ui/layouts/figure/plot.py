@@ -530,7 +530,7 @@ class PlotLayout:
         self._clegend = ColorLegendLayout(self.f.new("clegend"), self.fid)
         self._shape = ShapeLayout(self.f.new("shape"), self.fid)
         self._dl = DownloadGraphLayout(self.f.new("download"), self.fid, "plot")
-        self._filter = FilterLayout(self.f.new("filter"), self.fdata)
+        self._filter = FilterLayout(self.f.new("filter"), self.fdata, self.st.ui.plot_filter_message)
 
     def _blank(self) -> go.Figure:
         fig = go.Figure(go.Scatter(x=[], y = []))

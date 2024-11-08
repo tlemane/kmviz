@@ -9,16 +9,17 @@ from dash import Patch
 import dash_mantine_components as dmc
 
 class FilterLayout:
-    def __init__(self, factory, data):
+    def __init__(self, factory, data, placeholder):
         self.f = factory
         self.data = data
+        self.placeholder = placeholder
 
     def layout(self):
         c = [
             Keyboard(
                 cf.text(
                     self.f("sql-query"),
-                    placeholder="Temperature > 26 AND Season = 'Spring'",
+                    placeholder=self.placeholder,
                     size="xs"),
                 captureKeys=["Enter"],
                 id=self.f["keyboard"],

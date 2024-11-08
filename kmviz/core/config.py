@@ -235,7 +235,11 @@ class cui(BaseModel):
     with_index_tab: bool=True
     crs: Optional[Dict[str, Tuple[str, Dict[str, Any]]]]={}
     ui_notif_msg: Optional[str] = ""
-    compress_requests: bool=True
+    compress_requests: Optional[bool]=True
+
+    table_filter_message: Optional[str]="SQL WHERE clause"
+    map_filter_message: Optional[str]=table_filter_message
+    plot_filter_message: Optional[str]=table_filter_message
 
 class capi(BaseModel):
     enabled: bool=False

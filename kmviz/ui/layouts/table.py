@@ -17,7 +17,7 @@ import uuid
 class TableLayout:
     def __init__(self, st: state):
         self.st = st
-        self._filter = FilterLayout(kid.table, kid.table("grid"))
+        self._filter = FilterLayout(kid.table, kid.table("grid"), st.ui.table_filter_message)
 
     def layout(self) -> html.Div:
         return cf.div(
@@ -139,6 +139,7 @@ class TableLayout:
             fields = [
                 {
                     "field": x,
+                    "headerName": x,
                     "filterParams": {"maxNumConditions": 10000},
                     "suppressMenu": True,
                     "filter": colf(df[x]),
