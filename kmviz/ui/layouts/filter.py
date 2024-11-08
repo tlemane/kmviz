@@ -25,8 +25,21 @@ class FilterLayout:
                 id=self.f["keyboard"],
                 className="kmviz-filter-keyboard"
             ),
-            cf.action(self.f["sql-query-button"], DashIconify(icon="carbon:play-outline", width=30), variant="filled", color=km_color),
-            cf.action(self.f["rmf"], DashIconify(icon="lucide:filter-x", width=20), variant="filled", color=km_color),
+
+            dmc.Tooltip(
+                label="Apply filters (pressing 'Enter' has the same effect)",
+                withArrow=True,
+                children=[
+                    cf.action(self.f["sql-query-button"], DashIconify(icon="carbon:play-outline", width=30), variant="filled", color=km_color),
+                ],
+            ),
+            dmc.Tooltip(
+                label="Remove all filters",
+                withArrow=True,
+                children=[
+                    cf.action(self.f["rmf"], DashIconify(icon="lucide:filter-x", width=20), variant="filled", color=km_color),
+                ],
+            ),
         ]
 
         return cf.group(
