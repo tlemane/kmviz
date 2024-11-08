@@ -53,7 +53,8 @@ def make_kmviz_app(st: state):
         background_callback_manager=st.caches.manager,
         external_stylesheets=st.css,
         external_scripts=st.js,
-        meta_tags=st.html.metatags
+        meta_tags=st.html.metatags,
+        compress=st.ui.compress_requests
     )
 
     if st.html.template:

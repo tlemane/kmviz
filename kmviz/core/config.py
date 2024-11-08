@@ -235,6 +235,7 @@ class cui(BaseModel):
     with_index_tab: bool=True
     crs: Optional[Dict[str, Tuple[str, Dict[str, Any]]]]={}
     ui_notif_msg: Optional[str] = ""
+    compress_requests: bool=True
 
 class capi(BaseModel):
     enabled: bool=False
