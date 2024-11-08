@@ -1,5 +1,5 @@
 from kmviz.core.config import state
-from dash_extensions.enrich import html, Input, State, callback, Output, no_update, clientside_callback
+from dash_extensions.enrich import html, Input, State, callback, Output, no_update, clientside_callback, dcc
 from kmviz.ui.components.factory import ComponentFactory as cf
 from kmviz.ui.components.factory import km_color
 from kmviz.ui.id_factory import kid
@@ -25,7 +25,9 @@ class TableLayout:
             dmc.Space(h=5),
             self._filter.layout(),
             dmc.Space(h=5),
-            cf.ag_grid(kid.table("grid"), {}, {}, {}, style = {"height": "80vh"}),
+            dcc.Loading(id=kid.table("loading"), type="default", delay_show=250, children=[
+                cf.ag_grid(kid.table("grid"), {}, {}, {}, style = {"height": "80vh"}),
+            ]),
             dmc.Space(h=5),
             cf.group(
                 kid.table["grp-button"],
