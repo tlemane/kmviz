@@ -77,8 +77,8 @@ class MapTraceLayout:
                     cf.scycscale(self.f("color_cyc_continuous_scale"), label="Color cyclical scale", clearable=True, searchable=True, size="xs", className="kmviz-figure-select"),
                     cf.number(self.f("color_continuous_midpoint"), label="Color midpoint", min=None, max=None, step=None, value=None, leftSection=icons("floating"), decimalScale=2, size="xs"),
                     cf.number(self.f("opacity"), label="Opacity", min=0.0, max=1.0, step=0.01, value=0.7, leftSection=icons("floating"), decimalScale=2, size="xs"),
-                    cf.number(self.f("size_max"), label="Marker max size", min=0, max=50, step=1, value=15, leftSection=icons("integer"), decimalScale=2, size="xs"),
-                    cf.number(self.f("size_min"), label="Marker min size", min=0, max=50, step=1, value=2, leftSection=icons("integer"), decimalScale=2, size="xs"),
+                    cf.number(self.f("size_max"), label="Marker max size", min=0, max=50, step=1, value=15, leftSection=icons("integer"), decimalScale=2, size="xs", style = { "width": "100px"}),
+                    cf.number(self.f("size_min"), label="Marker min size", min=0, max=50, step=1, value=2, leftSection=icons("integer"), decimalScale=2, size="xs", style = { "width": "100px"}),
                 ),
                 cf.group(
                     self.f["style-grp-2"],
