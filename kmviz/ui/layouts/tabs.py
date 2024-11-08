@@ -204,7 +204,7 @@ class Tabs:
         group_content = [
             dcc.Download(id=kid.kmviz["download"]),
             dmc.Tooltip(
-                label="When making figures, kmviz distinguishes 2 types of action: those that create a new figure (the 'Trace' tab for both maps and plots), e.g. change the plot type, and those that update the figure, e.g. change the title. The blue switch at the top right corner allows to enabled/disabled the auto updates. When enabled, all properties corresponding to update actions are automatically re-applied when the figure is modified. For example, if you set a title, then change the plot type, the title remains",
+                label="When making figures, kmviz distinguishes 2 types of action: those that create a new figure (the 'Trace' tab for both maps and plots), e.g. change the plot type, and those that update the figure, e.g. change the title. The switch allows to enabled/disabled the auto updates. When enabled, all properties corresponding to update actions are automatically re-applied when the figure is modified. For example, if you set a title, then change the plot type, the title remains",
                 withArrow=True,
                 children=[cf.switch( kid.kmviz("auto"), onLabel=icons("autoff", width=20), offLabel=icons("auton", width=20), checked=True)],
                 multiline=True,
