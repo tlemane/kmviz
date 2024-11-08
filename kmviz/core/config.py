@@ -227,6 +227,8 @@ class cdatabase(BaseModel):
             return cpresets(**res)
         return cpresets(priority=False, map = {}, plot = {}, defaults=None)
 
+PLOT_TYPES = [ "Scatter", "Line", "Area", "Bar", "Parallel categories", "Parallel coordinates", "Scatter matrix", "Density heatmap", "Density contour", "Violin", "Box", "Histogram" ]
+
 class cui(BaseModel):
     with_map_tab: bool=True
     with_help_tab: bool=True
@@ -240,6 +242,8 @@ class cui(BaseModel):
     table_filter_message: Optional[str]="SQL WHERE clause"
     map_filter_message: Optional[str]=table_filter_message
     plot_filter_message: Optional[str]=table_filter_message
+
+    plot_types: Optional[List[str]]=PLOT_TYPES
 
 class capi(BaseModel):
     enabled: bool=False
