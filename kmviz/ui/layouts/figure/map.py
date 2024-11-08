@@ -214,7 +214,18 @@ class MapTraceLayout:
                 if preset and preset in self.st.engine.get(database).presets.map:
                     presets = self.st.engine.get(database).presets.map
 
-                    params = apply_presets(presets[preset].model_dump(exclude=["title", "legend"]), params, self.st.engine.get(database).presets.priority)
+                    md = presets[preset].model_dump(exclude=["title", "legend"])
+
+                    if "min_size" in md:
+                        p_min_size = md["min_size"]
+                        if self.st.engine.get(database).presets.priority:
+                            size_min = p_min_size
+                        else:
+                            if p_min_size > size_min:
+                                size_min = p_min_size
+                        del md["min_size"]
+
+                    params = apply_presets(md, params, self.st.engine.get(database).presets.priority)
                     fig = px.scatter_geo(df, hover_name="ID", **params)
                     apply_legend_and_title_presets(fig, presets[preset])
                     return fig

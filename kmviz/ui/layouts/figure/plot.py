@@ -446,6 +446,15 @@ class TraceLayout:
 
                     presets_params = presets[preset].model_dump()
 
+                    if "min_size" in presets_params:
+                        p_min_size = presets_params["min_size"]
+                        if self.st.engine.get(database).presets.priority:
+                            size_min = p_min_size
+                        else:
+                            if p_min_size > size_min:
+                                size_min = p_min_size
+                        del presets_params["min_size"]
+
                     ptype, X, Y, Z, = self.apply_plot_presets(presets_params, ptype, X, Y, Z, self.st.engine.get(database).presets.priority)
                     params = apply_presets(presets_params, params, self.st.engine.get(database).presets.priority)
 
