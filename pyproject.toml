@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kmviz"
-version = "0.7.3"
+version = "0.7.4"
 description = "A web interface for querying biological sequence indexes."
 authors = ["Teo Lemane <teo.lemane@genoscope.cns.fr>"]
 license = "MIT"
@@ -15,7 +15,7 @@ python = "^3.9"
 loguru = "^0.7.2"
 numpy = "^1.26.4"
 pandas = "^2.2.1"
-dash = {extras = ["compress"], version = "^2.18.2"}
+dash = {extras = ["compress", "diskcache"], version = "^2.18.2"}
 dash-bio = "^1.0.2"
 uplink = {extras = ["aiohttp"], version = "^0.9.7"}
 click = "^8.1.7"
@@ -42,10 +42,10 @@ dash-extensions = "=1.0.14"
 tomli-w = "^1.0.0"
 duckdb = "^1.0.0"
 sendgrid = "^6.11.0"
+gunicorn = "^23.0.0"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
-gunicorn = "^21.2.0"
 mkdocs-material = "^9.5.27"
 pytest = "^8.2.2"
 mike = "^2.1.1"
