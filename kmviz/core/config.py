@@ -245,10 +245,31 @@ class cui(BaseModel):
 
     plot_types: Optional[List[str]]=PLOT_TYPES
 
+README_TEMPLATE = """
+
+# {SESSION}
+
+## {TABLE}
+
+{FILES}
+
+## Session
+
+The file `session.json` allows to explore your results in any kmviz instance running in `session mode`.
+
+```bash
+pip install kmviz
+python -m kmviz app start session
+```
+
+A kmviz instance is now running at `https://localhost:8050/dashboard`. You can upload your session file using the `Upload session` button.
+"""
+
 class capi(BaseModel):
     enabled: bool=False
     with_query: bool=True
     with_download: bool=True
+    readme_template: Optional[str]=README_TEMPLATE
     route: Annotated[
         str,
         Field(default="/api", validate_default=True)

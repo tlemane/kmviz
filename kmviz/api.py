@@ -180,6 +180,9 @@ class KmvizAPI:
                     result[name] = self._make_geo_response(result[name], name, True)
                 results[query_name] = result
             zf.writestr("session.json", orjson.dumps(jsonify({session: results}).json).decode())
+            files = "\n".join(f"- `{k}.tsv`" for k in results)
+            readme = self.st.api.readme_template.format(SESSION=session, FILES=files, TABLE="Tables" if len(results) > 1 else "Table")
+            zf.writestr("README.md", readme)
         zf_io.seek(0)
         return send_file(zf_io, download_name=f"{session}.zip")
 
