@@ -18,15 +18,15 @@ class TableLayout:
     def __init__(self, st: state):
         self.st = st
         self._filter = FilterLayout(kid.table, kid.table("grid"), st.ui.table_filter_message)
+        self.extra = []
 
     def layout(self) -> html.Div:
-        return cf.div(
-            kid.table["div"],
+        children = [
             dmc.Space(h=5),
             self._filter.layout(),
             dmc.Space(h=5),
             dcc.Loading(id=kid.table("loading"), type="default", delay_show=250, children=[
-                cf.ag_grid(kid.table("grid"), {}, {}, {}, style = {"height": "80vh"}),
+                cf.ag_grid(kid.table("grid"), {}, {}, {}, style = {"height": self.st.ui.table_height}),
             ]),
             dmc.Space(h=5),
             cf.group(
@@ -49,7 +49,20 @@ class TableLayout:
                     disabled=True,
                     leftSection=DashIconify(icon="mingcute:na-fill", width=20)
                 )
-            ),
+            )
+        ]
+
+        if self.extra:
+            for i, e in self.extra:
+                print(i)
+                if i is not None:
+                    children.insert(i, e)
+                else:
+                    children.append(e)
+
+        return cf.div(
+            kid.table["div"],
+            *children
         )
 
     def callbacks(self) -> None:

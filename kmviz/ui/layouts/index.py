@@ -12,10 +12,10 @@ from dash_iconify import DashIconify
 class Index:
     def __init__(self, st: state):
         self.st = st
+        self.extra = []
 
     def layout(self):
-        return cf.div(
-            kid.index["div"],
+        children = [
             dmc.Center(cf.h2("Index information")),
             cf.ag_grid(
                 kid.index("info-grid"),
@@ -48,6 +48,19 @@ class Index:
                     leftSection=DashIconify(icon="ph:trash", width=20)
                 )
             )
+
+        ]
+
+        if self.extra:
+            for i, e in self.extra:
+                if i is not None:
+                    children.insert(i, e)
+                else:
+                    children.append(e)
+
+        return cf.div(
+            kid.index["div"],
+            *children
         )
 
     def callbacks(self) -> None:

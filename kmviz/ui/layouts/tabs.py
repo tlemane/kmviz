@@ -29,6 +29,9 @@ class Tabs:
         if self.st.mode == "session" or self.st.mode == "plot":
             self.dtab = "table"
 
+        if self.st.ui.default_tab:
+            self.dtab = self.st.ui.default_tab
+
         self.plugin_show = khide if self.st.mode in ("plot", "session") else {}
 
         self._index = Index(self.st)
@@ -41,11 +44,21 @@ class Tabs:
 
         self._disabled = False if self.st.mode in ("plot", "session") else True
 
+        for name, plugin in self.st.conf.plugins.items():
+            plugin.extra_layouts(self._table)
+            plugin.extra_layouts(self._index)
+
     def _plugin_layout(self):
         for name, plugin in self.st.conf.plugins.items():
             layouts = plugin.layouts()
             if layouts:
-                for ptab, panel, icon in layouts:
+                for layout in layouts:
+                    if len(layout) == 3:
+                        ptab, panel, icon = layout
+                        pos = None
+                    else:
+                        ptab, panel, icon, pos = layout
+
                     if not isinstance(ptab, str):
                         tab_name = ptab[0]
                         tab = ptab[1]
@@ -58,14 +71,24 @@ class Tabs:
                             leftSection=DashIconify(icon=icon) if icon else None,
                             style=self.plugin_show)
 
-                    self._tabs.append(tab)
-                    self._panels.append(
-                        cf.tabs_panel(
-                            kid.plugin[f"{name}-{tab_name}-panel"],
-                            panel,
-                            value=f"{name}-{tab_name}-tab",
+                    if not pos:
+                        self._tabs.append(tab)
+                        self._panels.append(
+                            cf.tabs_panel(
+                                kid.plugin[f"{name}-{tab_name}-panel"],
+                                panel,
+                                value=f"{name}-{tab_name}-tab",
+                            )
                         )
-                    )
+                    else:
+                        self._tabs.insert(pos, tab)
+                        self._panels.insert(pos,
+                            cf.tabs_panel(
+                                kid.plugin[f"{name}-{tab_name}-panel"],
+                                panel,
+                                value=f"{name}-{tab_name}-tab",
+                            )
+                        )
 
     def _index_layout(self):
 

@@ -2,7 +2,7 @@ from kmviz.core.provider import Provider
 from kmviz.core.metadata.db import MetaDB
 from kmviz.core.notifier import Notifier
 from kmviz.core import KmVizError
-from typing import List, Tuple, Any, Union, Dict
+from typing import List, Tuple, Any, Union, Dict, Optional
 import importlib
 import pkgutil
 import shutil
@@ -33,9 +33,9 @@ class KmVizPlugin:
         :returns: The notifiers implemented by the plugin, as list of tuples <name, 'Notifier'>
         """
 
-    def layouts(self) -> List[Tuple[str, Any, str]]:
+    def layouts(self) -> List[Tuple[str, Any, str, Optional[int]]]:
         """
-        :returns: The layouts implemented by the plugin, as list of tuples <name, dash_component, icon_name>
+        :returns: The layouts implemented by the plugin, as list of tuples <name, dash_component, icon_name, index>
         """
         return []
 
@@ -90,6 +90,11 @@ class KmVizPlugin:
         :returns: None
         """
         return None
+
+    def extra_layouts(self, layout):
+        """
+        """
+        return []
 
     @property
     def config(self) -> Dict[str, Any]:

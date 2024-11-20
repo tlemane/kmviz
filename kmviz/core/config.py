@@ -245,8 +245,11 @@ class cui(BaseModel):
 
     plot_types: Optional[List[str]]=PLOT_TYPES
 
-README_TEMPLATE = """
+    default_tab: Optional[str]=""
 
+    table_height: Optional[str]="80vh"
+
+README_TEMPLATE = """
 # {SESSION}
 
 ## {TABLE}
