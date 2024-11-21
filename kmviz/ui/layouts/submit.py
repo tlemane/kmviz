@@ -59,7 +59,7 @@ class SubmitLayout:
         )
 
     def _on_error(self, uuid_str, msg=None):
-        return (no_update,) * 6 + (self._make_error_submit_notification(uuid_str, msg), False) + (no_update,) * 2 + (True,) * 5 + (self._def_tab, kshow, [])
+        return (no_update,) * 6 + (self._make_error_submit_notification(uuid_str, msg), False) + (no_update,) * 2 + (True,) * 5 + (no_update, kshow, [])
 
     def _submit_callback(self):
 
