@@ -54,7 +54,6 @@ class TableLayout:
 
         if self.extra:
             for i, e in self.extra:
-                print(i)
                 if i is not None:
                     children.insert(i, e)
                 else:
