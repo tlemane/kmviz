@@ -9,6 +9,7 @@ config_file = os.environ["KMVIZ_CONF"]
 log_directory = os.environ["KMVIZ_LOG_DIR"]
 log_stderr = os.environ["KMVIZ_LOG_STDERR"]
 verbosity = os.environ["KMVIZ_VERBOSITY"]
+log_rotation = os.environ["KMVIZ_LOG_ROTATION"]
 
 if not config_file:
     raise KmVizError("'KMVIZ_CONF' env variable not found")
@@ -22,9 +23,12 @@ if not verbosity:
 if not log_stderr:
     log_stderr = True
 
+if not log_rotation:
+    log_rotation = "24H"
+
 kconf.init_global_state()
 
-setup_logger(verbosity, log_directory=log_directory, with_stderr=log_stderr, traceback=None)
+setup_logger(verbosity, log_directory=log_directory, with_stderr=log_stderr, traceback=None, rotation=log_rotation)
 
 kconf.st.configure("db", config_file)
 app = make_kmviz_app(kconf.st)

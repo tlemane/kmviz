@@ -24,7 +24,7 @@ log_fmt_cli = (
     "<white><bold>{message}</bold></white>"
 )
 
-def setup_logger(log_level: str="DEBUG", log_directory: str=None, with_stderr: bool=True, cli: bool=False, traceback=None) -> None:
+def setup_logger(log_level: str="DEBUG", log_directory: str=None, with_stderr: bool=True, cli: bool=False, traceback=None, rotation="12H") -> None:
     log_level = log_level.upper()
     logger.remove()
 
@@ -39,7 +39,9 @@ def setup_logger(log_level: str="DEBUG", log_directory: str=None, with_stderr: b
         logger.add(sys.stderr, format=fmt, colorize=True, level=log_level, backtrace=False, diagnose=False)
 
     if log_directory:
-        logger.add(f"{log_directory}/kmviz-{{time:YYYY-MM-DD_HH:mm}}", rotation="12H", format=fmt)
+        logger.add(f"{log_directory}/kmviz-{{time:YYYY-MM-DD_HH:mm}}", rotation=rotation, format=fmt)
+
+
 
 def kmv_ex(exp) -> None:
     logger.exception(exp)
