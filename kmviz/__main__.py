@@ -50,8 +50,8 @@ def epilog(page: str=None) -> str:
 @click.option("--log-dir", "-d", type=str, metavar="<dir>", default="", help="Path to log directory")
 @click.option("--log-rotation", "-r", type=str, metavar="<str>", help="Log rotation")
 @click.option("--demo", "-x", type=str, default=None, hidden=True, help="Demo mode")
-def kmviz(verbose, log_dir, log_rot, demo):
-    setup_logger(verbose, log_directory=log_dir, traceback=0 if verbose != "debug" else None, rotation=log_rot)
+def kmviz(verbose, log_dir, log_rotation, demo):
+    setup_logger(verbose, log_directory=log_dir, traceback=0 if verbose != "debug" else None, rotation=log_rotation)
 
     if demo is not None:
         import kmviz
