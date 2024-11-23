@@ -26,7 +26,7 @@ class TableLayout:
             self._filter.layout(),
             dmc.Space(h=5),
             dcc.Loading(id=kid.table("loading"), type="default", delay_show=250, children=[
-                cf.ag_grid(kid.table("grid"), {"tooltipShowDelay": self.st.ui.table_tooltips_delay[0], "tooltipHideDelay": self.st.ui.table_tooltips_delay[1]}, {}, {}, style = {"height": self.st.ui.table_height}),
+                cf.ag_grid(kid.table("grid"), {"enableBrowserTooltips": self.st.ui.table_tooltips_browser,"tooltipShowDelay": self.st.ui.table_tooltips_delay[0], "tooltipHideDelay": self.st.ui.table_tooltips_delay[1]}, {}, {}, style = {"height": self.st.ui.table_height}),
             ]),
             dmc.Space(h=5),
             cf.group(

@@ -250,6 +250,7 @@ class cui(BaseModel):
     table_height: Optional[str]="80vh"
     table_tooltips: Optional[List[str]]=[]
     table_tooltips_delay: Optional[Tuple[int, int]]=(200, 10000)
+    table_tooltips_browser: Optional[bool]=True
 
 README_TEMPLATE = """
 # {SESSION}
