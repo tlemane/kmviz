@@ -26,7 +26,7 @@ class TableLayout:
             self._filter.layout(),
             dmc.Space(h=5),
             dcc.Loading(id=kid.table("loading"), type="default", delay_show=250, children=[
-                cf.ag_grid(kid.table("grid"), {}, {}, {}, style = {"height": self.st.ui.table_height}),
+                cf.ag_grid(kid.table("grid"), {"tooltipShowDelay": self.st.ui.table_tooltips_delay[0], "tooltipHideDelay": self.st.ui.table_tooltips_delay[1]}, {}, {}, style = {"height": self.st.ui.table_height}),
             ]),
             dmc.Space(h=5),
             cf.group(
@@ -156,7 +156,8 @@ class TableLayout:
                     "suppressMenu": True,
                     "filter": colf(df[x]),
                     "cellRenderer": self.st.ui.crs[x][0] if x in self.st.ui.crs else "",
-                    "cellRendererParams": self.st.ui.crs[x][1] if x in self.st.ui.crs else ""
+                    "cellRendererParams": self.st.ui.crs[x][1] if x in self.st.ui.crs else "",
+                    "tooltipField": x if x in self.st.ui.table_tooltips else ""
                 } for x in list(df)
             ]
 
