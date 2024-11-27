@@ -96,6 +96,12 @@ class KmVizPlugin:
         """
         return []
 
+    def callbacks(self):
+        """
+        Set the plugin callbacks
+        """
+        pass
+
     @property
     def config(self) -> Dict[str, Any]:
         return self._config

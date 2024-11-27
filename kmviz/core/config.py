@@ -509,6 +509,10 @@ class state:
         if apis:
             kmv_info(f"Load APIs from: [{','.join(apis)}]")
 
+    def init_plugins_callbacks(self):
+        for name, p in self._config.plugins.items():
+            p.callbacks()
+
     @property
     def mode(self) -> str:
         return self._mode

@@ -77,5 +77,6 @@ def make_kmviz_app(st: state):
 
     KmvizAPI(st, app.server)
     st.init_plugins_api(app.server)
+    st.init_plugins_callbacks()
 
     return app
