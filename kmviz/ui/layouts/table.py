@@ -152,6 +152,8 @@ class TableLayout:
                 {
                     "field": x,
                     "headerName": x,
+                    "headerClass": f"kmviz-ag-grid-header kmviz-ag-grid-header-{x.replace(' ', '-')}",
+                    "headerTooltip": self.st.ui.cts[x] if x in self.st.ui.cts else None,
                     "filterParams": {"maxNumConditions": 10000},
                     "suppressMenu": True,
                     "filter": colf(df[x]),
