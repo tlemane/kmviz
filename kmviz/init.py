@@ -4,7 +4,7 @@ from kmviz.core.log import kmv_info
 
 from kmviz.ui.components.factory import dmc_new
 import dash
-
+from dash import dcc
 if dmc_new:
     dash._dash_renderer._set_react_version('18.2.0')
 
@@ -66,6 +66,7 @@ def make_kmviz_app(st: state):
         ])
     else:
         app.layout = html.Div([
+            dcc.Store(id="user-sessions", storage_type="local", data=[]),
             dash.page_container
         ])
 
