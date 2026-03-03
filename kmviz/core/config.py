@@ -229,6 +229,8 @@ class cdatabase(BaseModel):
 
 PLOT_TYPES = [ "Scatter", "Line", "Area", "Bar", "Parallel categories", "Parallel coordinates", "Scatter matrix", "Density heatmap", "Density contour", "Violin", "Box", "Histogram" ]
 
+from kmviz import __version__ as vv
+
 class cui(BaseModel):
     with_map_tab: bool=True
     with_help_tab: bool=True
@@ -236,6 +238,7 @@ class cui(BaseModel):
     with_sequence_tab: bool=True
     with_index_tab: bool=True
     crs: Optional[Dict[str, Tuple[str, Dict[str, Any]]]]={}
+    cts: Optional[Dict[str, str]]={}
     ui_notif_msg: Optional[str] = ""
     compress_requests: Optional[bool]=True
 
@@ -251,6 +254,8 @@ class cui(BaseModel):
     table_tooltips: Optional[List[str]]=[]
     table_tooltips_delay: Optional[Tuple[int, int]]=(200, 10000)
     table_tooltips_browser: Optional[bool]=True
+
+    dashboard_main_title: Optional[str]=f"kmviz v{vv}"
 
 README_TEMPLATE = """
 # {SESSION}
@@ -497,6 +502,12 @@ class state:
                 else:
                     return "/dashboard", p
         return "/dashboard", None
+
+    def get_plugin_dashboard(self):
+        for name, p in self._config.plugins.items():
+            if p.has_dashboard():
+                return p.dashboard()
+        return None
 
     def init_plugins_api(self, app):
         if not self.api.enabled:

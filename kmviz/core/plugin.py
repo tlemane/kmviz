@@ -102,6 +102,13 @@ class KmVizPlugin:
         """
         pass
 
+    def has_dashboard(self) -> bool:
+        return False
+
+    def dashboard(self):
+        """"""
+        pass
+
     @property
     def config(self) -> Dict[str, Any]:
         return self._config

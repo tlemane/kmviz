@@ -10,22 +10,25 @@ from kmviz.ui.components.factory import dmc_new
 import kmviz.core.config as kconf
 from kmviz.core.log import kmv_info
 
-Global(kconf.st).callbacks()
-Sidebar(kconf.st).callbacks()
-Tabs(kconf.st).callbacks()
+md = kconf.st.get_plugin_dashboard()
 
-@callback(
-    Input("kmviz-session-interval", "n_intervals"),
-    State(kid.input["session-button"], "n_clicks"),
-    State("kmviz-session-store-page", "data"),
-    Output(kid.input["session-button"], "n_clicks"),
-    Output(kid.input("session"), "value"),
-)
-def load_session_page(n_i, n_c, data):
-    kmv_info(f"Load session {str(data)}")
-    if n_i == 1:
-            return 500, data
-    return no_update, no_update
+if not md:
+    Global(kconf.st).callbacks()
+    Sidebar(kconf.st).callbacks()
+    Tabs(kconf.st).callbacks()
+
+    @callback(
+        Input("kmviz-session-interval", "n_intervals"),
+        State(kid.input["session-button"], "n_clicks"),
+        State("kmviz-session-store-page", "data"),
+        Output(kid.input["session-button"], "n_clicks"),
+        Output(kid.input("session"), "value"),
+    )
+    def load_session_page(n_i, n_c, data):
+        kmv_info(f"Load session {str(data)}")
+        if n_i == 1:
+                return 500, data
+        return no_update, no_update
 
 def make_dashboard(session_id=None):
     G = Global(kconf.st)
@@ -33,6 +36,7 @@ def make_dashboard(session_id=None):
     T = Tabs(kconf.st)
 
     if dmc_new:
+        print("ok")
         layout = dmc.AppShell(
             id="kmviz-shell",
             children=[
@@ -73,11 +77,17 @@ def make_dashboard(session_id=None):
                     withCloseButton=False,
                     shadow=True
                 ),
-            ])
+            ]),
+            dmc.Modal(
+                title=""
+            )
         ])
 
     return layout
 
 dash.register_page(__name__, path_template=kconf.st.instance_plugin[0] + "/<session_id>", path=kconf.st.instance_plugin[0], name="dashboard", title="dashboard")
 
-layout = make_dashboard
+if not md:
+   layout = make_dashboard
+else:
+   layout = md
