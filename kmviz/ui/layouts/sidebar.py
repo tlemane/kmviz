@@ -30,7 +30,7 @@ class Sidebar:
     def _make_database_layout(self) -> html.Div:
         layout = cf.div(
             kid.kmviz["side-div"],
-            dmc.Center(cf.h1(f"kmviz {kmviz.__version_str__}")),
+            dmc.Center(cf.h1(self.st.ui.dashboard_main_title)),
             self.sdb.layout(),
             self.sinput.layout(),
             self.snotif.layout(),
