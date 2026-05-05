@@ -67,6 +67,7 @@ def make_multichoice_option(opt: MultiChoiceOption, id):
         clearable=True,
         searchable=True,
         classNames={"root": "kmviz-dmc-select-input-root"},
+        maxSelectedValues=opt.max_selected if opt.max_selected else None,
         size="xs"
     )
 

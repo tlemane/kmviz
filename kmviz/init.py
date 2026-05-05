@@ -54,7 +54,9 @@ def make_kmviz_app(st: state):
         external_stylesheets=st.css,
         external_scripts=st.js,
         meta_tags=st.html.metatags,
-        compress=st.ui.compress_requests
+        compress=st.ui.compress_requests,
+        #requests_pathname_prefix="/v2/",
+        #routes_pathname_prefix="/v2/"
     )
 
     if st.html.template:

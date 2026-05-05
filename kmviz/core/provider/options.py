@@ -43,6 +43,7 @@ class ChoiceOption(ProviderOption):
 class MultiChoiceOption(ProviderOption):
     choices: Iterable[Union[str, int, float]]
     value: Iterable[Union[str, int, float]] = None
+    max_selected: int = 1
 
 @dataclass
 class RangeOption(ProviderOption):
