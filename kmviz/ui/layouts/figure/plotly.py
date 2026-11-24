@@ -485,17 +485,21 @@ def make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
 
     # px only creates MELT_COLUMN when several Y are given
     multi_y = isinstance(Y, list) and len(Y) > 1
-    by_variable = False
-    for key in ("facet_row", "facet_col"):
-        if params.get(key) == MELT_COLUMN:
-            if multi_y:
-                by_variable = True
-            else:
+    can_facet = "facet_row" in px_options.get(ptype, ())
+
+    if not multi_y:
+        for key in ("facet_row", "facet_col"):
+            if params.get(key) == MELT_COLUMN:
                 params[key] = None
+    elif can_facet and not params.get("facet_row") and not params.get("facet_col"):
+        # one panel per Y column rather than stacking them on one axis
+        params["facet_row"] = MELT_COLUMN
+
+    by_variable = MELT_COLUMN in (params.get("facet_row"), params.get("facet_col"))
 
     fig = _make_plot_px(ptype, df, X, Y, Z, params)
 
-    # one panel per Y column: different units, so px's shared scale is wrong
+    # different columns, different units, so px's shared scale is wrong
     if by_variable and hasattr(fig, "update_yaxes"):
         fig.update_yaxes(matches=None)
 
