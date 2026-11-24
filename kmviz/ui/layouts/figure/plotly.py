@@ -473,12 +473,35 @@ px_options = {
     "Histogram": px_histo_options
 }
 
+MELT_COLUMN = "variable"
+
 def list_to_str(value):
     if isinstance(value, list) and len(value) == 1:
         return value[0]
     return value
 
 def make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
+    params = dict(params)
+
+    # px only creates MELT_COLUMN when several Y are given
+    multi_y = isinstance(Y, list) and len(Y) > 1
+    by_variable = False
+    for key in ("facet_row", "facet_col"):
+        if params.get(key) == MELT_COLUMN:
+            if multi_y:
+                by_variable = True
+            else:
+                params[key] = None
+
+    fig = _make_plot_px(ptype, df, X, Y, Z, params)
+
+    # one panel per Y column: different units, so px's shared scale is wrong
+    if by_variable and hasattr(fig, "update_yaxes"):
+        fig.update_yaxes(matches=None)
+
+    return fig
+
+def _make_plot_px(ptype: str, df, X, Y, Z=None, params={}):
     X, Y, Z = list_to_str(X), list_to_str(Y), list_to_str(Z)
 
     if ptype == "Bar":

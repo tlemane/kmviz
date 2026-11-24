@@ -47,7 +47,8 @@ class TableLayout:
                     kid.table["filter-button"],
                     "Filter NaN",
                     disabled=True,
-                    leftSection=DashIconify(icon="mingcute:na-fill", width=20)
+                    leftSection=DashIconify(icon="mingcute:na-fill", width=20),
+                    style={"display": "none"}
                 )
             )
         ]

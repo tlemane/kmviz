@@ -9,7 +9,7 @@ from dash import Patch
 from kmviz.core.log import kmv_debug
 
 from kmviz.ui.id_factory import kid
-from kmviz.ui.layouts.figure.plotly import px_options, valid_input, fix_px_params, make_plot_px, to_bool, select_cscale
+from kmviz.ui.layouts.figure.plotly import px_options, valid_input, fix_px_params, make_plot_px, to_bool, select_cscale, MELT_COLUMN
 from kmviz.ui.layouts.figure.title import TitleLayout
 from kmviz.ui.layouts.figure.axe import AxesLayout
 from kmviz.ui.layouts.figure.legend import LegendLayout
@@ -284,7 +284,12 @@ class TraceLayout:
                     if all(x >= 0 for x in df[c]):
                         cols_size.append(c)
 
-            return (cols,) * 17 + (cols_size,)
+            # facet by MELT_COLUMN gives one panel per selected Y column
+            facet_cols = cols
+            if MELT_COLUMN not in list(df):
+                facet_cols = cols + make_select_data([MELT_COLUMN])
+
+            return (cols,) * 8 + (facet_cols,) * 2 + (cols,) * 7 + (cols_size,)
 
         def _blank() -> go.Figure:
             fig = go.Figure(go.Scatter(x=[], y = []))
